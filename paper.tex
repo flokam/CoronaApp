@@ -1,0 +1,90 @@
+\documentclass{llncs}
+
+\usepackage{fancyhdr}
+\usepackage{flushend}
+\usepackage{amsfonts,amssymb,amsmath,alltt}
+\usepackage{stmaryrd}
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{color}
+
+\usepackage{makeidx}
+\pagestyle{plain}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage[english]{babel}
+
+
+\renewcommand{\ttdefault}{cmtt}
+%This version DOES NOT suppress line breaks
+% newcommands etc
+\newenvironment{ttbox}{\begin{alltt}\ttbraces\small\tt}%
+                      {\end{alltt}}
+%the new definition of \. suppresses line breaks
+\def\ttbraces{\let\.=\nobreak\chardef\{=`\{\chardef\}=`\}\chardef\|=`\\}
+
+\newcommand{\symb}[1]{\makebox{\it #1}} 
+\newcommand\ie{i.e.\!\,, }
+\newcommand\rel{Re${\cal{L}}$}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
+\newcommand\ttand{\mbox{{$\land$}}}
+\newcommand\ttor{\mbox{{$\lor$}}}
+\newcommand\ttcap{\mbox{{$\cap$}}}
+\newcommand\ttcup{\mbox{{$\cup$}}}
+\newcommand\ttfun{\mbox{{$\Rightarrow$}}}
+\newcommand\ttmimp{\mbox{{$\Longrightarrow$}}}
+\newcommand\ttimp{\mbox{{$\longrightarrow$}}}
+\newcommand\ttequiv{\mbox{{$\equiv$}}}
+\newcommand\ttexists{\mbox{{$\exists$}}}
+\newcommand\ttforall{\mbox{{$\forall$}}}
+\newcommand\ttneg{\mbox{{$\neg$}}}
+\newcommand\ttneq{\mbox{{$\neq$}}}
+\newcommand\ttin{\mbox{{$\in$}}}
+\newcommand\ttnin{\mbox{{$\notin$}}}
+\newcommand\ttImp{\mbox{{$\Longrightarrow$}}}
+\newcommand\ttlam{\mbox{\( \lambda \)}}
+\newcommand\tttimes{\mbox{\( \times \)}}
+\newcommand\ttlbrack{\mbox{\(\llbracket\)}}
+\newcommand\ttrbrack{\mbox{\( \rrbracket \)}}
+\newcommand\noie{\textit{i.e.},\xspace}
+\newcommand\eg{~\textit{e.g.},\xspace}
+\newcommand\noeg{\textit{e.g.},\xspace}
+\newcommand\ttatI{\mbox{\( @_G \)}}
+\newcommand\ttto[1]{\mbox{{$\to^{#1}$}}}
+\newcommand\ttleq{\mbox{{$\le$}}}
+\newcommand\ttrelI{\mbox{{$\to_{i}$}}}
+\newcommand\ttalpha{\mbox{{$\alpha$}}}
+\newcommand\tttau{\mbox{{$\tau$}}}
+\newcommand\ttsubseteq{\mbox{{$\subseteq$}}}
+\newcommand\ttf{\mbox{{$f$}}}
+\newcommand\ttvdash{\mbox{{$\vdash$}}}
+\newcommand\ttref[1]{\mbox{\(\sqsubseteq_{#1}\)}}
+\newcommand\ttNatt{\mbox{{$\mathcal{N}$}}}
+\newcommand\ttattand[1]{\mbox{{$\oplus_{\wedge}^{#1}$}}}
+\newcommand\ttattor[1]{\mbox{{$\oplus_{\vee}^{#1}$}}}
+\newcommand\ttrelIstar{\mbox{{$\to_{i}^*$}}}
+
+
+\begin{document}
+\frontmatter
+  
+\mainmatter
+\title{Modeling Corona App in Isabelle}
+\author{Florian Kamm\"uller and Bianca Lutz}
+
+\institute{Middlesex University London and\\ Technische Universit\"at Berlin\\
+\email{f.kammueller@mdx.ac.uk|bialut@gmail.com}
+}
+\maketitle
+\begin{abstract}
+We provide a model in the Isabelle Infrastructure framework of the currently designed
+Corona App.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+\bibliographystyle{abbrv}
+\bibliography{../insider}
+
+\end{document}
