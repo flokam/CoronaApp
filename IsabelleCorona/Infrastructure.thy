@@ -47,11 +47,19 @@ set of labelled data may represent a condition on that data.
 Corresponding projection functions for each of these components of an 
 @{text \<open>igraph\<close>} are provided; they are named @{text \<open>gra\<close>} for the actual set of pairs of
 locations, @{text \<open>agra\<close>} for the actor map, @{text \<open>cgra\<close>} for the credentials,
-and @{text \<open>lgra\<close>} for the state of a location and the data at that location.\<close>
+and @{text \<open>lgra\<close>} for the state of a location and the data at that location.
+Finally, there is the map of the (Efemeral) Ids that are posted by mobile phones at a location
+(which is added here for the CoronaApp) and the map for each actor to the knowledge set which
+represents the combinatorial explosion of all Ids with all people present at a location representing the
+knowledge about who might be who. \<close>
 datatype location = Location nat
-  datatype igraph = Lgraph "(location * location)set" "location \<Rightarrow> identity set"
-                           "actor \<Rightarrow> (string set * string set)"  
+datatype efid = EfId nat
+datatype igraph = Lgraph "(location * location)set" "location \<Rightarrow> identity set"
+                           "actor \<Rightarrow> (string set * string set * efid)"  
                            "location \<Rightarrow> string * (dlm * data) set"
+                           "location \<Rightarrow> efid set"
+                           "actor \<Rightarrow> (identity * efid)set"
+
 datatype infrastructure = 
          Infrastructure "igraph" 
                         "[igraph, location] \<Rightarrow> policy set" 
@@ -59,13 +67,17 @@ datatype infrastructure =
 primrec loc :: "location \<Rightarrow> nat"
 where  "loc(Location n) = n"
 primrec gra :: "igraph \<Rightarrow> (location * location)set"
-where  "gra(Lgraph g a c l) = g"
+where  "gra(Lgraph g a c l e k) = g"
 primrec agra :: "igraph \<Rightarrow> (location \<Rightarrow> identity set)"
-where  "agra(Lgraph g a c l) = a"
-primrec cgra :: "igraph \<Rightarrow> (actor \<Rightarrow> string set * string set)"
-where  "cgra(Lgraph g a c l) = c"
+where  "agra(Lgraph g a c l e k) = a"
+primrec cgra :: "igraph \<Rightarrow> (actor \<Rightarrow> string set * string set * efid)"
+where  "cgra(Lgraph g a c l e k) = c"
 primrec lgra :: "igraph \<Rightarrow> (location \<Rightarrow> string * (dlm * data) set)"
-where  "lgra(Lgraph g a c l) = l"
+  where  "lgra(Lgraph g a c l e k) = l"
+primrec egra :: "igraph \<Rightarrow> location \<Rightarrow> efid set"
+  where  "egra(Lgraph g a c l e k) = e"
+primrec kgra:: "[igraph, actor] \<Rightarrow> (identity * efid)set"
+  where "kgra(Lgraph g a c l e k) = k"
 
 definition nodes :: "igraph \<Rightarrow> location set" 
 where "nodes g == { x. (? y. ((x,y): gra g) | ((y,x): gra g))}"
@@ -80,17 +92,19 @@ primrec graphI :: "infrastructure \<Rightarrow> igraph"
 where "graphI (Infrastructure g d) = g"
 primrec delta :: "[infrastructure, igraph, location] \<Rightarrow> policy set"
 where "delta (Infrastructure g d) = d"
-primrec tspace :: "[infrastructure, actor ] \<Rightarrow> string set * string set"
+primrec tspace :: "[infrastructure, actor ] \<Rightarrow> string set * string set * efid"
   where "tspace (Infrastructure g d) = cgra g"
 primrec lspace :: "[infrastructure, location ] \<Rightarrow> string * (dlm * data)set"
-where "lspace (Infrastructure g d) = lgra g"
+  where "lspace (Infrastructure g d) = lgra g"
 
-definition credentials :: "string set * string set \<Rightarrow> string set"
+definition credentials :: "string set * string set * efid \<Rightarrow> string set"
   where  "credentials lxl \<equiv> (fst lxl)"
 definition has :: "[igraph, actor * string] \<Rightarrow> bool"
   where "has G ac \<equiv> snd ac \<in> credentials(cgra G (fst ac))"
-definition roles :: "string set * string set \<Rightarrow> string set"
-  where  "roles lxl \<equiv> (snd lxl)"
+definition roles :: "string set * string set * efid \<Rightarrow> string set"
+  where  "roles lxl \<equiv> (fst (snd lxl))"
+definition efemid :: "string set * string set * efid \<Rightarrow> efid"
+  where "efemid lxl \<equiv> snd(snd lxl)"
 definition role :: "[igraph, actor * string] \<Rightarrow> bool"
   where "role G ac \<equiv> snd ac \<in> roles(cgra G (fst ac))"
 definition isin :: "[igraph,location, string] \<Rightarrow> bool" 
@@ -201,7 +215,13 @@ definition move_graph_a :: "[identity, location, location, igraph] \<Rightarrow>
 where "move_graph_a n l l' g \<equiv> Lgraph (gra g) 
                     (if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then 
                      ((agra g)(l := (agra g l) - {n}))(l' := (insert n (agra g l')))
-                     else (agra g))(cgra g)(lgra g)"
+                     else (agra g))
+                               (cgra g)(lgra g)
+                     (if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then
+                       ((egra g)(l := (egra g l) - {efemid (cgra g (Actor n))}))
+                                (l' := (insert (efemid (cgra g (Actor n))) (egra g l')))
+                      else egra g)
+                               (kgra g)"
 
 inductive state_transition_in :: "[infrastructure, infrastructure] \<Rightarrow> bool" ("(_ \<rightarrow>\<^sub>n _)" 50)
 where
@@ -214,16 +234,19 @@ where
                    (Lgraph (gra G)(agra G)
                            ((cgra G)(Actor a' := 
                                 (insert z (fst(cgra G (Actor a'))), snd(cgra G (Actor a')))))
-                           (lgra G))
+                           (lgra G)(egra g)(kgra g))
                    (delta I)
          \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
+
+(* 
 | get_data : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow>
         enables I l' (Actor a) get \<Longrightarrow> 
        ((Actor a', as), n) \<in> snd (lgra G l') \<Longrightarrow> Actor a \<in> as \<Longrightarrow> 
         I' = Infrastructure 
                    (Lgraph (gra G)(agra G)(cgra G)
                    ((lgra G)(l := (fst (lgra G l), 
-                                   snd (lgra G l)  \<union> {((Actor a', as), n)}))))
+                                   snd (lgra G l)  \<union> {((Actor a', as), n)}))) 
+                            (egra G))
                    (delta I)
          \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 | process : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow>
@@ -233,23 +256,17 @@ where
                    (Lgraph (gra G)(agra G)(cgra G)
                    ((lgra G)(l := (fst (lgra G l), 
                     snd (lgra G l)  - {((Actor a', as), n)}
-                    \<union> {(f :: label_fun) \<Updown> ((Actor a', as), n)}))))
+                    \<union> {(f :: label_fun) \<Updown> ((Actor a', as), n)})))
+                           (egra G))
                    (delta I)
          \<Longrightarrow> I \<rightarrow>\<^sub>n I'"  
-| del_data : "G = graphI I \<Longrightarrow> a \<in> actors G \<Longrightarrow> l \<in> nodes G \<Longrightarrow>
-       ((Actor a, as), n) \<in> snd (lgra G l) \<Longrightarrow> 
-        I' = Infrastructure 
-                   (Lgraph (gra G)(agra G)(cgra G)
-                   ((lgra G)(l := (fst (lgra G l), snd (lgra G l) - {((Actor a, as), n)}))))
-                   (delta I)
-         \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 | put : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow> enables I l (Actor a) put \<Longrightarrow>
         I' = Infrastructure 
                   (Lgraph (gra G)(agra G)(cgra G)
-                          ((lgra G)(l := (s, snd (lgra G l) \<union> {((Actor a, as), n)}))))
+                          ((lgra G)(l := (s, snd (lgra G l) \<union> {((Actor a, as), n)})))(egre G))
                    (delta I)
           \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
-
+*)
 text \<open>Note that the type infrastructure can now be instantiated to the axiomatic type class 
       @{text\<open>state\<close>} which enables the use of the underlying Kripke structures and CTL.\<close>
 instantiation "infrastructure" :: state
