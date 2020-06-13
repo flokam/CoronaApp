@@ -211,6 +211,12 @@ primrec nodup :: "['a, 'a list] \<Rightarrow> bool"
     nodup_nil: "nodup a [] = True" |
     nodup_step: "nodup a (x # ls) = (if x = a then (a \<notin> (set ls)) else nodup a ls)"
 *)
+text \<open>The @{text \<open>move_graph_a\<close>} function encapsulates the infrastructure state change for a 
+      move action used in the subsequent rule move. It relocates the actor from a location l
+      to a new location l' if the actor is actually at l and is not at l'. Additionally, 
+      here for the CoronaApp application, under the same conditons the local sending of the
+      ephemeral Id of the actor is also moved to the new location l' by adapting the egra component
+      of the infrastructure state graph.\<close>
 definition move_graph_a :: "[identity, location, location, igraph] \<Rightarrow> igraph"
 where "move_graph_a n l l' g \<equiv> Lgraph (gra g) 
                     (if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then 
@@ -228,13 +234,11 @@ where
   move: "\<lbrakk> G = graphI I; a @\<^bsub>G\<^esub> l; l \<in> nodes G; l' \<in> nodes G;
           (a) \<in> actors_graph(graphI I); enables I l' (Actor a) move;
          I' = Infrastructure (move_graph_a a l l' (graphI I))(delta I) \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'" 
-| get : "\<lbrakk> G = graphI I; a @\<^bsub>G\<^esub> l; a' @\<^bsub>G\<^esub> l; has G (Actor a, z);
+| get : "\<lbrakk> G = graphI I; a @\<^bsub>G\<^esub> l;
         enables I l (Actor a) get;
         I' = Infrastructure 
-                   (Lgraph (gra G)(agra G)
-                           ((cgra G)(Actor a' := 
-                                (insert z (fst(cgra G (Actor a'))), snd(cgra G (Actor a')))))
-                           (lgra G)(egra g)(kgra g))
+                   (Lgraph (gra G)(agra G)(cgra G)(lgra G)(egra g)
+                       ((kgra g)(Actor a := {(x,y). x \<in> agra G l \<and> y \<in> egra G l} \<inter> (kgra g (Actor a)))))
                    (delta I)
          \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 
