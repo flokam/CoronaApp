@@ -238,7 +238,9 @@ where
         enables I l (Actor a) get;
         I' = Infrastructure 
                    (Lgraph (gra G)(agra G)(cgra G)(lgra G)(egra g)
-                       ((kgra g)(Actor a := {(x,y). x \<in> agra G l \<and> y \<in> egra G l} \<inter> (kgra g (Actor a)))))
+                       ((kgra g)(Actor a := if kgra g (Actor a) = {} 
+                                            then {(x,y). x \<in> agra G l \<and> y \<in> egra G l}
+                                            else {(x,y). x \<in> agra G l \<and> y \<in> egra G l} \<inter> (kgra g (Actor a)))))
                    (delta I)
          \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 
