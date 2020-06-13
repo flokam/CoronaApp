@@ -229,6 +229,16 @@ where "move_graph_a n l l' g \<equiv> Lgraph (gra g)
                       else egra g)
                                (kgra g)"
 
+text \<open>The state transition relation defines the semantics for the actions. We concentrate
+     only on two: move and get. Move models the moving of actors from one locations to another
+     automatically posting the ephemeral ids at the new location (and stop posting them at the 
+     old location, i.e. deleting them there) -- this is implemented in @{text \<open>move_graph_a\<close>}
+     above.
+     For get, an actor a at a location can use get, if he's entitled to do that by the policy, 
+     to extend hos knowledge set. He adds all combinations of the actors a sees at the location 
+     with all ephemeral ids she measures, i.e. which are in the set @{text \<open>egra G l\<close>}. If a
+     already has a nonempty knowledge set @{text \<open>kgra G (Actor a)\<close>} she can already improve
+     her knowledge by building an intersection with the previous knowledge set.\<close>
 inductive state_transition_in :: "[infrastructure, infrastructure] \<Rightarrow> bool" ("(_ \<rightarrow>\<^sub>n _)" 50)
 where
   move: "\<lbrakk> G = graphI I; a @\<^bsub>G\<^esub> l; l \<in> nodes G; l' \<in> nodes G;
