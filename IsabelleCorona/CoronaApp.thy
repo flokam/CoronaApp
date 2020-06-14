@@ -17,66 +17,104 @@ text \<open>Local policies are represented as a function over an @{text \<open>i
       order to grant him actions in the location (second element of the pair). 
       The predicate @{text \<open>@G\<close>} checks whether an actor is at a given location 
        in the @{text \<open>igraph G\<close>}.\<close>
-locale scenarioGDPR = 
-fixes gdpr_actors :: "identity set"
-defines gdpr_actors_def: "gdpr_actors \<equiv> {''Patient'', ''Doctor''}"
-fixes gdpr_locations :: "location set"
-defines gdpr_locations_def: "gdpr_locations \<equiv> 
-          {Location 0, Location 1, Location 2, Location 3}"
-fixes sphone :: "location"
-defines sphone_def: "sphone \<equiv> Location 0"
-fixes home :: "location"
-defines home_def: "home \<equiv> Location 1"
-fixes hospital :: "location"
-defines hospital_def: "hospital \<equiv> Location 2"
-fixes cloud :: "location"
-defines cloud_def: "cloud \<equiv> Location 3"
-fixes global_policy :: "[infrastructure, identity] \<Rightarrow> bool"
-defines global_policy_def: "global_policy I a \<equiv> a \<noteq> ''Doctor'' 
-                 \<longrightarrow> \<not>(enables I hospital (Actor a) eval)"
-fixes global_policy' :: "[infrastructure, identity] \<Rightarrow> bool"
-defines global_policy'_def: "global_policy' I a \<equiv> a \<notin> gdpr_actors 
-                 \<longrightarrow> \<not>(enables I cloud (Actor a) get)"  
-fixes ex_creds :: "actor \<Rightarrow> (string set * string set)"
-defines ex_creds_def: "ex_creds \<equiv> (\<lambda> x. if x = Actor ''Patient'' then 
-                         ({''PIN'',''skey''}, {}) else 
-                            (if x = Actor ''Doctor'' then
-                                ({''PIN''},{}) else ({},{})))"
+locale scenarioCorona = 
+
+fixes corona_actors :: "identity set"
+defines corona_actors_def: "corona_actors \<equiv> {''Alice'', ''Bob'', ''Charly'', ''David'', ''Eve''}"
+
+fixes corona_locations :: "location set"
+defines corona_locations_def: "corona_locations \<equiv> {Location 0, Location 1}"
+fixes pub :: "location"
+defines pub_def: "pub \<equiv> Location 0"
+fixes shop :: "location"
+defines shop_def: "shop \<equiv> Location 1"
+
+fixes identifiable :: "[infrastructure,actor,efid] \<Rightarrow> bool"
+defines identifiable_def: "identifiable I a eid \<equiv> is_singleton{(Id,Eid). (Id, Eid) \<in> kgra (graphI I) a \<and> Eid = eid}"
+fixes global_policy :: "[infrastructure, efid] \<Rightarrow> bool"
+defines global_policy_def: "global_policy I eid \<equiv>  \<not>(identifiable I (Actor ''Eve'') eid)"
+
+fixes ex_creds :: "actor \<Rightarrow> (string set * string set * efid)"
+defines ex_creds_def: 
+          "ex_creds \<equiv> (\<lambda> x. if x = Actor ''Alice'' then ({}, {}, Efid 1) else 
+                            (if x = Actor ''Bob'' then  ({},{}, Efid 2) else 
+                            (if x = Actor ''Charly'' then ({},{}, Efid 3) else
+                            (if x = Actor ''David'' then ({},{}, Efid 4) else
+                            (if x = Actor ''Eve'' then ({},{}, Efid 5) else ({},{},Efid 0))))))"
+
 fixes ex_locs :: "location \<Rightarrow> string * (dlm * data) set"
-defines "ex_locs \<equiv> (\<lambda> x.  if x = cloud then
-             (''free'',{((Actor ''Patient'',{Actor ''Doctor''}),42)}) 
-             else ('''',{}))"
+defines "ex_locs \<equiv> (\<lambda> x. ('''',{}))"
+
 fixes ex_loc_ass :: "location \<Rightarrow> identity set"
 defines ex_loc_ass_def: "ex_loc_ass \<equiv>
-          (\<lambda> x.  if x = home then {''Patient''}  
-                 else (if x = hospital then {''Doctor'', ''Eve''} 
+          (\<lambda> x. if x = pub then {''Alice'', ''Bob'', ''Eve''}  
+                 else (if x = shop then {''Charly'', ''David''} 
                        else {}))"
+fixes ex_loc_ass' :: "location \<Rightarrow> identity set"
+defines ex_loc_ass'_def: "ex_loc_ass' \<equiv>
+          (\<lambda> x. if x = pub then {''Alice'', ''Eve''}  
+                 else (if x = shop then { ''Bob'', ''Charly'', ''David''} 
+                       else {}))"
+fixes ex_loc_ass'' :: "location \<Rightarrow> identity set"
+defines ex_loc_ass''_def: "ex_loc_ass'' \<equiv>
+          (\<lambda> x. if x = pub then {''Alice''}  
+                 else (if x = shop then {''Eve'', ''Bob'', ''Charly'', ''David''} 
+                       else {}))"
+
+fixes ex_efids :: "location \<Rightarrow> efid set"
+defines ex_efids_def: "ex_efids \<equiv> 
+          (\<lambda> x. if x = pub then {Efid 1, Efid 2, Efid 5}
+                else (if x = shop then {Efid 3, Efid 4}
+                      else {}))"
+
+fixes ex_efids' :: "location \<Rightarrow> efid set"
+defines ex_efids'_def: "ex_efids' \<equiv> 
+          (\<lambda> x. if x = pub then {Efid 1, Efid 5}
+                else (if x = shop then {Efid 2, Efid 3, Efid 4}
+                      else {}))"
+
+fixes ex_efids'' :: "location \<Rightarrow> efid set"
+defines ex_efids''_def: "ex_efids'' \<equiv> 
+          (\<lambda> x. if x = pub then {Efid 1}
+                else (if x = shop then {Efid 5, Efid 2, Efid 3, Efid 4}
+                      else {}))"
+
+fixes ex_knos :: "actor \<Rightarrow> (identity * efid) set"
+defines ex_knos_def: "ex_knos \<equiv> (\<lambda> x :: actor. 
+                  (if x = Actor ''Eve'' then ({} :: (identity * efid) set) 
+                   else ({} :: (identity * efid) set)))"
+
+fixes ex_knos' :: "actor \<Rightarrow> (identity * efid) set"
+defines ex_knos'_def: "ex_knos' \<equiv> (\<lambda> x :: actor. 
+                  (if x = Actor ''Eve'' then 
+                    ({(''Alice'', Efid 1),(''Alice'', Efid 2),(''Alice'', Efid 5),
+                      (''Bob'', Efid 1),(''Bob'', Efid 2),(''Bob'', Efid 5)}) 
+                   else ({} :: (identity * efid) set)))"
+
+fixes ex_knos'' :: "actor \<Rightarrow> (identity * efid) set"
+defines ex_knos''_def: "ex_knos'' \<equiv> (\<lambda> x :: actor. 
+                  (if x = Actor ''Eve'' then ({(''Bob'', Efid 2)}) 
+                   else ({} :: (identity * efid) set)))"
+
 (* The nicer representation with case suffers from
    not so nice presentation in the cases (need to unfold the syntax)  
 fixes ex_loc_ass_alt :: "location \<Rightarrow> identity set"
 defines ex_loc_ass_alt_def: "ex_loc_ass_alt \<equiv>
           (\<lambda> x.  (case x of 
-             Location (Suc 0) \<Rightarrow> {''Patient''}  
-           | Location (Suc (Suc 0)) \<Rightarrow> {''Doctor'', ''Eve''} 
+             Location (Suc 0) \<Rightarrow> {''Alice'', ''Bob'', ''Eve''}  
+           | Location (Suc (Suc 0)) \<Rightarrow> {''Charly'', ''David''} 
            |  _ \<Rightarrow> {}))"
 *)
+
 fixes ex_graph :: "igraph"
-defines ex_graph_def: "ex_graph \<equiv> Lgraph 
-     {(home, cloud), (sphone, cloud), (cloud,hospital)}
-     ex_loc_ass
-     ex_creds ex_locs"
+defines ex_graph_def: "ex_graph \<equiv> Lgraph {(pub, shop)} ex_loc_ass ex_creds ex_locs ex_efids ex_knos"
+
 fixes ex_graph' :: "igraph"
-defines ex_graph'_def: "ex_graph' \<equiv> Lgraph 
-     {(home, cloud), (sphone, cloud), (cloud,hospital)}
-       (\<lambda> x. if x = cloud then {''Patient''} else 
-           (if x = hospital then {''Doctor'',''Eve''} else {})) 
-     ex_creds ex_locs"
+defines ex_graph'_def: "ex_graph' \<equiv> Lgraph {(pub, shop)} ex_loc_ass' ex_creds ex_locs ex_efids' ex_knos'"
+
 fixes ex_graph'' :: "igraph"
-defines ex_graph''_def: "ex_graph'' \<equiv> Lgraph 
-     {(home, cloud), (sphone, cloud), (cloud,hospital)}
-       (\<lambda> x. if x = cloud then {''Patient'', ''Eve''} else 
-           (if x = hospital then {''Doctor''} else {})) 
-     ex_creds ex_locs"
+defines ex_graph''_def: "ex_graph'' \<equiv> Lgraph {(pub, shop)} ex_loc_ass'' ex_creds ex_locs ex_efids'' ex_knos''"
+
 (* Same as above: the nicer representation with case suffers from
    not so nice presentation in the cases (need to unfold the syntax) 
 fixes local_policies_alt :: "[igraph, location] \<Rightarrow> policy set"
@@ -90,17 +128,13 @@ defines local_policies_alt_def: "local_policies_alt G \<equiv>
                            has G (y, ''skey''))), {put,get,move,eval})} 
        | _ \<Rightarrow>  {})"
 *)
+
 fixes local_policies :: "[igraph, location] \<Rightarrow> policy set"
 defines local_policies_def: "local_policies G \<equiv> 
-    (\<lambda> x. if x = home then
-        {(\<lambda> y. True, {put,get,move,eval})}
-          else (if x = sphone then 
-             {((\<lambda> y. has G (y, ''PIN'')), {put,get,move,eval})} 
-                else (if x = cloud then
-                {(\<lambda> y. True, {put,get,move,eval})}
-                       else (if x = hospital then
-                {((\<lambda> y. (\<exists> n. (n  @\<^bsub>G\<^esub> hospital) \<and> Actor n = y \<and> 
-                           has G (y, ''skey''))), {put,get,move,eval})} else {}))))"
+    (\<lambda> x. if x = pub then  {(\<lambda> y. True, {get,move})}
+          else (if x = shop then {(\<lambda> y. True, {get,move})} 
+                else {}))"
+
 (* problems with case in locales?
 defines local_policies_def: "local_policies G x \<equiv> 
      (case x of 
@@ -111,107 +145,122 @@ defines local_policies_def: "local_policies G x \<equiv>
                            has G (y, ''skey''))), {put,get,move,eval})} 
      | _ \<Rightarrow>  {})"
 *)
-fixes gdpr_scenario :: "infrastructure"
-defines gdpr_scenario_def:
-"gdpr_scenario \<equiv> Infrastructure ex_graph local_policies"
-fixes Igdpr :: "infrastructure set"
-defines Igdpr_def:
-  "Igdpr \<equiv> {gdpr_scenario}"
+
+fixes corona_scenario :: "infrastructure"
+defines corona_scenario_def:
+"corona_scenario \<equiv> Infrastructure ex_graph local_policies"
+fixes Icorona :: "infrastructure set"
+defines Icorona_def:
+  "Icorona \<equiv> {corona_scenario}"
+
 (* other states of scenario *)
-(* First step: Patient goes onto cloud *)
-fixes gdpr_scenario' :: "infrastructure"
-defines gdpr_scenario'_def:
-"gdpr_scenario' \<equiv> Infrastructure ex_graph' local_policies"
-fixes GDPR' :: "infrastructure set"
-defines GDPR'_def:
-  "GDPR' \<equiv> {gdpr_scenario'}"
+(* First step: Bob goes to shop *)
+fixes corona_scenario' :: "infrastructure"
+defines corona_scenario'_def:
+"corona_scenario' \<equiv> Infrastructure ex_graph' local_policies"
+fixes Corona' :: "infrastructure set"
+defines Corona'_def:
+  "Corona' \<equiv> {corona_scenario'}"
 (* Second step: Eve goes onto cloud from where she'll be able to get the data *)
-fixes gdpr_scenario'' :: "infrastructure"
-defines gdpr_scenario''_def:
-"gdpr_scenario'' \<equiv> Infrastructure ex_graph'' local_policies"
-fixes GDPR'' :: "infrastructure set"
-defines GDPR''_def:
-  "GDPR'' \<equiv> {gdpr_scenario''}"
-fixes gdpr_states
-defines gdpr_states_def: "gdpr_states \<equiv> { I. gdpr_scenario \<rightarrow>\<^sub>i* I }"
-fixes gdpr_Kripke
-defines "gdpr_Kripke \<equiv> Kripke gdpr_states {gdpr_scenario}"
-fixes sgdpr 
-defines "sgdpr \<equiv> {x. \<not> (global_policy' x ''Eve'')}"  
+fixes corona_scenario'' :: "infrastructure"
+defines corona_scenario''_def:
+"corona_scenario'' \<equiv> Infrastructure ex_graph'' local_policies"
+fixes Corona'' :: "infrastructure set"
+defines Corona''_def:
+  "Corona'' \<equiv> {corona_scenario''}"
+fixes corona_states
+defines corona_states_def: "corona_states \<equiv> { I. corona_scenario \<rightarrow>\<^sub>i* I }"
+fixes corona_Kripke
+defines "corona_Kripke \<equiv> Kripke corona_states {corona_scenario}"
+fixes scorona 
+defines "scorona \<equiv> {x. \<exists> n. \<not> global_policy x (Efid n)}"  
+
 begin
 subsection \<open>Using Attack Tree Calculus\<close>
 text \<open>Since we consider a predicate transformer semantics, we use sets of states 
      to represent properties. For example, the attack property is given by the above
-     @{text \<open>set sgdpr\<close>}.
+     @{text \<open>set scorona\<close>}.
 
 The attack we are interested in is to see whether for the scenario
 
-@{text \<open>gdpr scenario \<equiv> Infrastructure ex_graph local_policies\<close>}
+@{text \<open>corona scenario \<equiv> Infrastructure ex_graph local_policies\<close>}
 
 from the initial state 
 
-@{text \<open>Igdpr \<equiv>{gdpr scenario}\<close>}, 
+@{text \<open>Icorona \<equiv>{corona scenario}\<close>}, 
 
 the critical state
-@{text \<open>sgdpr\<close>} can be reached, i.e., is there a valid attack @{text \<open>(Igdpr,sgdpr)\<close>}?
+@{text \<open>scorona\<close>} can be reached, i.e., is there a valid attack @{text \<open>(Icorona,scorona)\<close>}?
 
 We first present a number of lemmas showing single and multi-step state transitions
-for relevant states reachable from our @{text \<open>gdpr_scenario\<close>}.\<close>
-lemma step1: "gdpr_scenario  \<rightarrow>\<^sub>n gdpr_scenario'"
-proof (rule_tac l = home and a = "''Patient''" and l' = cloud in move)
-  show "graphI gdpr_scenario = graphI gdpr_scenario" by (rule refl)
-next show "''Patient'' @\<^bsub>graphI gdpr_scenario\<^esub> home" 
-    by (simp add: gdpr_scenario_def ex_graph_def ex_loc_ass_def atI_def nodes_def)
-next show "home \<in> nodes (graphI gdpr_scenario)"
-    by (simp add: gdpr_scenario_def ex_graph_def ex_loc_ass_def atI_def nodes_def, blast)
-next show "cloud \<in> nodes (graphI gdpr_scenario)"
-    by (simp add: gdpr_scenario_def nodes_def ex_graph_def, blast)
-next show "''Patient'' \<in> actors_graph (graphI gdpr_scenario)"
-    by (simp add: actors_graph_def gdpr_scenario_def ex_graph_def ex_loc_ass_def nodes_def, blast)
-next show "enables gdpr_scenario cloud (Actor ''Patient'') move"
-    by (simp add: enables_def gdpr_scenario_def ex_graph_def local_policies_def
+for relevant states reachable from our @{text \<open>corona_scenario\<close>}.\<close>
+
+lemma step1: "corona_scenario  \<rightarrow>\<^sub>n corona_scenario'"
+proof (rule_tac l = pub and a = "''Bob''" and l' = shop in move)
+  show "graphI corona_scenario = graphI corona_scenario" by (rule refl)
+next show "''Bob'' @\<^bsub>graphI corona_scenario\<^esub> pub" 
+    by (simp add: corona_scenario_def ex_graph_def ex_loc_ass_def atI_def nodes_def)
+next show "pub \<in> nodes (graphI corona_scenario)"
+    by (simp add: corona_scenario_def ex_graph_def ex_loc_ass_def atI_def nodes_def, blast)
+next show "shop \<in> nodes (graphI corona_scenario)"
+    by (simp add: corona_scenario_def nodes_def ex_graph_def, blast)
+next show "''Bob'' \<in> actors_graph (graphI corona_scenario)"
+    by (simp add: actors_graph_def corona_scenario_def ex_graph_def ex_loc_ass_def nodes_def shop_def pub_def, blast)
+next show "enables corona_scenario shop (Actor ''Bob'') move"
+    by (simp add: enables_def corona_scenario_def ex_graph_def local_policies_def
                     ex_creds_def ex_locs_def has_def credentials_def)
-next show "gdpr_scenario' =
-    Infrastructure (move_graph_a ''Patient'' home cloud (graphI gdpr_scenario)) (delta gdpr_scenario)"
-    apply (simp add: gdpr_scenario'_def ex_graph'_def move_graph_a_def 
-                     gdpr_scenario_def ex_graph_def home_def cloud_def hospital_def
-                     ex_loc_ass_def ex_creds_def)
-    apply (rule ext)
+next show "corona_scenario' = 
+           Infrastructure (move_graph_a ''Bob'' pub shop (graphI corona_scenario)) (delta corona_scenario)"
+    apply (simp add: corona_scenario'_def ex_graph'_def move_graph_a_def 
+                     corona_scenario_def ex_graph_def pub_def shop_def 
+                     ex_loc_ass'_def ex_loc_ass_def ex_efids'_def ex_efids_def 
+                     ex_knos_def ex_knos'_def ex_creds_def)
+    apply (rule conjI, rule impI, rule conjI)
+    apply (rule ext, simp)
+      apply (simp add: insert_Diff_if shop_def efemid_def)
+     apply (rule conjI)
+      apply (rule ext, simp add: insert_Diff_if shop_def efemid_def)
+      apply (simp add: insert_Diff_if shop_def efemid_def)
+      apply auto[1]
+                 apply (subgoal_tac "Efid 2 = Efid 5")
+                  apply force
+    apply simp
     by (simp add: hospital_def)
 qed
 
-lemma step1r: "gdpr_scenario  \<rightarrow>\<^sub>n* gdpr_scenario'"
+(*
+lemma step1r: "corona_scenario  \<rightarrow>\<^sub>n* corona_scenario'"
 proof (simp add: state_transition_in_refl_def)
-  show " (gdpr_scenario, gdpr_scenario') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
+  show " (corona_scenario, corona_scenario') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
   by (insert step1, auto)
 qed
 
-lemma step2: "gdpr_scenario'  \<rightarrow>\<^sub>n gdpr_scenario''"
+lemma step2: "corona_scenario'  \<rightarrow>\<^sub>n corona_scenario''"
 proof (rule_tac l = hospital and a = "''Eve''" and l' = cloud in move, rule refl)
-  show "''Eve'' @\<^bsub>graphI gdpr_scenario'\<^esub> hospital"
-   by (simp add: gdpr_scenario'_def ex_graph'_def hospital_def cloud_def atI_def nodes_def)
-next show "hospital \<in> nodes (graphI gdpr_scenario')"
-    by (simp add: gdpr_scenario'_def ex_graph'_def hospital_def cloud_def atI_def nodes_def, blast)
-next show "cloud \<in> nodes (graphI gdpr_scenario')"
-    by (simp add: gdpr_scenario'_def nodes_def ex_graph'_def, blast)
-next show "''Eve'' \<in> actors_graph (graphI gdpr_scenario')"
-    by (simp add: actors_graph_def gdpr_scenario'_def ex_graph'_def nodes_def
+  show "''Eve'' @\<^bsub>graphI corona_scenario'\<^esub> hospital"
+   by (simp add: corona_scenario'_def ex_graph'_def hospital_def cloud_def atI_def nodes_def)
+next show "hospital \<in> nodes (graphI corona_scenario')"
+    by (simp add: corona_scenario'_def ex_graph'_def hospital_def cloud_def atI_def nodes_def, blast)
+next show "cloud \<in> nodes (graphI corona_scenario')"
+    by (simp add: corona_scenario'_def nodes_def ex_graph'_def, blast)
+next show "''Eve'' \<in> actors_graph (graphI corona_scenario')"
+    by (simp add: actors_graph_def corona_scenario'_def ex_graph'_def nodes_def
                      hospital_def cloud_def, blast)
-next show "enables gdpr_scenario' cloud (Actor ''Eve'') move"
-    by (simp add: enables_def gdpr_scenario'_def ex_graph_def local_policies_def
+next show "enables corona_scenario' cloud (Actor ''Eve'') move"
+    by (simp add: enables_def corona_scenario'_def ex_graph_def local_policies_def
                   ex_creds_def ex_locs_def has_def credentials_def cloud_def sphone_def)
-next show "gdpr_scenario'' =
-    Infrastructure (move_graph_a ''Eve'' hospital cloud (graphI gdpr_scenario')) (delta gdpr_scenario')"
-    apply (simp add: gdpr_scenario'_def ex_graph''_def move_graph_a_def gdpr_scenario''_def 
+next show "corona_scenario'' =
+    Infrastructure (move_graph_a ''Eve'' hospital cloud (graphI corona_scenario')) (delta corona_scenario')"
+    apply (simp add: corona_scenario'_def ex_graph''_def move_graph_a_def corona_scenario''_def 
                      ex_graph'_def home_def cloud_def hospital_def ex_creds_def)
     apply (rule ext)
     apply (simp add: hospital_def)
     by blast
 qed
 
-lemma step2r: "gdpr_scenario'  \<rightarrow>\<^sub>n* gdpr_scenario''"
+lemma step2r: "corona_scenario'  \<rightarrow>\<^sub>n* corona_scenario''"
 proof (simp add: state_transition_in_refl_def)
-  show "(gdpr_scenario', gdpr_scenario'') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
+  show "(corona_scenario', corona_scenario'') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
     by (insert step2, auto)
 qed
      
@@ -226,97 +275,97 @@ qed
 *)
 text \<open>For the Kripke structure
 
-@{text \<open>gdpr_Kripke \<equiv> Kripke { I. gdpr_scenario \<rightarrow>\<^sub>i* I } {gdpr_scenario}\<close>}
+@{text \<open>corona_Kripke \<equiv> Kripke { I. corona_scenario \<rightarrow>\<^sub>i* I } {corona_scenario}\<close>}
 
 we first derive a valid and-attack using the attack tree proof calculus.
 
-@{text \<open>"\<turnstile>[\<N>\<^bsub>(Igdpr,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',sgdpr)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Igdpr,sgdpr)\<^esup>\<close>}
+@{text \<open>"\<turnstile>[\<N>\<^bsub>(Icorona,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>\<close>}
 
 The set @{text \<open>GDPR'\<close>} (see above) is an intermediate state where Eve accesses the cloud.\<close>
 
-lemma gdpr_ref: "[\<N>\<^bsub>(Igdpr,sgdpr)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Igdpr,sgdpr)\<^esup> \<sqsubseteq>
-                  ([\<N>\<^bsub>(Igdpr,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',sgdpr)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Igdpr,sgdpr)\<^esup>)"  
-proof (rule_tac l = "[]" and l' = "[\<N>\<^bsub>(Igdpr,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',sgdpr)\<^esub>]" and
-                  l'' = "[]" and si = Igdpr and si' = Igdpr and 
-                  si'' = sgdpr and si''' = sgdpr in refI, simp, rule refl)
-  show "([\<N>\<^bsub>(Igdpr, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', sgdpr)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Igdpr, sgdpr)\<^esup>) =
-    ([] @ [\<N>\<^bsub>(Igdpr, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', sgdpr)\<^esub>] @ [] \<oplus>\<^sub>\<and>\<^bsup>(Igdpr, sgdpr)\<^esup>)"
+lemma corona_ref: "[\<N>\<^bsub>(Icorona,scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup> \<sqsubseteq>
+                  ([\<N>\<^bsub>(Icorona,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"  
+proof (rule_tac l = "[]" and l' = "[\<N>\<^bsub>(Icorona,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>]" and
+                  l'' = "[]" and si = Icorona and si' = Icorona and 
+                  si'' = scorona and si''' = scorona in refI, simp, rule refl)
+  show "([\<N>\<^bsub>(Icorona, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>) =
+    ([] @ [\<N>\<^bsub>(Icorona, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', scorona)\<^esub>] @ [] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>)"
   by simp
 qed
 
-lemma att_gdpr: "\<turnstile>([\<N>\<^bsub>(Igdpr,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',sgdpr)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Igdpr,sgdpr)\<^esup>)"
+lemma att_corona: "\<turnstile>([\<N>\<^bsub>(Icorona,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
 proof (subst att_and, simp, rule conjI)
-  show " \<turnstile>\<N>\<^bsub>(Igdpr, GDPR')\<^esub>"
-    apply (simp add: Igdpr_def GDPR'_def att_base)
+  show " \<turnstile>\<N>\<^bsub>(Icorona, GDPR')\<^esub>"
+    apply (simp add: Icorona_def GDPR'_def att_base)
     using state_transition_infra_def step1 by blast
-next show "\<turnstile>([\<N>\<^bsub>(GDPR', sgdpr)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(GDPR', sgdpr)\<^esup>)"
+next show "\<turnstile>([\<N>\<^bsub>(GDPR', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(GDPR', scorona)\<^esup>)"
     apply (subst att_and, simp)
-    apply (simp add: GDPR'_def sgdpr_def att_base)
+    apply (simp add: GDPR'_def scorona_def att_base)
     apply (subst state_transition_infra_def)
-    apply (rule_tac x = gdpr_scenario'' in exI)
+    apply (rule_tac x = corona_scenario'' in exI)
     apply (rule conjI)
-     apply (simp add: global_policy'_def gdpr_scenario''_def gdpr_actors_def 
+     apply (simp add: global_policy'_def corona_scenario''_def corona_actors_def 
                       enables_def local_policies_def cloud_def sphone_def)
     by (rule step2)
 qed
 
-lemma gdpr_abs_att: "\<turnstile>\<^sub>V([\<N>\<^bsub>(Igdpr,sgdpr)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Igdpr,sgdpr)\<^esup>)"
-  by (rule ref_valI, rule gdpr_ref, rule att_gdpr)
+lemma corona_abs_att: "\<turnstile>\<^sub>V([\<N>\<^bsub>(Icorona,scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
+  by (rule ref_valI, rule corona_ref, rule att_corona)
 
 text \<open>We can then simply apply the Correctness theorem @{text \<open>AT EF\<close>} to immediately 
       prove the following CTL statement.
 
-      @{text \<open>gdpr_Kripke \<turnstile> EF sgdpr\<close>}
+      @{text \<open>corona_Kripke \<turnstile> EF scorona\<close>}
 
 This application of the meta-theorem of Correctness of attack trees saves us
 proving the CTL formula tediously by exploring the state space.\<close>
-lemma gdpr_att: "gdpr_Kripke \<turnstile> EF {x. \<not>(global_policy' x ''Eve'')}"
+lemma corona_att: "corona_Kripke \<turnstile> EF {x. \<not>(global_policy' x ''Eve'')}"
 proof -
-  have a: " \<turnstile>([\<N>\<^bsub>(Igdpr, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', sgdpr)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Igdpr, sgdpr)\<^esup>)"
-    by (rule att_gdpr)
-  hence "(Igdpr,sgdpr) = attack ([\<N>\<^bsub>(Igdpr, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', sgdpr)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Igdpr, sgdpr)\<^esup>)"
+  have a: " \<turnstile>([\<N>\<^bsub>(Icorona, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>)"
+    by (rule att_corona)
+  hence "(Icorona,scorona) = attack ([\<N>\<^bsub>(Icorona, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>)"
     by simp
-  hence "Kripke {s::infrastructure. \<exists>i::infrastructure\<in>Igdpr. i \<rightarrow>\<^sub>i* s} Igdpr \<turnstile> EF sgdpr"
-    using ATV_EF gdpr_abs_att by fastforce 
-  thus "gdpr_Kripke \<turnstile> EF {x::infrastructure. \<not> global_policy' x ''Eve''}"
-    by (simp add: gdpr_Kripke_def gdpr_states_def Igdpr_def sgdpr_def)
+  hence "Kripke {s::infrastructure. \<exists>i::infrastructure\<in>Icorona. i \<rightarrow>\<^sub>i* s} Icorona \<turnstile> EF scorona"
+    using ATV_EF corona_abs_att by fastforce 
+  thus "corona_Kripke \<turnstile> EF {x::infrastructure. \<not> global_policy' x ''Eve''}"
+    by (simp add: corona_Kripke_def corona_states_def Icorona_def scorona_def)
 qed
 
-theorem gdpr_EF: "gdpr_Kripke \<turnstile> EF sgdpr"
-  using gdpr_att sgdpr_def by blast 
+theorem corona_EF: "corona_Kripke \<turnstile> EF scorona"
+  using corona_att scorona_def by blast 
 
-text \<open>Similarly, vice-versa, the CTL statement proved in @{text \<open>gdpr_EF\<close>}
+text \<open>Similarly, vice-versa, the CTL statement proved in @{text \<open>corona_EF\<close>}
     can now be directly translated into Attack Trees using the Completeness 
     Theorem\footnote{This theorem could easily 
-    be proved as a direct instance of @{text \<open>att_gdpr\<close>} above but we want to illustrate
+    be proved as a direct instance of @{text \<open>att_corona\<close>} above but we want to illustrate
     an alternative proof method using Completeness here.}.\<close>
-theorem gdpr_AT: "\<exists> A. \<turnstile> A \<and> attack A = (Igdpr,sgdpr)"
-  using att_gdpr attack.simps(2) by blast  
-(* old proof that uses Completeness and does not use att_gdpr:
-theorem gdpr_AT: "\<exists> A. \<turnstile> A \<and> attack A = (Igdpr,sgdpr)"
+theorem corona_AT: "\<exists> A. \<turnstile> A \<and> attack A = (Icorona,scorona)"
+  using att_corona attack.simps(2) by blast  
+(* old proof that uses Completeness and does not use att_corona:
+theorem corona_AT: "\<exists> A. \<turnstile> A \<and> attack A = (Icorona,scorona)"
 proof -
-  have a: "gdpr_Kripke \<turnstile> EF sgdpr " by (rule gdpr_EF)
-  have b: "Igdpr \<noteq> {}" by (simp add: Igdpr_def)
-  thus "\<exists>A::infrastructure attree. \<turnstile>A \<and> attack A = (Igdpr, sgdpr)" 
+  have a: "corona_Kripke \<turnstile> EF scorona " by (rule corona_EF)
+  have b: "Icorona \<noteq> {}" by (simp add: Icorona_def)
+  thus "\<exists>A::infrastructure attree. \<turnstile>A \<and> attack A = (Icorona, scorona)" 
     apply (rule Completeness)
-     apply (simp add: Igdpr_def)
+     apply (simp add: Icorona_def)
     apply (insert a)
-    by (simp add: gdpr_Kripke_def Igdpr_def gdpr_states_def)
+    by (simp add: corona_Kripke_def Icorona_def corona_states_def)
 qed
 *)
 
-text \<open>Conversely, since we have an attack given by rule @{text \<open>gdpr_AT\<close>}, we can immediately 
+text \<open>Conversely, since we have an attack given by rule @{text \<open>corona_AT\<close>}, we can immediately 
    infer @{text \<open>EF s\<close>} using Correctness @{text \<open>AT_EF\<close>}\footnote{Clearly, this theorem is identical
-   to @{text \<open>gdpr_EF\<close>} and could thus be inferred from that one but we want to show here an 
+   to @{text \<open>corona_EF\<close>} and could thus be inferred from that one but we want to show here an 
    alternative way of proving it using the Correctness theorem @{text \<open>AT_EF\<close>}.}.\<close>
-theorem gdpr_EF': "gdpr_Kripke \<turnstile> EF sgdpr"
-  using gdpr_EF by auto
-(* older version of  proof that uses AT_EF and does not use gdpr_EF:
-    by (auto simp: gdpr_Kripke_def gdpr_states_def Igdpr_def dest: AT_EF) *)
+theorem corona_EF': "corona_Kripke \<turnstile> EF scorona"
+  using corona_EF by auto
+(* older version of  proof that uses AT_EF and does not use corona_EF:
+    by (auto simp: corona_Kripke_def corona_states_def Icorona_def dest: AT_EF) *)
 
 (* However, when integrating DLM into the model and hence labeling
    information becomes part of the conditions of the get_data rule this isn't
-   possible any more: gdpr_EF is not true any more *)    
+   possible any more: corona_EF is not true any more *)    
 (** GDPR properties  for the illustration of the DLM labeling **)    
 section \<open>Data Protection by Design for GDPR compliance\<close>
 subsection \<open>General Data Protection Regulation (GDPR)\<close>
@@ -348,18 +397,18 @@ text \<open>We can now use the labeled data to encode the privacy constraints of
 We can prove that processing preserves ownership as defined in the initial state for all paths 
 globally (AG) within the Kripke structure and in all locations of the graph.\<close>
 (* GDPR three: Processing preserves ownership in any location *)    
-lemma gdpr_three: "h \<in> gdpr_actors \<Longrightarrow> l \<in> gdpr_locations \<Longrightarrow>
-         owns (Igraph gdpr_scenario) l (Actor h) d \<Longrightarrow>
-         gdpr_Kripke \<turnstile> AG {x. \<forall> l \<in> gdpr_locations. owns (Igraph x) l (Actor h) d }"  
-proof (simp add: gdpr_Kripke_def check_def, rule conjI)
-  show "gdpr_scenario \<in> gdpr_states" by (simp add: gdpr_states_def state_transition_refl_def)
-next show "h \<in> gdpr_actors \<Longrightarrow>
-    l \<in> gdpr_locations \<Longrightarrow>
-    owns (Igraph gdpr_scenario) l (Actor h) d \<Longrightarrow>
-    gdpr_scenario \<in> AG {x::infrastructure. \<forall>l::location\<in>gdpr_locations. owns (Igraph x) l (Actor h) d}"
+lemma corona_three: "h \<in> corona_actors \<Longrightarrow> l \<in> corona_locations \<Longrightarrow>
+         owns (Igraph corona_scenario) l (Actor h) d \<Longrightarrow>
+         corona_Kripke \<turnstile> AG {x. \<forall> l \<in> corona_locations. owns (Igraph x) l (Actor h) d }"  
+proof (simp add: corona_Kripke_def check_def, rule conjI)
+  show "corona_scenario \<in> corona_states" by (simp add: corona_states_def state_transition_refl_def)
+next show "h \<in> corona_actors \<Longrightarrow>
+    l \<in> corona_locations \<Longrightarrow>
+    owns (Igraph corona_scenario) l (Actor h) d \<Longrightarrow>
+    corona_scenario \<in> AG {x::infrastructure. \<forall>l::location\<in>corona_locations. owns (Igraph x) l (Actor h) d}"
     apply (simp add: AG_def gfp_def)
-    apply (rule_tac x = "{x::infrastructure. \<forall>l::location\<in>gdpr_locations. owns (Igraph x) l (Actor h) d}" in exI)
-    by (auto simp: AX_def gdpr_scenario_def owns_def)
+    apply (rule_tac x = "{x::infrastructure. \<forall>l::location\<in>corona_locations. owns (Igraph x) l (Actor h) d}" in exI)
+    by (auto simp: AX_def corona_scenario_def owns_def)
 qed
 
 text \<open>The final application example of Correctness contraposition 
@@ -369,24 +418,25 @@ The contraposition of the Correctness property grants that if there is no attack
 @{text \<open>(I,\<not>f)\<close>}, then @{text \<open>(EF \<not>f)\<close>} does not hold in the Kripke structure. This 
 yields the theorem since the @{text \<open>AG f\<close>} statement corresponds to @{text \<open>\<not>(EF \<not>f)\<close>}.
 \<close>
-theorem no_attack_gdpr_three: 
-"h \<in> gdpr_actors \<Longrightarrow> l \<in> gdpr_locations \<Longrightarrow> 
- owns (Igraph gdpr_scenario) l (Actor h) d \<Longrightarrow>
-attack A = (Igdpr, -{x. \<forall> l \<in> gdpr_locations. owns (Igraph x) l (Actor h) d })
+theorem no_attack_corona_three: 
+"h \<in> corona_actors \<Longrightarrow> l \<in> corona_locations \<Longrightarrow> 
+ owns (Igraph corona_scenario) l (Actor h) d \<Longrightarrow>
+attack A = (Icorona, -{x. \<forall> l \<in> corona_locations. owns (Igraph x) l (Actor h) d })
 \<Longrightarrow> \<not> (\<turnstile> A)"
-proof (rule_tac I = Igdpr and 
-           s = "-{x::infrastructure. \<forall>l::location\<in>gdpr_locations. owns (Igraph x) l (Actor h) d}" 
+proof (rule_tac I = Icorona and 
+           s = "-{x::infrastructure. \<forall>l::location\<in>corona_locations. owns (Igraph x) l (Actor h) d}" 
        in contrapos_corr)
-  show "h \<in> gdpr_actors \<Longrightarrow>
-    l \<in> gdpr_locations \<Longrightarrow>
-    owns (Igraph gdpr_scenario) l (Actor h) d \<Longrightarrow>
-    attack A = (Igdpr, - {x::infrastructure. \<forall>l::location\<in>gdpr_locations. owns (Igraph x) l (Actor h) d}) \<Longrightarrow>
-    \<not> (Kripke {s::infrastructure. \<exists>i::infrastructure\<in>Igdpr. i \<rightarrow>\<^sub>i* s}
-        Igdpr \<turnstile> EF (- {x::infrastructure. \<forall>l::location\<in>gdpr_locations. owns (Igraph x) l (Actor h) d}))"
+  show "h \<in> corona_actors \<Longrightarrow>
+    l \<in> corona_locations \<Longrightarrow>
+    owns (Igraph corona_scenario) l (Actor h) d \<Longrightarrow>
+    attack A = (Icorona, - {x::infrastructure. \<forall>l::location\<in>corona_locations. owns (Igraph x) l (Actor h) d}) \<Longrightarrow>
+    \<not> (Kripke {s::infrastructure. \<exists>i::infrastructure\<in>Icorona. i \<rightarrow>\<^sub>i* s}
+        Icorona \<turnstile> EF (- {x::infrastructure. \<forall>l::location\<in>corona_locations. owns (Igraph x) l (Actor h) d}))"
     apply (rule AG_imp_notnotEF) 
-     apply (simp add: gdpr_Kripke_def Igdpr_def gdpr_states_def)
-    apply (drule gdpr_three, assumption, assumption)
-    by (simp add: gdpr_Kripke_def Igdpr_def gdpr_states_def)
+     apply (simp add: corona_Kripke_def Icorona_def corona_states_def)
+    apply (drule corona_three, assumption, assumption)
+    by (simp add: corona_Kripke_def Icorona_def corona_states_def)
 qed
+*)
 end
 end

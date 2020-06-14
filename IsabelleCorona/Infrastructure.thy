@@ -297,7 +297,10 @@ definition state_transition_in_refl ("(_ \<rightarrow>\<^sub>n* _)" 50)
 where "s \<rightarrow>\<^sub>n* s' \<equiv> ((s,s') \<in> {(x,y). state_transition_in x y}\<^sup>*)"
 
 end
-      
+
+definition identifiable :: "[infrastructure,actor,identity] \<Rightarrow> bool"
+  where "identifiable I a eid \<equiv> singleton{}"
+
 lemma move_graph_eq: "move_graph_a a l l g = g"  
   by (simp add: move_graph_a_def, case_tac g, force)
      
