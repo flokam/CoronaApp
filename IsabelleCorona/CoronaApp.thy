@@ -29,10 +29,17 @@ defines pub_def: "pub \<equiv> Location 0"
 fixes shop :: "location"
 defines shop_def: "shop \<equiv> Location 1"
 
-fixes identifiable :: "[infrastructure,actor,efid] \<Rightarrow> bool"
-defines identifiable_def: "identifiable I a eid \<equiv> is_singleton{(Id,Eid). (Id, Eid) \<in> kgra (graphI I) a \<and> Eid = eid}"
+fixes identifiable :: "[infrastructure,actor,efid, location] \<Rightarrow> bool"
+defines identifiable_def: "identifiable I a eid l\<equiv> is_singleton{(Id,Eid). (Id, Eid) \<in> kgra (graphI I) a l \<and> Eid = eid}"
 fixes global_policy :: "[infrastructure, efid] \<Rightarrow> bool"
-defines global_policy_def: "global_policy I eid \<equiv>  \<not>(identifiable I (Actor ''Eve'') eid)"
+defines global_policy_def: "global_policy I eid \<equiv>  (\<exists> l. \<not>(identifiable I (Actor ''Eve'') eid l))"
+
+fixes identifiable' :: "[efid, (identity * efid)set] \<Rightarrow> bool"
+defines identifiable'_def: "identifiable' eid A \<equiv> is_singleton{(Id,Eid). (Id, Eid) \<in> A \<and> Eid = eid}"
+
+fixes global_policy' :: "[infrastructure, efid] \<Rightarrow> bool"
+defines global_policy'_def: "global_policy' I eid \<equiv>  
+             \<not>(identifiable' eid (\<Inter> {A. (\<exists> l. (A = (kgra(graphI I)(Actor ''Eve'') l)) \<and> l \<in> nodes(graphI I)) }))"
 
 fixes ex_creds :: "actor \<Rightarrow> (string set * string set * efid)"
 defines ex_creds_def: 
@@ -79,22 +86,37 @@ defines ex_efids''_def: "ex_efids'' \<equiv>
                 else (if x = shop then {Efid 5, Efid 2, Efid 3, Efid 4}
                       else {}))"
 
-fixes ex_knos :: "actor \<Rightarrow> (identity * efid) set"
+fixes ex_knos :: "actor \<Rightarrow> location \<Rightarrow> (identity * efid) set"
 defines ex_knos_def: "ex_knos \<equiv> (\<lambda> x :: actor. 
-                  (if x = Actor ''Eve'' then ({} :: (identity * efid) set) 
-                   else ({} :: (identity * efid) set)))"
+                  (if x = Actor ''Eve'' then (\<lambda> l :: location. {} :: (identity * efid) set) 
+                   else (\<lambda> l :: location. {} :: (identity * efid) set)))"
 
-fixes ex_knos' :: "actor \<Rightarrow> (identity * efid) set"
+fixes ex_knos' :: "actor \<Rightarrow> location \<Rightarrow> (identity * efid) set"
 defines ex_knos'_def: "ex_knos' \<equiv> (\<lambda> x :: actor. 
                   (if x = Actor ''Eve'' then 
-                    ({(''Alice'', Efid 1),(''Alice'', Efid 2),(''Alice'', Efid 5),
-                      (''Bob'', Efid 1),(''Bob'', Efid 2),(''Bob'', Efid 5)}) 
-                   else ({} :: (identity * efid) set)))"
+                     (\<lambda> l :: location.
+                        (if l = pub then 
+                                  ({(''Alice'', Efid 1),(''Alice'', Efid 2),(''Alice'', Efid 5),
+                                    (''Bob'', Efid 1),(''Bob'', Efid 2),(''Bob'', Efid 5),
+                                    (''Eve'', Efid 1),(''Eve'', Efid 2),(''Eve'', Efid 5)})
+                         else {})) 
+                   else (\<lambda> l :: location. {} :: (identity * efid) set)))"
 
-fixes ex_knos'' :: "actor \<Rightarrow> (identity * efid) set"
-defines ex_knos''_def: "ex_knos'' \<equiv> (\<lambda> x :: actor. 
-                  (if x = Actor ''Eve'' then ({(''Bob'', Efid 2)}) 
-                   else ({} :: (identity * efid) set)))"
+fixes ex_knos'' :: "actor \<Rightarrow> location \<Rightarrow> (identity * efid) set"
+defines ex_knos''_def: "ex_knos'' \<equiv> (\<lambda> x :: actor.                       
+                  (if x = Actor ''Eve'' then 
+                      (\<lambda> l :: location.
+                           (if l = pub then 
+                                  ({(''Alice'', Efid 1),(''Alice'', Efid 2),(''Alice'', Efid 5),
+                                    (''Bob'', Efid 1),(''Bob'', Efid 2),(''Bob'', Efid 5),
+                                    (''Eve'', Efid 1),(''Eve'', Efid 2),(''Eve'', Efid 5)})
+                            else (if l = shop then 
+                                     ({(''Eve'', Efid 5),(''Eve'', Efid 2),(''Eve'', Efid 3),(''Eve'', Efid 4),
+                                       (''Bob'', Efid 5),(''Bob'', Efid 2),(''Bob'', Efid 3),(''Bob'', Efid 4), 
+                                       (''Charly'', Efid 5),(''Charly'', Efid 2),(''Charly'', Efid 3),(''Charly'', Efid 4),
+                                       (''David'', Efid 5),(''David'', Efid 2),(''David'', Efid 3),(''David'', Efid 4)})
+                                   else {})))
+                   else (\<lambda> l :: location. {} :: (identity * efid) set)))"
 
 (* The nicer representation with case suffers from
    not so nice presentation in the cases (need to unfold the syntax)  
@@ -106,14 +128,25 @@ defines ex_loc_ass_alt_def: "ex_loc_ass_alt \<equiv>
            |  _ \<Rightarrow> {}))"
 *)
 
+(* initial *)
 fixes ex_graph :: "igraph"
 defines ex_graph_def: "ex_graph \<equiv> Lgraph {(pub, shop)} ex_loc_ass ex_creds ex_locs ex_efids ex_knos"
 
+(* Eve gets the ex_knos *)
 fixes ex_graph' :: "igraph"
-defines ex_graph'_def: "ex_graph' \<equiv> Lgraph {(pub, shop)} ex_loc_ass' ex_creds ex_locs ex_efids' ex_knos'"
+defines ex_graph'_def: "ex_graph' \<equiv> Lgraph {(pub, shop)} ex_loc_ass' ex_creds ex_locs ex_efids ex_knos'"
 
+(* Bob goes to shop *)
 fixes ex_graph'' :: "igraph"
-defines ex_graph''_def: "ex_graph'' \<equiv> Lgraph {(pub, shop)} ex_loc_ass'' ex_creds ex_locs ex_efids'' ex_knos''"
+defines ex_graph''_def: "ex_graph'' \<equiv> Lgraph {(pub, shop)} ex_loc_ass' ex_creds ex_locs ex_efids' ex_knos'"
+
+(* Eve goes to shop *)
+fixes ex_graph''' :: "igraph"
+defines ex_graph'''_def: "ex_graph''' \<equiv> Lgraph {(pub, shop)} ex_loc_ass'' ex_creds ex_locs ex_efids'' ex_knos'"
+
+(* Eve gets ex_knos at shop *)
+fixes ex_graph'''' :: "igraph"
+defines ex_graph''''_def: "ex_graph'''' \<equiv> Lgraph {(pub, shop)} ex_loc_ass'' ex_creds ex_locs ex_efids'' ex_knos''"
 
 (* Same as above: the nicer representation with case suffers from
    not so nice presentation in the cases (need to unfold the syntax) 
@@ -155,19 +188,25 @@ defines Icorona_def:
 
 (* other states of scenario *)
 (* First step: Bob goes to shop *)
+
 fixes corona_scenario' :: "infrastructure"
-defines corona_scenario'_def:
-"corona_scenario' \<equiv> Infrastructure ex_graph' local_policies"
+defines corona_scenario'_def: "corona_scenario' \<equiv> Infrastructure ex_graph' local_policies"
 fixes Corona' :: "infrastructure set"
-defines Corona'_def:
-  "Corona' \<equiv> {corona_scenario'}"
-(* Second step: Eve goes onto cloud from where she'll be able to get the data *)
+defines Corona'_def: "Corona' \<equiv> {corona_scenario'}"
 fixes corona_scenario'' :: "infrastructure"
-defines corona_scenario''_def:
-"corona_scenario'' \<equiv> Infrastructure ex_graph'' local_policies"
+defines corona_scenario''_def: "corona_scenario'' \<equiv> Infrastructure ex_graph'' local_policies"
 fixes Corona'' :: "infrastructure set"
-defines Corona''_def:
-  "Corona'' \<equiv> {corona_scenario''}"
+defines Corona''_def: "Corona'' \<equiv> {corona_scenario''}"
+fixes corona_scenario''' :: "infrastructure"
+defines corona_scenario'''_def: "corona_scenario''' \<equiv> Infrastructure ex_graph''' local_policies"
+fixes Corona''' :: "infrastructure set"
+defines Corona'''_def: "Corona''' \<equiv> {corona_scenario'''}"
+fixes corona_scenario'''' :: "infrastructure"
+defines corona_scenario''''_def: "corona_scenario'''' \<equiv> Infrastructure ex_graph'''' local_policies"
+fixes Corona'''' :: "infrastructure set"
+defines Corona''''_def: "Corona'''' \<equiv> {corona_scenario''''}"
+
+
 fixes corona_states
 defines corona_states_def: "corona_states \<equiv> { I. corona_scenario \<rightarrow>\<^sub>i* I }"
 fixes corona_Kripke

@@ -53,12 +53,12 @@ Finally, there is the map of the (Efemeral) Ids that are posted by mobile phones
 represents the combinatorial explosion of all Ids with all people present at a location representing the
 knowledge about who might be who. \<close>
 datatype location = Location nat
-datatype efid = EfId nat
+datatype efid = Efid nat
 datatype igraph = Lgraph "(location * location)set" "location \<Rightarrow> identity set"
                            "actor \<Rightarrow> (string set * string set * efid)"  
                            "location \<Rightarrow> string * (dlm * data) set"
                            "location \<Rightarrow> efid set"
-                           "actor \<Rightarrow> (identity * efid)set"
+                           "actor \<Rightarrow> location \<Rightarrow> (identity * efid)set"
 
 datatype infrastructure = 
          Infrastructure "igraph" 
@@ -76,7 +76,7 @@ primrec lgra :: "igraph \<Rightarrow> (location \<Rightarrow> string * (dlm * da
   where  "lgra(Lgraph g a c l e k) = l"
 primrec egra :: "igraph \<Rightarrow> location \<Rightarrow> efid set"
   where  "egra(Lgraph g a c l e k) = e"
-primrec kgra:: "[igraph, actor] \<Rightarrow> (identity * efid)set"
+primrec kgra:: "[igraph, actor, location] \<Rightarrow> (identity * efid)set"
   where "kgra(Lgraph g a c l e k) = k"
 
 definition nodes :: "igraph \<Rightarrow> location set" 
@@ -248,9 +248,7 @@ where
         enables I l (Actor a) get;
         I' = Infrastructure 
                    (Lgraph (gra G)(agra G)(cgra G)(lgra G)(egra g)
-                       ((kgra g)(Actor a := if kgra g (Actor a) = {} 
-                                            then {(x,y). x \<in> agra G l \<and> y \<in> egra G l}
-                                            else {(x,y). x \<in> agra G l \<and> y \<in> egra G l} \<inter> (kgra g (Actor a)))))
+                       ((kgra g)((Actor a) := ((kgra g (Actor a))(l:= {(x,y). x \<in> agra G l \<and> y \<in> egra G l})))))
                    (delta I)
          \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 
@@ -298,8 +296,6 @@ where "s \<rightarrow>\<^sub>n* s' \<equiv> ((s,s') \<in> {(x,y). state_transiti
 
 end
 
-definition identifiable :: "[infrastructure,actor,identity] \<Rightarrow> bool"
-  where "identifiable I a eid \<equiv> singleton{}"
 
 lemma move_graph_eq: "move_graph_a a l l g = g"  
   by (simp add: move_graph_a_def, case_tac g, force)
