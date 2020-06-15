@@ -39,7 +39,7 @@ defines identifiable'_def: "identifiable' eid A \<equiv> is_singleton{(Id,Eid). 
 
 fixes global_policy' :: "[infrastructure, efid] \<Rightarrow> bool"
 defines global_policy'_def: "global_policy' I eid \<equiv>  
-             \<not>(identifiable' eid (\<Inter> {A. (\<exists> l. (A = (kgra(graphI I)(Actor ''Eve'') l)) \<and> l \<in> nodes(graphI I)) }))"
+             \<not>(identifiable' eid (\<Inter> {A. (\<exists> l \<in> nodes(graphI I). (A = (kgra(graphI I)(Actor ''Eve'') l)))  }))"
 
 fixes ex_creds :: "actor \<Rightarrow> (string set * string set * efid)"
 defines ex_creds_def: 
@@ -233,6 +233,10 @@ the critical state
 
 We first present a number of lemmas showing single and multi-step state transitions
 for relevant states reachable from our @{text \<open>corona_scenario\<close>}.\<close>
+
+thm global_policy'_def
+lemma bla: "global_policy' I eid \<Longrightarrow> global_policy I eid"
+  apply (simp add: global_policy'_def)
 
 lemma step1: "corona_scenario  \<rightarrow>\<^sub>n corona_scenario'"
 proof (rule_tac l = pub and a = "''Bob''" and l' = shop in move)
