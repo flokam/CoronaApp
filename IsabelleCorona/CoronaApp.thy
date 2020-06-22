@@ -42,13 +42,13 @@ fixes global_policy' :: "[infrastructure, efid] \<Rightarrow> bool"
 defines global_policy'_def: "global_policy' I eid \<equiv>  
              \<not>(identifiable' eid (\<Inter> {A. (\<exists> l \<in> nodes(graphI I). (A = (kgra(graphI I)(Actor ''Eve'') l)))  }))"
 
-fixes ex_creds :: "actor \<Rightarrow> (string set * string set * efid)"
+fixes ex_creds :: "identity \<Rightarrow> (string set * string set * efid)"
 defines ex_creds_def: 
-          "ex_creds \<equiv> (\<lambda> x. if x = Actor ''Alice'' then ({}, {}, Efid 1) else 
-                            (if x = Actor ''Bob'' then  ({},{}, Efid 2) else 
-                            (if x = Actor ''Charly'' then ({},{}, Efid 3) else
-                            (if x = Actor ''David'' then ({},{}, Efid 4) else
-                            (if x = Actor ''Eve'' then ({},{}, Efid 5) else ({},{},Efid 0))))))"
+          "ex_creds \<equiv> (\<lambda> x. if x = ''Alice'' then ({}, {}, Efid 1) else 
+                            (if x = ''Bob'' then  ({},{}, Efid 2) else 
+                            (if x = ''Charly'' then ({},{}, Efid 3) else
+                            (if x = ''David'' then ({},{}, Efid 4) else
+                            (if x = ''Eve'' then ({},{}, Efid 5) else ({},{},Efid 0))))))"
 
 fixes ex_locs :: "location \<Rightarrow> string * (dlm * data) set"
 defines "ex_locs \<equiv> (\<lambda> x. ('''',{}))"
@@ -217,13 +217,14 @@ defines "scorona \<equiv> {x. \<exists> n. \<not> global_policy x (Efid n)}"
   (*  We assume the Insider assumption for Eve being able to impersonate Charly but
      we only need it in a positive sense to ensure that other actors can be assumed to 
      be unique, that is, that the function Actor is injective on their identities. This 
-     is needed only to evaluate the credentials function that ranges over type actor. *)
+     is needed only to evaluate the credentials function that ranges over type actor. 
+
 fixes astate:: "identity \<Rightarrow> actor_state"
 defines astate_def: "astate x \<equiv>  (case x of 
            ''Eve'' \<Rightarrow> Actor_state depressed {revenge, peer_recognition}
           | _ \<Rightarrow> Actor_state happy {})"
 assumes Eve_precipitating_event: "tipping_point (astate ''Eve'')"
-assumes Insider_Eve: "Insider ''Eve'' {''Charly''} astate"
+assumes Insider_Eve: "Insider ''Eve'' {''Charly''} astate" *)
 
 begin
 subsection \<open>Using Attack Tree Calculus\<close>
@@ -249,7 +250,7 @@ thm global_policy'_def
 lemma bla: "global_policy' I eid \<Longrightarrow> global_policy I eid"
   apply (simp add: global_policy'_def)
   oops
-
+(*
 lemma "Actor ''Eve'' = Actor ''Charly''"
   using Eve_precipitating_event Insider_Eve Insider_def UasI_def by blast
 
@@ -268,6 +269,7 @@ lemma Charly_Bob_neq: \<open>Actor ''Charly'' \<noteq> Actor ''Bob''\<close>
 
 lemma Charly_Alice_neq: \<open>Actor ''Charly'' \<noteq> Actor ''Alice''\<close>
   by (smt Eve_precipitating_event Insider_Eve Insider_def UasI_def char.inject list.inject singletonI)
+*)
 
 lemma step1: "corona_scenario  \<rightarrow>\<^sub>n corona_scenario'"
 proof (rule_tac l = pub and a = "''Eve''" and l = pub in get)
@@ -321,9 +323,7 @@ next show "corona_scenario'' =
     apply (rule conjI)
       apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
     apply (simp add: ex_efids_def ex_efids'_def shop_def pub_def ex_creds_def)
-    apply (rule conjI)
-     apply (simp add: Alice_Bob_neq)
-by (rule impI, rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
+    by (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
 qed
 
 lemma step2r: "corona_scenario'  \<rightarrow>\<^sub>n* corona_scenario''"
@@ -350,29 +350,46 @@ next show \<open>corona_scenario''' =
     apply (simp add: corona_scenario'''_def ex_graph'''_def move_graph_a_def pub_def shop_def
                      corona_scenario''_def ex_graph''_def ex_loc_ass''_def ex_loc_ass'_def)
     apply (rule conjI)
-     apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
-    apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
+     apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)+
     apply (simp add: ex_efids'_def ex_efids''_def shop_def pub_def ex_creds_def)
-    apply (rule conjI)
-     apply (subgoal_tac \<open>Actor ''Eve'' \<noteq> Actor ''David''\<close>, simp)
-     apply (rule Alice_David_neq)
-    apply (simp add: insert_Diff_if shop_def efemid_def pub_def)
-    apply (rule impI)
-    apply (rule conjI)
-     apply (rule impI)
-     apply (rule conjI)
-      apply (rule impI)
-    apply (rule conjI)
-       apply (subgoal_tac \<open>Actor ''Bob'' \<noteq> Actor ''Alice''\<close>, simp)
-       apply (rule Alice_Bob_neq)
-    using Charly_Bob_neq apply linarith
-     apply (rule impI)
-     apply (rule conjI)
-    using Charly_Alice_neq apply linarith
-
-
-
+    by (simp add: insert_Diff_if shop_def efemid_def pub_def)
+qed
    
+lemma step3r: "corona_scenario''  \<rightarrow>\<^sub>n* corona_scenario'''"
+proof (simp add: state_transition_in_refl_def)
+  show "(corona_scenario'', corona_scenario''') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
+    by (insert step3, auto)
+qed
+
+lemma step4: "corona_scenario'''  \<rightarrow>\<^sub>n corona_scenario''''"
+proof (rule_tac l = shop and a = "''Eve''" in get, rule refl)
+  show \<open>''Eve'' @\<^bsub>graphI corona_scenario'''\<^esub> shop\<close>
+   by (simp add: corona_scenario'''_def ex_graph'''_def pub_def shop_def atI_def ex_loc_ass''_def)
+next show \<open>enables corona_scenario''' shop (Actor ''Eve'') get\<close>
+    by (simp add: enables_def corona_scenario'''_def local_policies_def)
+next show \<open>corona_scenario'''' =
+    Infrastructure
+     (Lgraph (gra (graphI corona_scenario''')) (agra (graphI corona_scenario''')) (cgra (graphI corona_scenario'''))
+       (lgra (graphI corona_scenario''')) (egra (graphI corona_scenario'''))
+       ((kgra (graphI corona_scenario'''))
+        (Actor ''Eve'' := (kgra (graphI corona_scenario''') (Actor ''Eve''))
+           (shop := {(x, y). x \<in> agra (graphI corona_scenario''') shop \<and> y \<in> egra (graphI corona_scenario''') shop}))))
+     (delta corona_scenario''') \<close>
+    apply (simp add: corona_scenario'''_def ex_graph'''_def move_graph_a_def pub_def shop_def
+                     corona_scenario''''_def ex_graph''''_def ex_loc_ass''_def ex_loc_ass'_def)
+     apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)+
+    apply (simp add: ex_efids''_def shop_def pub_def ex_knos'_def ex_knos''_def)
+    apply (rule impI, rule ext)
+    apply (simp add: insert_Diff_if shop_def efemid_def pub_def)
+    by auto
+qed
+
+lemma step4r: "corona_scenario'''  \<rightarrow>\<^sub>n* corona_scenario''''"
+proof (simp add: state_transition_in_refl_def)
+  show "(corona_scenario''', corona_scenario'''') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
+    by (insert step4, auto)
+qed
+
 
 text \<open>For the Kripke structure
 
