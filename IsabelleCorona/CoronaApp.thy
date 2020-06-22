@@ -1,5 +1,6 @@
 section \<open>Application example from IoT healthcare\<close> 
 text \<open>The  example of an IoT healthcare systems is taken from the context of the CHIST-ERA project
+   by (simp add: corona_scenario'_def ex_graph'_def pub_def shop_def atI_def ex_loc_ass_def)
 SUCCESS \cite{suc:16}.  In this system architecture, data is collected by sensors 
 in the home or via a smart phone helping to monitor bio markers of the patient. The data 
 collection is in a cloud based server to enable hospitals (or scientific institutions) 
@@ -134,7 +135,7 @@ defines ex_graph_def: "ex_graph \<equiv> Lgraph {(pub, shop)} ex_loc_ass ex_cred
 
 (* Eve gets the ex_knos *)
 fixes ex_graph' :: "igraph"
-defines ex_graph'_def: "ex_graph' \<equiv> Lgraph {(pub, shop)} ex_loc_ass' ex_creds ex_locs ex_efids ex_knos'"
+defines ex_graph'_def: "ex_graph' \<equiv> Lgraph {(pub, shop)} ex_loc_ass ex_creds ex_locs ex_efids ex_knos'"
 
 (* Bob goes to shop *)
 fixes ex_graph'' :: "igraph"
@@ -206,13 +207,23 @@ defines corona_scenario''''_def: "corona_scenario'''' \<equiv> Infrastructure ex
 fixes Corona'''' :: "infrastructure set"
 defines Corona''''_def: "Corona'''' \<equiv> {corona_scenario''''}"
 
-
 fixes corona_states
 defines corona_states_def: "corona_states \<equiv> { I. corona_scenario \<rightarrow>\<^sub>i* I }"
 fixes corona_Kripke
 defines "corona_Kripke \<equiv> Kripke corona_states {corona_scenario}"
 fixes scorona 
 defines "scorona \<equiv> {x. \<exists> n. \<not> global_policy x (Efid n)}"  
+
+  (*  We assume the Insider assumption for Eve being able to impersonate Charly but
+     we only need it in a positive sense to ensure that other actors can be assumed to 
+     be unique, that is, that the function Actor is injective on their identities. This 
+     is needed only to evaluate the credentials function that ranges over type actor. *)
+fixes astate:: "identity \<Rightarrow> actor_state"
+defines astate_def: "astate x \<equiv>  (case x of 
+           ''Eve'' \<Rightarrow> Actor_state depressed {revenge, peer_recognition}
+          | _ \<Rightarrow> Actor_state happy {})"
+assumes Eve_precipitating_event: "tipping_point (astate ''Eve'')"
+assumes Insider_Eve: "Insider ''Eve'' {''Charly''} astate"
 
 begin
 subsection \<open>Using Attack Tree Calculus\<close>
@@ -237,68 +248,82 @@ for relevant states reachable from our @{text \<open>corona_scenario\<close>}.\<
 thm global_policy'_def
 lemma bla: "global_policy' I eid \<Longrightarrow> global_policy I eid"
   apply (simp add: global_policy'_def)
+  oops
+
+lemma "Actor ''Eve'' = Actor ''Charly''"
+  using Eve_precipitating_event Insider_Eve Insider_def UasI_def by blast
+
+lemma Alice_Bob_neq: "Actor ''Bob'' \<noteq> Actor ''Alice''"
+  apply (insert Eve_precipitating_event Insider_Eve)
+  apply (simp add: Insider_def UasI_def tipping_point_def astate_def)
+  apply (subgoal_tac "''Bob'' \<noteq> ''Alice''")
+  apply (smt char.inject list.inject)
+  by blast
+
+lemma Alice_David_neq: \<open>Actor ''Eve'' \<noteq> Actor ''David''\<close>
+  by (smt Eve_precipitating_event Insider_Eve Insider_def UasI_def char.inject list.inject singletonI)
+
+lemma Charly_Bob_neq: \<open>Actor ''Charly'' \<noteq> Actor ''Bob''\<close>
+  by (smt Eve_precipitating_event Insider_Eve Insider_def UasI_def char.inject list.inject singletonI)
+
+lemma Charly_Alice_neq: \<open>Actor ''Charly'' \<noteq> Actor ''Alice''\<close>
+  by (smt Eve_precipitating_event Insider_Eve Insider_def UasI_def char.inject list.inject singletonI)
 
 lemma step1: "corona_scenario  \<rightarrow>\<^sub>n corona_scenario'"
-proof (rule_tac l = pub and a = "''Bob''" and l' = shop in move)
+proof (rule_tac l = pub and a = "''Eve''" and l = pub in get)
   show "graphI corona_scenario = graphI corona_scenario" by (rule refl)
-next show "''Bob'' @\<^bsub>graphI corona_scenario\<^esub> pub" 
+next show "''Eve'' @\<^bsub>graphI corona_scenario\<^esub> pub" 
     by (simp add: corona_scenario_def ex_graph_def ex_loc_ass_def atI_def nodes_def)
-next show "pub \<in> nodes (graphI corona_scenario)"
-    by (simp add: corona_scenario_def ex_graph_def ex_loc_ass_def atI_def nodes_def, blast)
-next show "shop \<in> nodes (graphI corona_scenario)"
-    by (simp add: corona_scenario_def nodes_def ex_graph_def, blast)
-next show "''Bob'' \<in> actors_graph (graphI corona_scenario)"
-    by (simp add: actors_graph_def corona_scenario_def ex_graph_def ex_loc_ass_def nodes_def shop_def pub_def, blast)
-next show "enables corona_scenario shop (Actor ''Bob'') move"
+next show "enables corona_scenario pub (Actor ''Eve'') get"
     by (simp add: enables_def corona_scenario_def ex_graph_def local_policies_def
                     ex_creds_def ex_locs_def has_def credentials_def)
-next show "corona_scenario' = 
-           Infrastructure (move_graph_a ''Bob'' pub shop (graphI corona_scenario)) (delta corona_scenario)"
+next show "corona_scenario' =
+    Infrastructure
+     (Lgraph (gra (graphI corona_scenario)) (agra (graphI corona_scenario)) (cgra (graphI corona_scenario))
+       (lgra (graphI corona_scenario)) (egra (graphI corona_scenario))
+       ((kgra (graphI corona_scenario))
+        (Actor ''Eve'' := (kgra (graphI corona_scenario) (Actor ''Eve''))
+           (pub := {(x, y). x \<in> agra (graphI corona_scenario) pub \<and> y \<in> egra (graphI corona_scenario) pub}))))
+     (delta corona_scenario)"
     apply (simp add: corona_scenario'_def ex_graph'_def move_graph_a_def 
                      corona_scenario_def ex_graph_def pub_def shop_def 
                      ex_loc_ass'_def ex_loc_ass_def ex_efids'_def ex_efids_def 
                      ex_knos_def ex_knos'_def ex_creds_def)
-    apply (rule conjI, rule impI, rule conjI)
-    apply (rule ext, simp)
-      apply (simp add: insert_Diff_if shop_def efemid_def)
-     apply (rule conjI)
-      apply (rule ext, simp add: insert_Diff_if shop_def efemid_def)
-      apply (simp add: insert_Diff_if shop_def efemid_def)
-      apply auto[1]
-                 apply (subgoal_tac "Efid 2 = Efid 5")
-                  apply force
-    apply simp
-    by (simp add: hospital_def)
+    apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
+      apply (rule impI, rule ext)
+by auto[1]
 qed
 
-(*
 lemma step1r: "corona_scenario  \<rightarrow>\<^sub>n* corona_scenario'"
 proof (simp add: state_transition_in_refl_def)
   show " (corona_scenario, corona_scenario') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
   by (insert step1, auto)
 qed
 
+
 lemma step2: "corona_scenario'  \<rightarrow>\<^sub>n corona_scenario''"
-proof (rule_tac l = hospital and a = "''Eve''" and l' = cloud in move, rule refl)
-  show "''Eve'' @\<^bsub>graphI corona_scenario'\<^esub> hospital"
-   by (simp add: corona_scenario'_def ex_graph'_def hospital_def cloud_def atI_def nodes_def)
-next show "hospital \<in> nodes (graphI corona_scenario')"
-    by (simp add: corona_scenario'_def ex_graph'_def hospital_def cloud_def atI_def nodes_def, blast)
-next show "cloud \<in> nodes (graphI corona_scenario')"
+proof (rule_tac l' = shop and l = pub and a = "''Bob''" in move, rule refl)
+  show "''Bob'' @\<^bsub>graphI corona_scenario'\<^esub> pub"
+   by (simp add: corona_scenario'_def ex_graph'_def pub_def shop_def atI_def ex_loc_ass_def)
+next show "pub \<in> nodes (graphI corona_scenario')"
+    by (simp add: corona_scenario'_def ex_graph'_def pub_def atI_def nodes_def, blast)
+next show "shop \<in> nodes (graphI corona_scenario')"
     by (simp add: corona_scenario'_def nodes_def ex_graph'_def, blast)
-next show "''Eve'' \<in> actors_graph (graphI corona_scenario')"
+next show "''Bob'' \<in> actors_graph (graphI corona_scenario')"
     by (simp add: actors_graph_def corona_scenario'_def ex_graph'_def nodes_def
-                     hospital_def cloud_def, blast)
-next show "enables corona_scenario' cloud (Actor ''Eve'') move"
-    by (simp add: enables_def corona_scenario'_def ex_graph_def local_policies_def
-                  ex_creds_def ex_locs_def has_def credentials_def cloud_def sphone_def)
+                     ex_loc_ass_def shop_def pub_def, blast)
+next show "enables corona_scenario' shop (Actor ''Bob'') move"
+    by (simp add: enables_def corona_scenario'_def local_policies_def)
 next show "corona_scenario'' =
-    Infrastructure (move_graph_a ''Eve'' hospital cloud (graphI corona_scenario')) (delta corona_scenario')"
+    Infrastructure (move_graph_a ''Bob'' pub shop (graphI corona_scenario')) (delta corona_scenario')"
     apply (simp add: corona_scenario'_def ex_graph''_def move_graph_a_def corona_scenario''_def 
-                     ex_graph'_def home_def cloud_def hospital_def ex_creds_def)
-    apply (rule ext)
-    apply (simp add: hospital_def)
-    by blast
+                     ex_graph'_def ex_loc_ass_def ex_loc_ass'_def shop_def pub_def)
+    apply (rule conjI)
+      apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
+    apply (simp add: ex_efids_def ex_efids'_def shop_def pub_def ex_creds_def)
+    apply (rule conjI)
+     apply (simp add: Alice_Bob_neq)
+by (rule impI, rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
 qed
 
 lemma step2r: "corona_scenario'  \<rightarrow>\<^sub>n* corona_scenario''"
@@ -306,23 +331,56 @@ proof (simp add: state_transition_in_refl_def)
   show "(corona_scenario', corona_scenario'') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
     by (insert step2, auto)
 qed
-     
-(* Attack example: Eve can get onto cloud and get Patient's data 
-   because the policy allows Eve to get on cloud.
-   This attack can easily be fixed by disabling Eve to "get"
-   in the policy (just change the "True" for cloud to a set with no 
-   Eve in it).
-   However, it would not prevent Insider attacks (where Eve is 
-   impersonating the Doctor, for example). Insider attacks can
-   be checked using the UasI predicate.
-*)
+
+lemma step3: "corona_scenario''  \<rightarrow>\<^sub>n corona_scenario'''"
+proof (rule_tac l' = shop and l = pub and a = "''Eve''" in move, rule refl)
+  show "''Eve'' @\<^bsub>graphI corona_scenario''\<^esub> pub"
+   by (simp add: corona_scenario''_def ex_graph''_def pub_def shop_def atI_def ex_loc_ass'_def)
+next show \<open>pub \<in> nodes (graphI corona_scenario'')\<close>
+    by (simp add: corona_scenario''_def pub_def ex_graph''_def nodes_def, blast)
+next show \<open>shop \<in> nodes (graphI corona_scenario'')\<close>
+    by (simp add: corona_scenario''_def pub_def ex_graph''_def nodes_def, blast)
+next show \<open>''Eve'' \<in> actors_graph (graphI corona_scenario'')\<close>
+    by (simp add: actors_graph_def corona_scenario''_def ex_graph''_def nodes_def ex_loc_ass'_def 
+                  shop_def pub_def, blast)
+next show \<open>enables corona_scenario'' shop (Actor ''Eve'') move\<close>
+    by (simp add: enables_def corona_scenario''_def local_policies_def)
+next show \<open>corona_scenario''' =
+    Infrastructure (move_graph_a ''Eve'' pub shop (graphI corona_scenario'')) (delta corona_scenario'')\<close>
+    apply (simp add: corona_scenario'''_def ex_graph'''_def move_graph_a_def pub_def shop_def
+                     corona_scenario''_def ex_graph''_def ex_loc_ass''_def ex_loc_ass'_def)
+    apply (rule conjI)
+     apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
+    apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
+    apply (simp add: ex_efids'_def ex_efids''_def shop_def pub_def ex_creds_def)
+    apply (rule conjI)
+     apply (subgoal_tac \<open>Actor ''Eve'' \<noteq> Actor ''David''\<close>, simp)
+     apply (rule Alice_David_neq)
+    apply (simp add: insert_Diff_if shop_def efemid_def pub_def)
+    apply (rule impI)
+    apply (rule conjI)
+     apply (rule impI)
+     apply (rule conjI)
+      apply (rule impI)
+    apply (rule conjI)
+       apply (subgoal_tac \<open>Actor ''Bob'' \<noteq> Actor ''Alice''\<close>, simp)
+       apply (rule Alice_Bob_neq)
+    using Charly_Bob_neq apply linarith
+     apply (rule impI)
+     apply (rule conjI)
+    using Charly_Alice_neq apply linarith
+
+
+
+   
+
 text \<open>For the Kripke structure
 
 @{text \<open>corona_Kripke \<equiv> Kripke { I. corona_scenario \<rightarrow>\<^sub>i* I } {corona_scenario}\<close>}
 
 we first derive a valid and-attack using the attack tree proof calculus.
 
-@{text \<open>"\<turnstile>[\<N>\<^bsub>(Icorona,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>\<close>}
+@{text \<open>"\<turnstile>[\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>\<close>}
 
 The set @{text \<open>GDPR'\<close>} (see above) is an intermediate state where Eve accesses the cloud.\<close>
 

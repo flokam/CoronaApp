@@ -136,7 +136,6 @@ typedef label_fun = "{f :: dlm * data \<Rightarrow> dlm * data.
 definition secure_process :: "label_fun \<Rightarrow> dlm * data \<Rightarrow> dlm * data" (infixr "\<Updown>" 50)
   where "f  \<Updown> d \<equiv> (Rep_label_fun f) d" 
 
-(* This part is relevant to model Insiders but is not needed for Infrastructures.
 
 datatype psy_states = happy | depressed | disgruntled | angry | stressed
 datatype motivations = financial | political | revenge | curious | competitive_advantage | power | peer_recognition
@@ -166,7 +165,7 @@ where "Insider a C \<equiv> (tipping_point (astate a) \<longrightarrow> (\<foral
 
 definition Insider' :: "[actor \<Rightarrow> bool, identity, identity set] \<Rightarrow> bool" 
 where "Insider' P a C \<equiv> (tipping_point (astate a) \<longrightarrow> (\<forall> b\<in>C. UasI' P a b \<and> inj_on Actor C))"
-*)
+
 
 text \<open>The predicate atI -- mixfix syntax @{text \<open>@\<^bsub>G\<^esub>\<close>} -- expresses that an actor (identity) 
       is at a certain location in an igraph.\<close>
@@ -225,7 +224,7 @@ where "move_graph_a n l l' g \<equiv> Lgraph (gra g)
                                (cgra g)(lgra g)
                      (if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then
                        ((egra g)(l := (egra g l) - {efemid (cgra g (Actor n))}))
-                                (l' := (insert (efemid (cgra g (Actor n))) (egra g l')))
+                                (l' := (insert (efemid (cgra g (Actor n)))(egra g l')))
                       else egra g)
                                (kgra g)"
 
