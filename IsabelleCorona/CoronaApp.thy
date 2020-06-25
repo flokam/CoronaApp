@@ -302,7 +302,6 @@ proof (simp add: state_transition_in_refl_def)
   by (insert step1, auto)
 qed
 
-
 lemma step2: "corona_scenario'  \<rightarrow>\<^sub>n corona_scenario''"
 proof (rule_tac l' = shop and l = pub and a = "''Bob''" in move, rule refl)
   show "''Bob'' @\<^bsub>graphI corona_scenario'\<^esub> pub"
@@ -397,25 +396,34 @@ text \<open>For the Kripke structure
 
 we first derive a valid and-attack using the attack tree proof calculus.
 
-@{text \<open>"\<turnstile>[\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>\<close>}
+@{text \<open>"\<turnstile>[\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>\<close>}
 
-The set @{text \<open>GDPR'\<close>} (see above) is an intermediate state where Eve accesses the cloud.\<close>
+The sets @{text \<open>Corona'-'''\<close>} (see above) are intermediate states where Eve gets Bob's connection data by 
+following him from pub to shop and interfering.\<close>
 
 lemma corona_ref: "[\<N>\<^bsub>(Icorona,scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup> \<sqsubseteq>
-                  ([\<N>\<^bsub>(Icorona,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"  
-proof (rule_tac l = "[]" and l' = "[\<N>\<^bsub>(Icorona,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>]" and
-                  l'' = "[]" and si = Icorona and si' = Icorona and 
-                  si'' = scorona and si''' = scorona in refI, simp, rule refl)
-  show "([\<N>\<^bsub>(Icorona, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>) =
-    ([] @ [\<N>\<^bsub>(Icorona, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', scorona)\<^esub>] @ [] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>)"
-  by simp
-qed
+                  ([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
+  by (metis append_Cons append_Nil refI)  
 
-lemma att_corona: "\<turnstile>([\<N>\<^bsub>(Icorona,GDPR')\<^esub>, \<N>\<^bsub>(GDPR',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
+lemma att_corona: "\<turnstile>([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
 proof (subst att_and, simp, rule conjI)
-  show " \<turnstile>\<N>\<^bsub>(Icorona, GDPR')\<^esub>"
-    apply (simp add: Icorona_def GDPR'_def att_base)
+  show " \<turnstile>\<N>\<^bsub>(Icorona, Corona')\<^esub>"
+    apply (simp add: Icorona_def Corona'_def att_base)
     using state_transition_infra_def step1 by blast
+next show \<open> \<turnstile>[\<N>\<^bsub>(Corona', Corona'')\<^esub>, \<N>\<^bsub>(Corona'', Corona''')\<^esub>, \<N>\<^bsub>(Corona''', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Corona', scorona)\<^esup>\<close>
+    apply (subst att_and, simp)
+    apply (rule conjI)
+     apply (simp add: Corona'_def Corona''_def att_base state_transition_infra_def step2)
+    apply (subst att_and, simp, rule conjI)
+     apply (simp add: Corona''_def Corona'''_def att_base state_transition_infra_def step3)
+    apply (subst att_and, simp)
+    apply (simp add: Corona'''_def scorona_def att_base state_transition_infra_def step4)
+    apply (rule_tac x = "corona_scenario''''" in exI)
+    apply (rule conjI)
+    apply (simp add: corona_scenario''''_def global_policy_def)
+
+
+
 next show "\<turnstile>([\<N>\<^bsub>(GDPR', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(GDPR', scorona)\<^esup>)"
     apply (subst att_and, simp)
     apply (simp add: GDPR'_def scorona_def att_base)
