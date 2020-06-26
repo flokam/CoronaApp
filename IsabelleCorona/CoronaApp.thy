@@ -432,7 +432,7 @@ next show \<open> \<turnstile>[\<N>\<^bsub>(Corona', Corona'')\<^esub>, \<N>\<^b
     apply (rule conjI)
      prefer 2
     apply (rule step4)
-     apply (unfold corona_scenario''''_def global_policy_def)
+     apply (unfold corona_scenario''''_def global_policy''_def)
      apply (unfold global_policy''_def identifiable'_def ex_graph''''_def ex_loc_ass''_def nodes_def is_singleton_def
                   ex_efids''_def pub_def shop_def ex_creds_def ex_locs_def ex_knos''_def local_policies_def)
      apply (rule_tac x = 2 in exI, simp)
