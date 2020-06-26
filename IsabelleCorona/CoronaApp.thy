@@ -40,7 +40,16 @@ defines identifiable'_def: "identifiable' eid A \<equiv> is_singleton{(Id,Eid). 
 
 fixes global_policy' :: "[infrastructure, efid] \<Rightarrow> bool"
 defines global_policy'_def: "global_policy' I eid \<equiv>  
-             \<not>(identifiable' eid (\<Inter> {A. (\<exists> l \<in> nodes(graphI I). (A = (kgra(graphI I)(Actor ''Eve'') l)))  }))"
+             \<not>(identifiable' eid 
+                ((\<Inter> {A. (\<exists> l \<in> nodes(graphI I). (A = (kgra(graphI I)(Actor ''Eve'') l)))})
+                 - {(x,y). x = ''Eve''}))"
+
+fixes global_policy'' :: "[infrastructure, efid] \<Rightarrow> bool"
+defines global_policy''_def: "global_policy'' I eid \<equiv>  
+             \<not>(identifiable' eid 
+                ((\<Inter> (kgra(graphI I)(Actor ''Eve'')`(nodes(graphI I))))
+                 - {(x,y). x = ''Eve''}))"
+
 
 fixes ex_creds :: "identity \<Rightarrow> (string set * string set * efid)"
 defines ex_creds_def: 
@@ -210,9 +219,9 @@ defines Corona''''_def: "Corona'''' \<equiv> {corona_scenario''''}"
 fixes corona_states
 defines corona_states_def: "corona_states \<equiv> { I. corona_scenario \<rightarrow>\<^sub>i* I }"
 fixes corona_Kripke
-defines "corona_Kripke \<equiv> Kripke corona_states {corona_scenario}"
+defines "corona_Kripke \<equiv> Kripke corona_states Icorona"
 fixes scorona 
-defines "scorona \<equiv> {x. \<exists> n. \<not> global_policy x (Efid n)}"  
+defines "scorona \<equiv> {x. \<exists> n. \<not> global_policy'' x (Efid n)}"  
 
   (*  We assume the Insider assumption for Eve being able to impersonate Charly but
      we only need it in a positive sense to ensure that other actors can be assumed to 
@@ -420,19 +429,20 @@ next show \<open> \<turnstile>[\<N>\<^bsub>(Corona', Corona'')\<^esub>, \<N>\<^b
     apply (simp add: Corona'''_def scorona_def att_base state_transition_infra_def step4)
     apply (rule_tac x = "corona_scenario''''" in exI)
     apply (rule conjI)
-    apply (simp add: corona_scenario''''_def global_policy_def)
-
-
-
-next show "\<turnstile>([\<N>\<^bsub>(GDPR', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(GDPR', scorona)\<^esup>)"
-    apply (subst att_and, simp)
-    apply (simp add: GDPR'_def scorona_def att_base)
-    apply (subst state_transition_infra_def)
-    apply (rule_tac x = corona_scenario'' in exI)
-    apply (rule conjI)
-     apply (simp add: global_policy'_def corona_scenario''_def corona_actors_def 
-                      enables_def local_policies_def cloud_def sphone_def)
-    by (rule step2)
+     prefer 2
+    apply (rule step4)
+     apply (unfold corona_scenario''''_def global_policy_def)
+     apply (unfold global_policy''_def identifiable'_def ex_graph''''_def ex_loc_ass''_def nodes_def is_singleton_def
+                  ex_efids''_def pub_def shop_def ex_creds_def ex_locs_def ex_knos''_def local_policies_def)
+     apply (rule_tac x = 2 in exI, simp)
+     apply (rule conjI)
+    apply (rule impI)
+     apply (rule_tac x = "''Bob''" in exI)
+      apply (rule_tac  x = "Efid 2" in exI)
+      apply (rule equalityI)
+       apply auto[1]
+      apply simp
+by blast
 qed
 
 lemma corona_abs_att: "\<turnstile>\<^sub>V([\<N>\<^bsub>(Icorona,scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
@@ -445,15 +455,15 @@ text \<open>We can then simply apply the Correctness theorem @{text \<open>AT EF
 
 This application of the meta-theorem of Correctness of attack trees saves us
 proving the CTL formula tediously by exploring the state space.\<close>
-lemma corona_att: "corona_Kripke \<turnstile> EF {x. \<not>(global_policy' x ''Eve'')}"
+lemma corona_att: "corona_Kripke \<turnstile> EF {x. \<exists> n. \<not>(global_policy'' x (Efid n))}"
 proof -
-  have a: " \<turnstile>([\<N>\<^bsub>(Icorona, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>)"
+  have a: " \<turnstile>([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>)"
     by (rule att_corona)
-  hence "(Icorona,scorona) = attack ([\<N>\<^bsub>(Icorona, GDPR')\<^esub>, \<N>\<^bsub>(GDPR', scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>)"
+  hence "(Icorona,scorona) = attack ([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona)\<^esup>)"
     by simp
   hence "Kripke {s::infrastructure. \<exists>i::infrastructure\<in>Icorona. i \<rightarrow>\<^sub>i* s} Icorona \<turnstile> EF scorona"
     using ATV_EF corona_abs_att by fastforce 
-  thus "corona_Kripke \<turnstile> EF {x::infrastructure. \<not> global_policy' x ''Eve''}"
+  thus "corona_Kripke \<turnstile> EF {x::infrastructure.  \<exists> n. \<not> global_policy'' x (Efid n)}"
     by (simp add: corona_Kripke_def corona_states_def Icorona_def scorona_def)
 qed
 
@@ -489,6 +499,8 @@ theorem corona_EF': "corona_Kripke \<turnstile> EF scorona"
 (* older version of  proof that uses AT_EF and does not use corona_EF:
     by (auto simp: corona_Kripke_def corona_states_def Icorona_def dest: AT_EF) *)
 
+
+(* CoronaApp: The remainder is probably not relevant in this application (FK 26.6.2020) 
 (* However, when integrating DLM into the model and hence labeling
    information becomes part of the conditions of the get_data rule this isn't
    possible any more: corona_EF is not true any more *)    
@@ -564,5 +576,6 @@ proof (rule_tac I = Icorona and
     by (simp add: corona_Kripke_def Icorona_def corona_states_def)
 qed
 *)
+
 end
 end
