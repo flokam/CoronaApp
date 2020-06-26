@@ -30,19 +30,24 @@ defines pub_def: "pub \<equiv> Location 0"
 fixes shop :: "location"
 defines shop_def: "shop \<equiv> Location 1"
 
+(* not relevant any more. It was made for earlier versions where the intersection happened
+   implicitly in the semantics. 
 fixes identifiable :: "[infrastructure,actor,efid, location] \<Rightarrow> bool"
 defines identifiable_def: "identifiable I a eid l\<equiv> is_singleton{(Id,Eid). (Id, Eid) \<in> kgra (graphI I) a l \<and> Eid = eid}"
 fixes global_policy :: "[infrastructure, efid] \<Rightarrow> bool"
 defines global_policy_def: "global_policy I eid \<equiv>  (\<exists> l. \<not>(identifiable I (Actor ''Eve'') eid l))"
+*)
 
 fixes identifiable' :: "[efid, (identity * efid)set] \<Rightarrow> bool"
 defines identifiable'_def: "identifiable' eid A \<equiv> is_singleton{(Id,Eid). (Id, Eid) \<in> A \<and> Eid = eid}"
 
+(* This version is apparently different from the below global_policy'' where we use the image operator
 fixes global_policy' :: "[infrastructure, efid] \<Rightarrow> bool"
 defines global_policy'_def: "global_policy' I eid \<equiv>  
              \<not>(identifiable' eid 
                 ((\<Inter> {A. (\<exists> l \<in> nodes(graphI I). (A = (kgra(graphI I)(Actor ''Eve'') l)))})
                  - {(x,y). x = ''Eve''}))"
+*)
 
 fixes global_policy'' :: "[infrastructure, efid] \<Rightarrow> bool"
 defines global_policy''_def: "global_policy'' I eid \<equiv>  
@@ -255,10 +260,6 @@ the critical state
 We first present a number of lemmas showing single and multi-step state transitions
 for relevant states reachable from our @{text \<open>corona_scenario\<close>}.\<close>
 
-thm global_policy'_def
-lemma bla: "global_policy' I eid \<Longrightarrow> global_policy I eid"
-  apply (simp add: global_policy'_def)
-  oops
 (*
 lemma "Actor ''Eve'' = Actor ''Charly''"
   using Eve_precipitating_event Insider_Eve Insider_def UasI_def by blast
