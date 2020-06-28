@@ -55,7 +55,7 @@ knowledge about who might be who. \<close>
 datatype location = Location nat
 datatype efid = Efid nat
 datatype igraph = Lgraph "(location * location)set" "location \<Rightarrow> identity set"
-                           "actor \<Rightarrow> (string set * string set * efid)"  
+                           "identity \<Rightarrow> (string set * string set * efid)"  
                            "location \<Rightarrow> string * (dlm * data) set"
                            "location \<Rightarrow> efid set"
                            "actor \<Rightarrow> location \<Rightarrow> (identity * efid)set"
@@ -70,7 +70,7 @@ primrec gra :: "igraph \<Rightarrow> (location * location)set"
 where  "gra(Lgraph g a c l e k) = g"
 primrec agra :: "igraph \<Rightarrow> (location \<Rightarrow> identity set)"
 where  "agra(Lgraph g a c l e k) = a"
-primrec cgra :: "igraph \<Rightarrow> (actor \<Rightarrow> string set * string set * efid)"
+primrec cgra :: "igraph \<Rightarrow> (identity \<Rightarrow> string set * string set * efid)"
 where  "cgra(Lgraph g a c l e k) = c"
 primrec lgra :: "igraph \<Rightarrow> (location \<Rightarrow> string * (dlm * data) set)"
   where  "lgra(Lgraph g a c l e k) = l"
@@ -92,20 +92,20 @@ primrec graphI :: "infrastructure \<Rightarrow> igraph"
 where "graphI (Infrastructure g d) = g"
 primrec delta :: "[infrastructure, igraph, location] \<Rightarrow> policy set"
 where "delta (Infrastructure g d) = d"
-primrec tspace :: "[infrastructure, actor ] \<Rightarrow> string set * string set * efid"
+primrec tspace :: "[infrastructure, identity ] \<Rightarrow> string set * string set * efid"
   where "tspace (Infrastructure g d) = cgra g"
 primrec lspace :: "[infrastructure, location ] \<Rightarrow> string * (dlm * data)set"
   where "lspace (Infrastructure g d) = lgra g"
 
 definition credentials :: "string set * string set * efid \<Rightarrow> string set"
   where  "credentials lxl \<equiv> (fst lxl)"
-definition has :: "[igraph, actor * string] \<Rightarrow> bool"
+definition has :: "[igraph, identity * string] \<Rightarrow> bool"
   where "has G ac \<equiv> snd ac \<in> credentials(cgra G (fst ac))"
 definition roles :: "string set * string set * efid \<Rightarrow> string set"
   where  "roles lxl \<equiv> (fst (snd lxl))"
 definition efemid :: "string set * string set * efid \<Rightarrow> efid"
   where "efemid lxl \<equiv> snd(snd lxl)"
-definition role :: "[igraph, actor * string] \<Rightarrow> bool"
+definition role :: "[igraph, identity * string] \<Rightarrow> bool"
   where "role G ac \<equiv> snd ac \<in> roles(cgra G (fst ac))"
 definition isin :: "[igraph,location, string] \<Rightarrow> bool" 
   where "isin G l s \<equiv> s = fst (lgra G l)"
@@ -136,10 +136,24 @@ typedef label_fun = "{f :: dlm * data \<Rightarrow> dlm * data.
 definition secure_process :: "label_fun \<Rightarrow> dlm * data \<Rightarrow> dlm * data" (infixr "\<Updown>" 50)
   where "f  \<Updown> d \<equiv> (Rep_label_fun f) d" 
 
-
+(*
+subsection \<open>Insider predicate\<close>
+text \<open>The human actor's level is modelled in the Isabelle Insider framework by assigning
+the individual actor's psychological disposition\footnote{Note that the determination of 
+the psychological state of an actor is not done using the formal system. It is up to a 
+psychologist to determine this. However, if for instance, an actor is classified as 
+@{text \<open>disgruntled\<close>} then this may have an influence on what they are allowed to do according 
+to a company policy and this can be formally described and reasoned about in Isabelle.} 
+@{text \<open>actor_state\<close>} to each actor's identity.\<close>
 datatype psy_states = happy | depressed | disgruntled | angry | stressed
 datatype motivations = financial | political | revenge | curious | competitive_advantage | power | peer_recognition
 
+text \<open>The values used for the definition of the types
+@{text \<open>motivations\<close>} and @{text \<open>psy_state\<close>}
+are based on a taxonomy from psychological insider research \cite{nblgcww:14}.
+The transition to become an insider is represented by a {\it Catalyst} that tips the insider 
+over the edge so he acts as an insider formalized as a ``tipping point'' 
+predicate.\<close>
 datatype actor_state = Actor_state "psy_states" "motivations set"
 primrec motivation :: "actor_state \<Rightarrow> motivations set" 
 where "motivation  (Actor_state p m) =  m"
@@ -149,24 +163,33 @@ where "psy_state  (Actor_state p m) = p"
 definition tipping_point :: "actor_state \<Rightarrow> bool" where
   "tipping_point a \<equiv> ((motivation a \<noteq> {}) \<and> (happy \<noteq> psy_state a))"
 
-consts astate :: "identity \<Rightarrow> actor_state"
-
-(* Two versions of an impersonation predicate "a can act as b". 
-   The first one is stronger and allows substitution of the insider in any context; 
-   the second one is parameterized over a context predicate to describe this.   *)
+text \<open>To embed the fact that the attacker is an insider, the actor can then
+impersonate other actors. In the Isabelle Insider framework, the 
+predicate @{text \<open>Insider\<close>} must be used as a {\it locale} assumption
+to enable impersonation for the insider:
+this assumption entails that an insider @{text \<open>Actor ''Eve''\<close>} can act like 
+their alter ego, say @{text \<open>Actor ''Charly''\<close>} within the context of the locale.
+This is realized by the predicate  @{text \<open>UasI\<close>}:
+@{text \<open>UasI\<close>} and @{text \<open>UasI'\<close>} are the central predicates allowing to specify Insiders.
+They define which identities can be mapped to the same role by the @{text \<open>Actor\<close>} function
+(an impersonation predicate "@{text \<open>a\<close>} can act as @{text \<open>b\<close>}").
+For all other identities, @{text \<open>Actor\<close>} is defined as injective on those identities.
+The first one is stronger and allows substitution of the insider in any context; the second 
+one is parameterized over a context predicate to describe this.\<close>
 definition UasI ::  "[identity, identity] \<Rightarrow> bool " 
 where "UasI a b \<equiv> (Actor a = Actor b) \<and> (\<forall> x y. x \<noteq> a \<and> y \<noteq> a \<and> Actor x = Actor y \<longrightarrow> x = y)"
-
-definition UasI' ::  "[actor => bool, identity, identity] \<Rightarrow> bool " 
+definition UasI' ::  "[actor \<Rightarrow> bool, identity, identity] \<Rightarrow> bool " 
 where "UasI' P a b \<equiv> P (Actor b) \<longrightarrow> P (Actor a)"
 
-definition Insider :: "[identity, identity set] \<Rightarrow> bool" 
-where "Insider a C \<equiv> (tipping_point (astate a) \<longrightarrow> (\<forall> b\<in>C. UasI a b))"
-
-definition Insider' :: "[actor \<Rightarrow> bool, identity, identity set] \<Rightarrow> bool" 
-where "Insider' P a C \<equiv> (tipping_point (astate a) \<longrightarrow> (\<forall> b\<in>C. UasI' P a b \<and> inj_on Actor C))"
-
-
+text \<open>Two versions of Insider predicate corresponding to @{text \<open>UasI\<close>} and @{text \<open>UasI'\<close>}
+exist. Under the assumption that the tipping point has been reached for a person @{text \<open>a\<close>}
+then @{text \<open>a\<close>} can impersonate all @{text \<open>b\<close>} (take all of @{text \<open>b\<close>}'s "roles") where
+the @{text \<open>b\<close>}'s are specified by a given set of identities.\<close>
+definition Insider :: "[identity, identity set, identity \<Rightarrow> actor_state] \<Rightarrow> bool" 
+where "Insider a C as \<equiv> (tipping_point (as a) \<longrightarrow> (\<forall> b\<in>C. UasI a b))"
+definition Insider' :: "[actor \<Rightarrow> bool, identity, identity set, identity \<Rightarrow> actor_state] \<Rightarrow> bool" 
+where "Insider' P a C as \<equiv> (tipping_point (as a) \<longrightarrow> (\<forall> b\<in>C. UasI' P a b \<and> inj_on Actor C))"
+*)
 text \<open>The predicate atI -- mixfix syntax @{text \<open>@\<^bsub>G\<^esub>\<close>} -- expresses that an actor (identity) 
       is at a certain location in an igraph.\<close>
 definition atI :: "[identity, igraph, location] \<Rightarrow> bool" ("_ @\<^bsub>(_)\<^esub> _" 50)
@@ -223,8 +246,8 @@ where "move_graph_a n l l' g \<equiv> Lgraph (gra g)
                      else (agra g))
                                (cgra g)(lgra g)
                      (if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then
-                       ((egra g)(l := (egra g l) - {efemid (cgra g (Actor n))}))
-                                (l' := (insert (efemid (cgra g (Actor n)))(egra g l')))
+                       ((egra g)(l := (egra g l) - {efemid (cgra g n)}))
+                                (l' := (insert (efemid (cgra g n))(egra g l')))
                       else egra g)
                                (kgra g)"
 
