@@ -7,7 +7,20 @@ text \<open>This is the new element for refining the Ephemeral Id -- simply a li
      but at the current stage of abstraction we are satisfied with t a list.
    The idea is that the current pointer is the first element and that
    the Efids are popped off once used.\<close>
-type_synonym efidlist = "efid list"
+datatype efidlist = Efids "efid" "nat" "efid list"
+
+primrec efids_root :: "efidlist \<Rightarrow> efid"
+  where "efids_root (Efids e n el) = e"
+primrec efids_index :: "efidlist \<Rightarrow> nat"
+  where "efids_index (Efids e n el) = n"
+primrec efids_inc_ind :: "efidlist \<Rightarrow> efidlist"
+  where "efids_inc_ind (Efids e n el) = (Efids e (Suc n) el) "
+primrec efids_cur:: "efidlist \<Rightarrow> efid"
+  where "efids_cur (Efids e n el) = nth el n"
+primrec efids_list :: "efidlist \<Rightarrow> efid list"
+  where "efids_list (Efids e n el) = el"
+definition repl_efr :: "(string set * string set * efidlist) \<Rightarrow> (string set * string set * efid)"
+  where "repl_efr abc \<equiv> (case abc of (a,b,c) \<Rightarrow> (a,b,efids_root c))" 
 
 datatype igraph = Lgraph "(location * location)set" "location \<Rightarrow> identity set"
                            "identity \<Rightarrow> (string set * string set * efidlist)"  
@@ -104,18 +117,18 @@ where "move_graph_a n l l' g \<equiv> Lgraph (gra g)
                      ((agra g)(l := (agra g l) - {n}))(l' := (insert n (agra g l')))
                      else (agra g))
                     ( if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then 
-                            (cgra g)(n := (credentials (cgra g n), roles (cgra g n), tl(efemid (cgra g n))))
+                            (cgra g)(n := (credentials (cgra g n), roles (cgra g n), efids_inc_ind(efemid (cgra g n))))
                       else (cgra g))
                                  (lgra g)
                     (if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then
-                       ((egra g)(l := (egra g l) - {hd(efemid (cgra g n))}))
+                       ((egra g)(l := (egra g l) - {efids_cur(efemid (cgra g n))}))
                       else egra g)(kgra g)"
 
 definition put_graph_efid :: "[identity, location, igraph] \<Rightarrow> igraph"
   where \<open>put_graph_efid n l g  \<equiv> Lgraph (gra g)(agra g)
-                            ((cgra g)(n := (credentials (cgra g n), roles (cgra g n), tl(efemid (cgra g n)))))
+                            ((cgra g)(n := (credentials (cgra g n), roles (cgra g n), efids_inc_ind(efemid (cgra g n)))))
                                (lgra g)
-                             ((egra g)(l := insert (hd(efemid (cgra g n)))(egra g l)))
+                             ((egra g)(l := insert (efids_cur(efemid (cgra g n)))(egra g l)))
                               (kgra g)\<close>
 
 inductive state_transition_in :: "[infrastructure, infrastructure] \<Rightarrow> bool" ("(_ \<rightarrow>\<^sub>n _)" 50)
@@ -134,7 +147,7 @@ where
         I' = Infrastructure (put_graph_efid a l (graphI I))(delta I)
           \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 
-(* 
+(*  
 | get_data : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow>
         enables I l' (Actor a) get \<Longrightarrow> 
        ((Actor a', as), n) \<in> snd (lgra G l') \<Longrightarrow> Actor a \<in> as \<Longrightarrow> 
@@ -175,7 +188,25 @@ end
 
 lemma move_graph_eq: "move_graph_a a l l g = g"  
   by (simp add: move_graph_a_def, case_tac g, force)
-  
+
+
+definition  
+
+definition ref_map :: "[InfrastructureTwo.infrastructure, 
+                        [Infrastructure.igraph, Infrastructure.location] \<Rightarrow> policy set]
+                        \<Rightarrow> Infrastructure.infrastructure"
+  where "ref_map I lp = Infrastructure.Infrastructure 
+                                 (Infrastructure.Lgraph
+                                        (InfrastructureTwo.gra (graphI I))
+                                        (InfrastructureTwo.agra (graphI I))
+                                        (\<lambda> h:: identity. repl_efr 
+                                           ((InfrastructureTwo.cgra (graphI I)) h))
+                                        (InfrastructureTwo.lgra (graphI I))
+                                        (InfrastructureTwo.egra (graphI I))
+                                        (\<lambda> a :: actor. \<lambda> l :: location.
+                                            (\<lambda> (x,y).(x, efids_root(efemid(InfrastructureTwo.cgra (graphI I) x))))`(InfrastructureTwo.kgra (graphI I)) a l))   
+                                                         lp"
+
 end
 
  
