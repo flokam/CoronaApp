@@ -1,7 +1,7 @@
 theory CoronaAppTwo
   imports InfrastructureTwo
 begin
-locale scenarioCoronaTwo = 
+locale scenarioCoronaTwo = scenarioCorona +
 
   fixes corona_actorsT :: "identity set"
 defines corona_actorsT_def: "corona_actorsT \<equiv> {''Alice'', ''Bob'', ''Charly'', ''David'', ''Eve''}"
@@ -182,6 +182,10 @@ defines local_policies_def: "local_policies G x \<equiv>
      | _ \<Rightarrow>  {})"
 *)
 
+fixes rmapT :: "InfrastructureTwo.infrastructure \<Rightarrow> Infrastructure.infrastructure"
+defines rmapT_def:
+"rmapT I \<equiv> InfrastructureTwo.ref_map I local_policies"
+
 fixes corona_scenarioT :: "infrastructure"
 defines corona_scenarioT_def:
 "corona_scenarioT \<equiv> Infrastructure ex_graphT local_policiesT"
@@ -217,6 +221,15 @@ fixes scoronaT
 defines "scoronaT \<equiv> {x. \<exists> n. \<not> global_policyT'' x (Efid n)}"  
 
 begin
+
+lemma refmapOne_lem: "\<forall>s::InfrastructureTwo.infrastructure.
+       (Corona_scenarioT, s) \<in> {(x::InfrastructureTwo.infrastructure, y::InfrastructureTwo.infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<longrightarrow>
+       (\<forall>s'::InfrastructureTwo.infrastructure. s \<rightarrow>\<^sub>n s' \<longrightarrow> rmapT s \<rightarrow>\<^sub>n rmapT s')"
+  oops
+
+(* For some obscure reason the infix \<sqsubseteq>\<^sub>rmapT doesn't work in the following. *)
+theorem refmapOne: "refinement corona_Kripke rmapT corona_KripkeT"
+  oops
 
 lemma step1: "corona_scenarioT  \<rightarrow>\<^sub>n corona_scenarioT'"
   oops

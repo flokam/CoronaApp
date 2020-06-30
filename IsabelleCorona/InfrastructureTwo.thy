@@ -200,7 +200,7 @@ definition ref_map :: "[InfrastructureTwo.infrastructure,
                                            ((InfrastructureTwo.cgra (graphI I)) h))
                                         (InfrastructureTwo.lgra (graphI I))
                                         (InfrastructureTwo.egra (graphI I))
-                                        (\<lambda> a :: actor. \<lambda> l :: location.
+                                        (\<lambda> a :: Infrastructure.actor. \<lambda> l :: Infrastructure.location.
                                             (\<lambda> (x,y).(x, efids_root(efemid(InfrastructureTwo.cgra (graphI I) x))))`(InfrastructureTwo.kgra (graphI I)) a l))   
                                                          lp"
 
