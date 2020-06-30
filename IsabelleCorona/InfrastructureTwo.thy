@@ -130,6 +130,9 @@ where
                        ((kgra g)((Actor a) := ((kgra g (Actor a))(l:= {(x,y). x \<in> agra G l \<and> y \<in> egra G l})))))
                    (delta I)
          \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
+| put : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow> enables I l (Actor a) put \<Longrightarrow>
+        I' = Infrastructure (put_graph_efid a l (graphI I))(delta I)
+          \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 
 (* 
 | get_data : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow>
@@ -153,12 +156,6 @@ where
                            (egra G))
                    (delta I)
          \<Longrightarrow> I \<rightarrow>\<^sub>n I'"  
-| put : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow> enables I l (Actor a) put \<Longrightarrow>
-        I' = Infrastructure 
-                  (Lgraph (gra G)(agra G)(cgra G)
-                          ((lgra G)(l := (s, snd (lgra G l) \<union> {((Actor a, as), n)})))(egre G))
-                   (delta I)
-          \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 *)
 text \<open>Note that the type infrastructure can now be instantiated to the axiomatic type class 
       @{text\<open>state\<close>} which enables the use of the underlying Kripke structures and CTL.\<close>
