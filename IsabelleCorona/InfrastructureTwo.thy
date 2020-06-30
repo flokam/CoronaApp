@@ -189,9 +189,6 @@ end
 lemma move_graph_eq: "move_graph_a a l l g = g"  
   by (simp add: move_graph_a_def, case_tac g, force)
 
-
-definition  
-
 definition ref_map :: "[InfrastructureTwo.infrastructure, 
                         [Infrastructure.igraph, Infrastructure.location] \<Rightarrow> policy set]
                         \<Rightarrow> Infrastructure.infrastructure"
