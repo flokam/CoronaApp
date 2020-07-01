@@ -69,7 +69,7 @@
 \frontmatter
   
 \mainmatter
-\title{Modeling Corona App in Isabelle}
+\title{Modeling and analysing the Coronavirus warning app with the Isabelle Infrastructure framework}
 \author{Florian Kamm\"uller and Bianca Lutz}
 
 \institute{Middlesex University London and\\ Technische Universit\"at Berlin\\
@@ -77,14 +77,83 @@
 }
 \maketitle
 \begin{abstract}
-We provide a model in the Isabelle Infrastructure framework of the currently designed
-Corona App.
+We provide a model in the Isabelle Infrastructure framework of the recently published
+Coronavirus warning app. The app supports breaking infection chains by informing users
+whether they have been in close contact to an infected person. The app has a decentralized
+architecture that supports anonimity of users.
+We provide a formal model of the existing app with the Isabelle Infrastructure framework
+to show up some natural attacks in a very abstract model. We then use the security
+refinement process of the Isabelle Infrastructure frmework to highlight how the use of
+continuosuly changing ephemeral ids improves the anonymity.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:intro}
+The German Chancelor Angela Merkel has strongly supported the publication of
+the mobile phone Corona warning app by publicly proclaiming that the ``Corona
+App deserves your trust'' \cite{bundes:20}. Many millions of mobile phone users
+in Germany have downloaded the app with 6 million on the first day.
+This app is one amongst many similar application that aim at the very important goal
+to ``break infection chains'' by providing timely information of users whether they
+have been exposed to close contact with a person that has been infected.
+
+The Coronavirus warning app has taken a long time to develop being published only on
+16th June 2020. It was a quite costly project but this was mainly due to the management of
+Telekom and SAP being in the driving seat. But the app has been designed with great
+attention on privacy:  a distributed architecture \cite{} has been adopted after a long and
+heated debate with supporters of a central architecture. The distributed architecture is
+based on a very clever distributed application design whereby users phones are sending
+highly anonymised so called ``Ephemeral IDs'' at physical locations via the Bluetooth
+protocol. The app saves those IDs of people in close proximity. When at a later date an
+infected person reports his infection to a central server, the unique root ID is published
+and in the daily check all mobile phones connecting to the central server can download
+the root IDs of infected people. Since the Ephemeral IDs can be mapped to the root ID
+all Ephemeral IDs that have been saved over the last 14 days allow users phones to
+regularly check whether their user has been exposed to an infected person and issue
+a warning to the user. The warning issued by the Corona warning app entitles to
+ahving a Corona test done (which at the time of writing is not normally possible).
+
+The Isabelle Infrastructure framework \cite{kam:20a} allows modeling and analysing
+architecture and scenarios including physical and logical entities, actors, and policies
+within the interactive theorem prover Isabelle supported with temporal locic, Kriple
+structures, and attack trees. It has been applied for example to Insider analysis in
+airplanes \cite{kam:20b}, privacy in IoT healthcare \cite{kam:18b}, and recently also
+to blockchain protocols \cite{kn:20}.
+
+
+\TODO{Motivation: Why bother re-engineering a formal specification for a nicely developed privacy oriented app? physical aspects (adoption rate), formal proof etc}
+
+In this paper, we first provide some background in Section \ref{sec:background}:
+we give a detailed overview of the development history and security and privacy
+relevant parts of the Coronavirus warning app (Section \ref{sec:history})
+and some essential facts about the Isabelle Infrastructure framework
+(Section \ref{sec:isainf}).
+We then present our model (Section \ref{sec:model}) and analysis of privacy and
+attacks (Section \ref{sec:ana}) before drawing some conclusions (Section \ref{sec:concl}).
+
+The formal model in the Isabelle insider framework is fully mechanised and proved in
+Isabelle (sources available \cite{kam:18smc}). 
+
+\section{Background}
+\label{sec:background}
+
+\subsection{History of Decentralized Archicture}
+\label{sec:history}
+
+\subsection{Isabelle Infrastructure framework}
+\label{sec:isainf}
+
+
+\section{Model}
+\label{sec:model}
+
+\section{Analysis}
+\label{sec:ana}
+
+\section{Conclusions}
+\label{sec:concl}
 
 \bibliographystyle{abbrv}
-\bibliography{../insider}
+\bibliography{insider}
 
 \end{document}
