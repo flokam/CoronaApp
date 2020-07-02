@@ -227,8 +227,7 @@ lemma refmapOne_lem: "\<forall>s::InfrastructureTwo.infrastructure.
        (\<forall>s'::InfrastructureTwo.infrastructure. s \<rightarrow>\<^sub>n s' \<longrightarrow> rmapT s \<rightarrow>\<^sub>n rmapT s')"
   oops
 
-(* For some obscure reason the infix \<sqsubseteq>\<^sub>rmapT doesn't work in the following. *)
-theorem refmapOne: "refinement corona_Kripke rmapT corona_KripkeT"
+theorem refmapOne: "corona_Kripke \<sqsubseteq>\<^sub>rmapT corona_KripkeT"
   oops
 
 lemma step1: "corona_scenarioT  \<rightarrow>\<^sub>n corona_scenarioT'"
