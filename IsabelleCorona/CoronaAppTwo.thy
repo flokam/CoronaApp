@@ -255,10 +255,10 @@ lemma step4r: "corona_scenarioT'''  \<rightarrow>\<^sub>n* corona_scenarioT''''"
   oops
 
 lemma corona_refT: "[\<N>\<^bsub>(IcoronaT,scoronaT)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaT,scoronaT)\<^esup> \<sqsubseteq>
-                  ([\<N>\<^bsub>(IcoronaT,CoronaT')\<^esub>, \<N>\<^bsub>(CoronaT',CoronaT'')\<^esub>,  \<N>\<^bsub>(CoronaT'',CoronaT''')\<^esub>, \<N>\<^bsub>(CoronaT''',scoronaT)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
+                  ([\<N>\<^bsub>(IcoronaT,CoronaT')\<^esub>, \<N>\<^bsub>(CoronaT',CoronaT'')\<^esub>,  \<N>\<^bsub>(CoronaT'',CoronaT''')\<^esub>, \<N>\<^bsub>(CoronaT''',scoronaT)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaT,scoronaT)\<^esup>)"
   oops
 
-lemma att_coronaT: "\<turnstile>([\<N>\<^bsub>(IcoronaT,CoronaT')\<^esub>, \<N>\<^bsub>(CoronaT',CoronaT'')\<^esub>,  \<N>\<^bsub>(CoronaT'',CoronaT''')\<^esub>, \<N>\<^bsub>(CoronaT''',scoronaT)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
+lemma att_coronaT: "\<turnstile>([\<N>\<^bsub>(IcoronaT,CoronaT')\<^esub>, \<N>\<^bsub>(CoronaT',CoronaT'')\<^esub>,  \<N>\<^bsub>(CoronaT'',CoronaT''')\<^esub>, \<N>\<^bsub>(CoronaT''',scoronaT)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaT,scoronaT)\<^esup>)"
   oops
 
 lemma corona_abs_attT: "\<turnstile>\<^sub>V([\<N>\<^bsub>(IcoronaT,scoronaT)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaT,scoronaT)\<^esup>)"
