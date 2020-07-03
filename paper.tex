@@ -120,7 +120,6 @@ structures, and attack trees. It has been applied for example to Insider analysi
 airplanes \cite{kam:20b}, privacy in IoT healthcare \cite{kam:18b}, and recently also
 to blockchain protocols \cite{kn:20}.
 
-
 %{Motivation: Why bother re-engineering a formal specification for a nicely developed privacy oriented app? physical aspects (adoption rate), formal proof etc}
 The technical advantage of modeling an application in the Isabelle Insider framework lies
 in (a) having explicit representations of infrastructures, actors and policies in a
@@ -153,6 +152,41 @@ Isabelle (sources available \cite{kam:18smc}).
 
 \subsection{Isabelle Infrastructure framework}
 \label{sec:isainf}
+\TODO{Adapt: this is copied from FMBC paper}
+The Isabelle Infrastructure is built in the interactive generic theorem prover
+Isabelle/HOL \cite{npw:02}. As a framework, it supports formalisation and proof of
+systems with actors and policies. It originally emerged from verification of insider 
+threat scenarios but it soon became clear that the theoretical concepts, like temporal
+logic combined with Kripke structures and a generic notion of state transitions were
+very suitable to be combined with attack trees into a formal security engineering process
+\cite{suc:16} and framework \cite{kam:19a}.
+
+Figure \ref{fig:theorystruc} gives an overview of the Isabelle Infrastructure 
+framework with its layers of object-logics -- each level below embeds the one
+above showing the novel contribution of this paper in blue on the top. 
+\begin{figure}
+\begin{center}
+  \includegraphics[scale=.5]{theory_structure.pdf}
+\end{center}
+%\vspace{-.5cm}
+\caption{Generic Isabelle Infrastructure framework applied to Corona-warning app.}
+\label{fig:theorystruc}
+\end{figure}
+The formal model of the Corona-warning app uses the Isabelle Infrastructure framework instantiating it
+by reusing its concept of {\it actors} for users and smartphones whereby locations correspond
+to physical locations. The Ephermeral IDs, their sending and change is added to Infrastructures
+by slightly adapting the basic state type of infrastructure graphs and accordingly the semantic rules
+for the actions move, get, and put. The details of the newly adapted Infrastructure are
+presented in Section \ref{sec:model}.
+Technically, an Isabelle theory file \texttt{Infrastructure.thy} builds on top of the theories for Kripke 
+structures and CTL (\texttt{MC.thy}), attack trees (\texttt{AT.thy}), and security refinement 
+(\texttt{Refinement.thy}). Thus all these concepts can be used to specify the formal model
+for IBC, express relevant and interesting properties and conduct interactive proofs (with the 
+full support of the powerful and highly automated proof support of Isabelle).
+The IBC theory itself is an adaptation of the Infrastructure theory of the 
+Isabelle Infrastructure framework and reuses (or slightly adapts) existing concepts. 
+In the remainder of this paper, we introduce the model that we conceived for IBC. 
+All Isabelle sources are available online \cite{kam:20gitsc}.
 
 
 \section{Model}
