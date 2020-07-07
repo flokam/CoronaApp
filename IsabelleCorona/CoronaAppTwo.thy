@@ -1,9 +1,9 @@
 theory CoronaAppTwo
   imports InfrastructureTwo
 begin
-locale scenarioCoronaTwo = scenarioCorona +
+locale scenarioCoronaTwo = scenarioCoronaOne +
 
-  fixes corona_actorsT :: "identity set"
+fixes corona_actorsT :: "identity set"
 defines corona_actorsT_def: "corona_actorsT \<equiv> {''Alice'', ''Bob'', ''Charly'', ''David'', ''Eve''}"
 
 fixes corona_locationsT :: "location set"

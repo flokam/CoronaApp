@@ -1,5 +1,5 @@
-theory InfrastructureTwo
-  imports CoronaAppOne
+theory InfrastructureOne
+  imports CoronaApp
 begin
 
 text \<open>This is the new element for refining the Ephemeral Id -- simply a list
@@ -7,7 +7,7 @@ text \<open>This is the new element for refining the Ephemeral Id -- simply a li
      but at the current stage of abstraction we are satisfied with t a list.
    The idea is that the current pointer is the first element and that
    the Efids are popped off once used.\<close>
-(* datatype efidlist = Efids "efid" "nat" "efid list" *)
+datatype efidlist = Efids "efid" "nat" "efid list"
 
 primrec efids_root :: "efidlist \<Rightarrow> efid"
   where "efids_root (Efids e n el) = e"
@@ -122,7 +122,6 @@ where "move_graph_a n l l' g \<equiv> Lgraph (gra g)
                                  (lgra g)
                     (if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then
                        ((egra g)(l := (egra g l) - {efids_cur(efemid (cgra g n))}))
-                                (l' := insert (efids_cur(efids_inc_ind(efemid (cgra g n))))(egra g l))
                       else egra g)(kgra g)"
 
 definition put_graph_efid :: "[identity, location, igraph] \<Rightarrow> igraph"
@@ -190,17 +189,19 @@ end
 lemma move_graph_eq: "move_graph_a a l l g = g"  
   by (simp add: move_graph_a_def, case_tac g, force)
 
-definition ref_map :: "[InfrastructureTwo.infrastructure, 
-                        [InfrastructureOne.igraph, location] \<Rightarrow> policy set]
-                        \<Rightarrow> InfrastructureOne.infrastructure"
-  where "ref_map I lp = InfrastructureOne.Infrastructure 
-                                 (InfrastructureOne.Lgraph
-                                        (InfrastructureTwo.gra (graphI I))
-                                        (InfrastructureTwo.agra (graphI I))
-                                        (InfrastructureTwo.cgra (graphI I))
-                                        (InfrastructureTwo.lgra (graphI I))
-                                        (InfrastructureTwo.egra (graphI I))
-                                        (InfrastructureTwo.kgra (graphI I)))   
+definition ref_map :: "[InfrastructureOne.infrastructure, 
+                        [Infrastructure.igraph, Infrastructure.location] \<Rightarrow> policy set]
+                        \<Rightarrow> Infrastructure.infrastructure"
+  where "ref_map I lp = Infrastructure.Infrastructure 
+                                 (Infrastructure.Lgraph
+                                        (InfrastructureOne.gra (graphI I))
+                                        (InfrastructureOne.agra (graphI I))
+                                        (\<lambda> h:: identity. repl_efr 
+                                           ((InfrastructureOne.cgra (graphI I)) h))
+                                        (InfrastructureOne.lgra (graphI I))
+                                        (InfrastructureOne.egra (graphI I))
+                                        (\<lambda> a :: Infrastructure.actor. \<lambda> l :: Infrastructure.location.
+                                            (\<lambda> (x,y).(x, efids_root(efemid(InfrastructureOne.cgra (graphI I) x))))`(InfrastructureOne.kgra (graphI I)) a l))   
                                                          lp"
 
 end
