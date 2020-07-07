@@ -27,6 +27,8 @@
 \newcommand\ie{i.e.\!\,, }
 \newcommand\rel{Re${\cal{L}}$}
 \newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
+\newcommand*{\TODOfn}[2][noteC]{\TODO[#1]{[\footnote{\TODO[#1]{#2}}]}}
+\newcommand*{\TODOref}[2][todoC]{\TODOfn[#1]{\textbf{BIB-REF}: #2}}
 \newcommand\ttand{\mbox{{$\land$}}}
 \newcommand\ttor{\mbox{{$\lor$}}}
 \newcommand\ttcap{\mbox{{$\cap$}}}
@@ -108,8 +110,10 @@ This app is one amongst many similar application that aim at the very important 
 to ``break infection chains'' by providing timely information of users whether they
 have been exposed to close contact with a person that has been infected.
 
-The Corona-virus warning app has taken a long time to develop being published only on
-16th June 2020. It was a quite costly project but this was mainly due to the management of
+The Corona-virus warning app
+%has taken a long time to develop being published only on
+%16th June 2020. It
+was a quite costly project but this was mainly due to the management of
 Telekom and SAP being in the driving seat. But the app has been designed with great
 attention on privacy:  a distributed architecture \cite{} has been adopted after a long and
 heated debate with supporters of a central architecture. The distributed architecture is
@@ -152,11 +156,10 @@ based on attacks found by the attack tree analysis.
 
 
 In this paper, we first provide some background in Section \ref{sec:background}:
-we give a detailed overview of the development history and security and privacy
-relevant parts of the Corona-virus warning app (Section \ref{sec:history})
-and some essential facts about the Isabelle Infrastructure framework
-(Section \ref{sec:isainf}).
-We then present our model (Section \ref{sec:model}) and analysis of privacy and
+we give a detailed overview of the development history %and security and privacy
+ajnd relevant parts of the Corona-virus warning app (Section \ref{sec:history})
+We then introduce the Isabelle Infrastructure framework (Section \ref{sec:isainf}).
+Next, we present our model (Section \ref{sec:model}) and analysis of privacy and
 attacks (Section \ref{sec:ana}). The found attck on the first abstract specification
 motivates refinement. The formal definition of refinement for the Isabelle Infrastructure
 framework is introduced and illustrated on the Corona-virus warning app (Section \ref{sec:ref})
@@ -165,11 +168,61 @@ before drawing some conclusions (Section \ref{sec:concl}).
 The formal model in the Isabelle insider framework is fully mechanized and proved in
 Isabelle (sources available \cite{kam:18smc}). 
 
-\section{Background}
-\label{sec:background}
+\section{Background and related work}
 
-\subsection{History of Decentralized Architecture}
+\subsection{DP-3T and PEPP-PT}
 \label{sec:history}
+This paper is mainly concerned with the architecture and protocols proposed by the
+Decentralized Privacy-Preserving Proximity Tracing project (DP-3T).
+The main reason to focus on this particular family of protocols is the
+\textit{Exposure Notification Framework}, jointly published by Apple and Google, that adopts
+the main core principles of the DP-3T proposal. This API is not only used in the German
+Corona-virus warning app but has the potential of being widely adopted in future
+app developments that might emerge due to the reach of players like Apple and Google.
+
+There are, however, competing architectures noteworthy, namely protocols developed under the
+roof of the \textit{Pan-European Privacy-Preserving Proximity Tracing} project (PEPP-PT), e.g.
+PEPP-PT-ROBERT \TODOref{ROBERT github repository} and PEPP-PT-NTK\TODOref{NTK ???; mentioned in
+  ``Response to Analysis of DP-3T''}.
+
+Neither DP-3T nor PEPP-PT are synonymous for just one single protocol. Each project endorses
+different protocols with unique properties in terms of privacy and data protection.
+Yet, on a higher level of abstraction, it seems feasible to distinguish two basic architectures:
+protocols as endorsed by PEPP-PT might be characterized as centralized architectures whereas
+DP-3T-inspired protocols follow a (more) decentralized approach.\footnote{%
+  As we will see, DP-3T involves a central backend server. It is decentralized with regard to
+  collection and evaluation of contact information:
+  In centralized architectures the server provides a risk scoring services, whereas decentralized
+  approaches rely on local risk assessment and, thus, do not need to share contact information with
+  the backend.}
+
+\subsubsection{Basic DP-3T protocol: How does it work? How does it relate to ENF/CWA? (broad strokes)}
+%
+Upon installation,the app generates secret daily seeds to derive so called \textit{Ephemeral IDs}
+(EphIDs) from them. EphIDs are generated locally with cryptographic methods and cannot be connected
+to one another but only reconstructed from the secret seed they were derived from.
+
+During normal operation each client broadcasts its EphIDs via Bluetooth whilst scanning for
+EphIDs broadcasted by other devices in the vicinity. Collected EphIDs are stored locally along
+with associated metadata such as signal attenuation and date. In DP-3T the contact information
+gathered is never shared but only evaluated locally (on the device).
+
+If patients are tested positive on the Corona-virus, they are entitled to upload specific data to a
+central backend server. This data is accumulated by the backend server and redistributed to all
+clients regularly to provide the means for local risk scoring, i.\,e., determining whether collected
+EphIDs match those broadcasted by now-confirmed Corona-virus patients during the last, e.\,g., 14, 
+days.
+
+In the most simple (and insecure) protocol proposed by DP-3T
+\TODOref{Low-cost decentralized proximity tracing; DP-3T Whitepaper p. 14ff}
+this basically translates into publishing the daily seeds used to derive EphIDs from.
+Aside from additional security measures,
+%\TODOfn[styC]{In short: I want to name it but don't talk about it (since we're not really concerned with% this level of detail). But this sounds just sh...}
+like signing content the server provides as a general rule, the protocol implemented by ENF and,
+hence, CWA follows this low-cost design.\TODOref{CWA solution architecture ($\rightarrow$ github:CWA); probably ENF specification} DP-3T proposes two other, more sophisticated protocols that improve
+privacy and data protection properties to different degrees but are more costly.
+%TODOfn[styC]{``complicated'' sounds lame but ``costly'' is, perhaps, to simple/literal} to set up.
+
 
 \subsection{Isabelle Infrastructure framework}
 \label{sec:isainf}
