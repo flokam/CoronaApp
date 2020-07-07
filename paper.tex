@@ -125,8 +125,9 @@ and in the daily check all mobile phones connecting to the central server can do
 the root IDs of infected people. Since the Ephemeral IDs can be mapped to the root ID
 all Ephemeral IDs that have been saved over the last 14 days allow users phones to
 regularly check whether their user has been exposed to an infected person and issue
-a warning to the user. The warning issued by the Corona warning app entitles to
-having a Corona test done (which at the time of writing is not normally possible).
+a warning to the user. The user then needs to contact health autohorities.
+%The warning issued by the Corona warning app entitles to
+%having a Corona test done (which at the time of writing is not normally possible).
 
 The Isabelle Infrastructure framework \cite{kam:20a} allows modeling and analyzing
 architecture and scenarios including physical and logical entities, actors, and policies
@@ -154,7 +155,6 @@ certification of a novel view on the system architecture including actors, locat
 (c) an formal definition of a security refinement process that allows to improve a system
 based on attacks found by the attack tree analysis.
 
-
 In this paper, we first provide some background in Section \ref{sec:background}:
 we give a detailed overview of the development history %and security and privacy
 ajnd relevant parts of the Corona-virus warning app (Section \ref{sec:history})
@@ -169,7 +169,7 @@ The formal model in the Isabelle insider framework is fully mechanized and prove
 Isabelle (sources available \cite{kam:18smc}). 
 
 \section{Background and related work}
-
+\label{sec:background}
 \subsection{DP-3T and PEPP-PT}
 \label{sec:history}
 This paper is mainly concerned with the architecture and protocols proposed by the
@@ -196,9 +196,10 @@ DP-3T-inspired protocols follow a (more) decentralized approach.\footnote{%
   approaches rely on local risk assessment and, thus, do not need to share contact information with
   the backend.}
 
-\subsubsection{Basic DP-3T protocol: How does it work? How does it relate to ENF/CWA? (broad strokes)}
+\subsubsection{Basic DP-3T protocol: How does it work?}
+%  How does it relate to ENF/CWA? (broad strokes)}
 %
-Upon installation,the app generates secret daily seeds to derive so called \textit{Ephemeral IDs}
+Upon installation, the app generates secret daily seeds to derive so called \textit{Ephemeral IDs}
 (EphIDs) from them. EphIDs are generated locally with cryptographic methods and cannot be connected
 to one another but only reconstructed from the secret seed they were derived from.
 
@@ -418,6 +419,10 @@ sometimes just specialise the traces: in this case the state map
 
 \section{Conclusions}
 \label{sec:concl}
+\subsection{Protection goals of attacks}
+
+\subsection{Relevance of the approach}
+
 
 \bibliographystyle{abbrv}
 \bibliography{insider}

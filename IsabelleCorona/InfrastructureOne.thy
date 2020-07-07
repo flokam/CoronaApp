@@ -122,6 +122,7 @@ where "move_graph_a n l l' g \<equiv> Lgraph (gra g)
                                  (lgra g)
                     (if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then
                        ((egra g)(l := (egra g l) - {efids_cur(efemid (cgra g n))}))
+                                (l' := insert (efids_cur(efemid (cgra g n)))(egra g l))
                       else egra g)(kgra g)"
 
 definition put_graph_efid :: "[identity, location, igraph] \<Rightarrow> igraph"

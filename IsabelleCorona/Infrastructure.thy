@@ -10,7 +10,7 @@ Actors are given by an abstract type @{text \<open>actor\<close>} and a function
 (conditions) and sets of (enabled) actions.\<close>
 subsection \<open>Actors, actions, and data labels\<close>
 theory Infrastructure
-  imports AT 
+  imports ModTrans
 begin
 datatype action = get | move | eval | put
 

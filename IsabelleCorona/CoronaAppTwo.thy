@@ -182,9 +182,9 @@ defines local_policies_def: "local_policies G x \<equiv>
      | _ \<Rightarrow>  {})"
 *)
 
-fixes rmapT :: "InfrastructureTwo.infrastructure \<Rightarrow> Infrastructure.infrastructure"
+fixes rmapT :: "InfrastructureTwo.infrastructure \<Rightarrow> InfrastructureOne.infrastructure"
 defines rmapT_def:
-"rmapT I \<equiv> InfrastructureTwo.ref_map I local_policies"
+"rmapT I \<equiv> InfrastructureTwo.ref_map I local_policiesO"
 
 fixes corona_scenarioT :: "infrastructure"
 defines corona_scenarioT_def:
