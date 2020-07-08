@@ -121,11 +121,11 @@ based on a very clever distributed application design whereby users phones are s
 highly anonymized so called ``Ephemeral IDs'' at physical locations via the Bluetooth
 protocol. The app saves those IDs of people in close proximity. When at a later date an
 infected person reports his infection to a central server, the unique root ID is published
-and in the daily check all mobile phones connecting to the central server can download
+and in the daily check all mobile phones connecting to the central server download
 the root IDs of infected people. Since the Ephemeral IDs can be mapped to the root ID
-all Ephemeral IDs that have been saved over the last 14 days allow users phones to
+all Ephemeral IDs that have been saved over the last 14 days allow users' phones to
 regularly check whether their user has been exposed to an infected person and issue
-a warning to the user. The user then needs to contact health autohorities.
+a warning to the user and recommendation to contact health authorities.
 %The warning issued by the Corona warning app entitles to
 %having a Corona test done (which at the time of writing is not normally possible).
 
@@ -140,27 +140,36 @@ to blockchain protocols \cite{kn:20}.
 The technical advantage of modeling an application in the Isabelle Insider framework lies
 in (a) having explicit representations of infrastructures, actors and policies in a
 formal model that (b) allows additional automated verification of security properties
-within the interactive theorem prover Isabelle.
-Although the Corona-virus app has been produced based on a sophisticated security
-concept conceived by experts in the field, to our knowledge, no formal verification
-has been involved. Even if a ``post-production'' formal specification seems pointless,
+with CTL, Kripke structures and Attack Trees within the interactive theorem prover
+Isabelle.
+
+The Corona-virus app has been produced based on a sophisticated security
+concept conceived by experts in the field, %to our knowledge, no formal verification
+%
+and has strong claims with regard to mathematical support:
+
+``Such a design builds on strong, mathematically provable support for privacy and data protection goals [...]'' \TODOref{DP-3T Whitepaper p. 2} \smallskip\\
+%  \NOTE{DP-3T on their design and how wisely chosen it is ;) We have to use this! Something along the l%ines of:}
+However, there has been, as of yet, to our knowledge no formal verification been involved.
+Even if a ``post-production'' formal specification seems pointless, 
 it allows to reveal weak points of the architecture, show that the measures that have
 been conceived are suitable to cover those weak points. Thereby, we believe
 that our current work is useful to increase the trust in the Corona-virus app necessary for
 its wide adoption which in turn is crucial for it to be efficient.
 
 The contributions of this paper are (a) formal re-engineering of the Corona-virus warning app
-(b) providing an additional security and privacy analysis with interactice theorem proving
+(b) providing an additional security and privacy analysis with interactive theorem proving
 certification of a novel view on the system architecture including actors, locations, and policies,
-(c) an formal definition of a security refinement process that allows to improve a system
-based on attacks found by the attack tree analysis.
+(c) a formal definition of a security refinement process that allows to improve a system
+based on attacks found by the attack tree analysis and (d) an application of the refinement to
+improve security of the Corona-virus app specification.
 
 In this paper, we first provide some background in Section \ref{sec:background}:
 we give a detailed overview of the development history %and security and privacy
-ajnd relevant parts of the Corona-virus warning app (Section \ref{sec:history})
+and relevant parts of the Corona-virus warning app (Section \ref{sec:history})
 We then introduce the Isabelle Infrastructure framework (Section \ref{sec:isainf}).
 Next, we present our model (Section \ref{sec:model}) and analysis of privacy and
-attacks (Section \ref{sec:ana}). The found attck on the first abstract specification
+attacks (Section \ref{sec:ana}). The found attack on the first abstract specification
 motivates refinement. The formal definition of refinement for the Isabelle Infrastructure
 framework is introduced and illustrated on the Corona-virus warning app (Section \ref{sec:ref})
 before drawing some conclusions (Section \ref{sec:concl}).
@@ -205,7 +214,7 @@ to one another but only reconstructed from the secret seed they were derived fro
 
 During normal operation each client broadcasts its EphIDs via Bluetooth whilst scanning for
 EphIDs broadcasted by other devices in the vicinity. Collected EphIDs are stored locally along
-with associated metadata such as signal attenuation and date. In DP-3T the contact information
+with associated meta-data such as signal attenuation and date. In DP-3T the contact information
 gathered is never shared but only evaluated locally (on the device).
 
 If patients are tested positive on the Corona-virus, they are entitled to upload specific data to a
@@ -229,7 +238,7 @@ privacy and data protection properties to different degrees but are more costly.
 \label{sec:isainf}
 %\TODO{Adapt: this is copied from FMBC paper}
 The Isabelle Infrastructure is built in the interactive generic theorem prover
-Isabelle/HOL \cite{npw:02}. As a framework, it supports formalisation and proof of
+Isabelle/HOL \cite{npw:02}. As a framework, it supports formalization and proof of
 systems with actors and policies. It originally emerged from verification of insider 
 threat scenarios but it soon became clear that the theoretical concepts, like temporal
 logic combined with Kripke structures and a generic notion of state transitions were
@@ -253,7 +262,7 @@ above showing the novel contribution of this paper in blue on the top.
 \subsubsection{Instantiation of Framework}
 The formal model of the Corona-warning app uses the Isabelle Infrastructure framework instantiating it
 by reusing its concept of {\it actors} for users and smartphones whereby locations correspond
-to physical locations. The Ephermeral IDs, their sending and change is added to Infrastructures
+to physical locations. The Ephemeral IDs, their sending and change is added to Infrastructures
 by slightly adapting the basic state type of infrastructure graphs and accordingly the semantic rules
 for the actions move, get, and put. The details of the newly adapted Infrastructure are
 presented in Section \ref{sec:model}.
@@ -269,9 +278,9 @@ of Isabelle).
 All Isabelle sources are available online \cite{kam:20gitsc}.
 
 \subsubsection{Refinement}
-An interesting feature that has been integrated into the Isabelle Infrastructure
+An additional feature that has been integrated into the Isabelle Infrastructure
 framework motivated by security engineering formal specifications for IoT healthcare
-system is  is an extension of the formal specifciation process introducing
+system is an extension of the formal specification process introducing
 refinement of Kripke structures \cite{kam:19a,kam:20a}. It refines a system model based on a 
 formal definition of a combination of trace refinement and structural 
 refinement (or datatype refinement). The definition allows to prove property preservation results 
@@ -300,7 +309,7 @@ transformed model.
 %This relationship between the Kripke structure can be better understood
 %visually (see Figure \ref{fig:modtrans})
 In other words, we can encode a refinement within our framework
-as a relation on Kripke structures that is parametrized additionally by
+as a relation on Kripke structures that is parameterized additionally by
 a function that maps the refined type to the abstract type.
 The direction ``from refined to abstract'' of this type mapping may seem 
 curiously counter-intuitive. However, the actual refinement is given by the 
@@ -308,7 +317,7 @@ refinement that uses this function as an input. The refinement
 then refines an abstract to a more concrete system specification. 
 The additional layer for the refinement 
 %(the red box in Figure \ref{fig:theorystruc})
-can be formalised in Isabelle as a
+can be formalized in Isabelle as a
 %second\footnote{The first refinement 
 %relation in this framework is on attack trees summarized in Section \ref{sec:at}.} 
 refinement relation 
@@ -376,13 +385,13 @@ It is remarkable, that our definition of refinement by Kripke
 structure refinement entails property preservation and makes it possible 
 to prove this as a theorem in Isabelle once for all, i.e., as a meta-theorem.
 However, this is due to the fact that our generic definition of state transition
-allows to explicitly formalise such sophisticated concepts like reachability.
+allows to explicitly formalize such sophisticated concepts like reachability.
 For practical purposes, however, the proof obligation of showing that
 a specific refinement is in fact a refinement is rather complex
 justly because of the explicit use of the transitive closure of the state
 transition relation.
 In most cases, the refinement will be simpler. Therefore, we offer
-additional help by the following theorem that uses a stronger characterisation
+additional help by the following theorem that uses a stronger characterization
 of Kripke structure refinement and shows that our refinement follows
 from this.
 \begin{ttbox}
@@ -390,7 +399,7 @@ from this.
 \ttecal\ttimg(init K') \ttsubseteq init K \ttand s \ttrel{\sigma'} s' \ttimp \ttecal(s) \ttrel{\sigma} \ttecal(s') 
 \ttImp K \ttmeref K'
 \end{ttbox}
-This simpler characterisation is in fact a stronger one: we could have $s \ttrel{\sigma'} s'$ 
+This simpler characterization is in fact a stronger one: we could have $s \ttrel{\sigma'} s'$ 
 in the refined Kripke structure \texttt{K'} and $\neg(\ttecal(s) \ttrel{\sigma} \ttecal(s'))$
 but neither $s$ nor $s'$ are reachable from initial states in \texttt{K'}.
 For cases, where we want to have the simpler one-step proviso but still need 
@@ -409,11 +418,11 @@ former one.
 Although the principal idea is similar, we greatly extend it since our notion
 additionally incorporates refinement. Since we include a state map 
 \texttt{\ttsigma'\ttfun \ttsigma} in our refinement map, we additionally
-allow structural refinement: the state map generalises the basic idea of
+allow structural refinement: the state map generalizes the basic idea of
 trace refinement by traces corresponding to each other but allows additionally
 an exchange of data types. 
 As we see in the application to the case study, the refinement steps may
-sometimes just specialise the traces: in this case the state map 
+sometimes just specialize the traces: in this case the state map 
 \texttt{\ttsigma'\ttfun \ttsigma} is just identity. 
 
 In addition, as we can observe in the following example in the second refinement
