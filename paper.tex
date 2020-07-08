@@ -290,12 +290,13 @@ analysis while security properties can be proved in Isabelle. In each iteration
 security qualities are accumulated while continuously attack trees scrutinize
 the design.
 One of the contributions of this paper is to explore different concepts of refinement:
-the formal expression of refinemnet, enables to pin down (i.e. exemplify) different concepts
+the formal expression of refinement, enables to pin down (i.e. exemplify) different concepts
 of refinement (data refinement, action refinement, trace refinement (aka spec refinement) and
 combinations thereof with concrete attack scenarios. 
 
 \section{Model}
 \label{sec:model}
+
 
 \section{Analysis}
 \label{sec:ana}
@@ -441,8 +442,52 @@ below.
 \label{sec:concl}
 \subsection{Protection goals of attacks}
 
-\subsection{Relevance of the approach}
+\subsection{Summary and discussion of relevance of the approach}
+We can establish in our formal framework an attack that even a system using changing
+Ephemeral ids can be broken if the attacker physically follows a victim. This is a basic attack on
+anonymity: a user's connection between his Ephemeral Ids and personal details (Iphone MAC or name)
+is revealed to the attacker. The protection goal of privacy is thereby destroyed.
 
+When establishing the attack we start from a simplistic scenario that does not use Ephemeral Ids but fixed ids.
+In this (over)simplified model the attack is established. We then define a formal Refinement calculus for
+the Isabelle Infrastructure framework to refine the attack to a system with Ephemeral Ids that change in fixed
+time intervals obfuscating the relationship between user and his pseudonym\footnote{We identify the smartphone
+  and the user which might be also recognized by his appearance (face)}.
+
+Now, the refinement shows that although the Ephemeral Ids change regularly the same attack that has been
+identified on the very abstract level (fixed ids) persists.
+The refinement allows refining the datatype (Id $\mapsto$ EphId) but also delivers the usual trace
+refinement (behaviours of the refined systems are a subset of the traces of the abstract system).
+This persistence of the attack precisely shows which part of the system behaviour is responsible for the
+attack. In a second refinement step using action refinement based on this insight from the (repeated)
+attack, we can exclude the dangerous attack trace\footnote{Implication on the actual protection goals
+  that are endangered by the attack on privacy are discussed in the larger context of the Corona-warning
+  app (see previous Section)}.
+
+Clearly, the abstract attack we establish is obvious on an informal level but the persistence of the attack
+on the refined system is less obvious. The remedy by a second refinement step is an evident restriction of
+the system behaviour which gives a clear specification of a system secured against this attack. The use of
+formal methods therefore lies not in the discovery of an obvious attack on a simplified system but in showing
+how a formal specification including security refinement can lead to a stepwise improvement that is accompanied
+by formal proof in the Isabelle Infrastructure framework. The solution to exclude the attack in the second refinement
+step binds the action move together with a put action. %which effectively represents an action refinement.
+This shows that besides datatype refinement and trace refinement our Refinement calculus also entails action
+refinement. This action refinement is implemented implicitly by changing the effects of the actions
+in the semantic state transition relation. In future work, we could think about making the action refinement
+more explicit by considering a relationship between semantic rules or by refining the refinement notion to
+a more explicit layer of protocol steps -- similar to what has been done in previous applications of the
+Isabelle Infrastructure framework for example to Auction protocols \cite{kkp:17} or the Quantum Key Distribution \cite{kam:19c}.
+
+The security refinement in general might seem pointless, as in the first step of refinement the attack
+persists and even though the second refinement gets rid of this specific attack, it doesn't exclude the
+reachability of the attack goal altogether (if the attacker Eve gets Bob on his own in a location she can
+map all used EphIDs to him).
+However, the refinement makes the system relatively more secure in that for a larger number of traces the abstract
+attack does not work anymore\footnote{Adding probabilities as in \cite{kam:19c} enables quantifying this.}. 
+It is important to emphasize that security refinement is a cyclic process that
+improves security but does not usually terminate (like a loop) with a fixed point of 100\% secure system.
+In a refined model new detail may give rise to new attack possibilities. These additional attacks can be
+identified using the Attack Tree calculus and trigger further refinement steps.
 
 \bibliographystyle{abbrv}
 \bibliography{insider}
