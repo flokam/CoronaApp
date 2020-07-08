@@ -290,7 +290,7 @@ the design.
 
 \section{Refinement}
 \label{sec:ref}
-\TODO{This section is just copied over from arxive paper - adapt}
+%\TODO{This section is just copied over from arxive paper - adapt}
 Intuitively, a refinement changes some aspect of the type of
 the state, for example, replaces a data type by a richer datatype or
 restricts the behaviour of the actors. The former is expressed directly 
@@ -416,6 +416,14 @@ As we see in the application to the case study, the refinement steps may
 sometimes just specialise the traces: in this case the state map 
 \texttt{\ttsigma'\ttfun \ttsigma} is just identity. 
 
+In addition, as we can observe in the following example in the second refinement
+step, we also have a simple implicit version of {\it action refinement}. In an
+action refinement, traces may be refined by combining consecutive system events
+into atomic events thereby reducing traces. This will be detailed on the example
+below.
+
+\section{Refining the Specification}
+\label{sec:corref}
 
 \section{Conclusions}
 \label{sec:concl}
