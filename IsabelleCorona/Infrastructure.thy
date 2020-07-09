@@ -10,7 +10,7 @@ Actors are given by an abstract type @{text \<open>actor\<close>} and a function
 (conditions) and sets of (enabled) actions.\<close>
 subsection \<open>Actors, actions, and data labels\<close>
 theory Infrastructure
-  imports Refinement
+  imports ModTrans
 begin
 datatype action = get | move | eval | put
 
@@ -269,8 +269,8 @@ where
 | get : "\<lbrakk> G = graphI I; a @\<^bsub>G\<^esub> l;
         enables I l (Actor a) get;
         I' = Infrastructure 
-                   (Lgraph (gra G)(agra G)(cgra G)(lgra G)(egra g)
-                       ((kgra g)((Actor a) := ((kgra g (Actor a))(l:= {(x,y). x \<in> agra G l \<and> y \<in> egra G l})))))
+                   (Lgraph (gra G)(agra G)(cgra G)(lgra G)(egra G)
+                       ((kgra G)((Actor a) := ((kgra G (Actor a))(l:= {(x,y). x \<in> agra G l \<and> y \<in> egra G l})))))
                    (delta I)
          \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 

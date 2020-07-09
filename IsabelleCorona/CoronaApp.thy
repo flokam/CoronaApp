@@ -179,8 +179,8 @@ defines local_policies_alt_def: "local_policies_alt G \<equiv>
 
 fixes local_policies :: "[igraph, location] \<Rightarrow> policy set"
 defines local_policies_def: "local_policies G \<equiv> 
-    (\<lambda> x. if x = pub then  {(\<lambda> y. True, {get,move})}
-          else (if x = shop then {(\<lambda> y. True, {get,move})} 
+    (\<lambda> x. if x = pub then  {(\<lambda> y. True, {get,move,put})}
+          else (if x = shop then {(\<lambda> y. True, {get,move,put})} 
                 else {}))"
 
 (* problems with case in locales?

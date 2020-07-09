@@ -61,11 +61,14 @@
 \newcommand\ttalpha{\mbox{{$\alpha$}}}
 \newcommand\ttsupseteq{\mbox{{$\supseteq$}}}
 \newcommand\ttupdownarrow{\mbox{{$\Updownarrow$}}}
+\newcommand\ttbigcap{\mbox{{$\bigcap$}}}
 \newcommand\tttau{\mbox{{$\tau$}}}
 \newcommand\ttsubseteq{\mbox{{$\subseteq$}}}
 \newcommand\ttf{\mbox{{$f$}}}
 \newcommand\ttvdash{\mbox{{$\vdash$}}}
 \newcommand\ttref[1]{\mbox{\(\sqsubseteq_{#1}\)}}
+\newcommand\ttrefV{\mbox{{$\sqsubseteq_V$}}}
+\newcommand{\ttcalN}[1]{\mbox{{${\mathcal{N}}_{\texttt{#1}}$}}} 
 \newcommand\ttNatt{\mbox{{$\mathcal{N}$}}}
 \newcommand\ttattand[1]{\mbox{{$\oplus_{\wedge}^{#1}$}}}
 \newcommand\ttattor[1]{\mbox{{$\oplus_{\vee}^{#1}$}}}
@@ -244,9 +247,8 @@ threat scenarios but it soon became clear that the theoretical concepts, like te
 logic combined with Kripke structures and a generic notion of state transitions were
 very suitable to be combined with attack trees into a formal security engineering process
 \cite{suc:16} and framework \cite{kam:19a}.
-
-\subsubsection{Overview}
-\label{sec:isainfover}
+%\subsubsection{Overview}
+%\label{sec:isainfover}
 Figure \ref{fig:theorystruc} gives an overview of the Isabelle Infrastructure 
 framework with its layers of object-logics -- each level below embeds the one
 above showing the novel contribution of this paper in blue on the top. 
@@ -258,6 +260,65 @@ above showing the novel contribution of this paper in blue on the top.
 \caption{Generic Isabelle Infrastructure framework applied to Corona-warning app.}
 \label{fig:theorystruc}
 \end{figure}
+
+
+\subsubsection{Kripke structures, CTL, and Attack Trees}
+\label{sec:intro}
+The Isabelle framework has now after various case studies become a general framework for
+the state-based security analysis of infrastructures with policies and actors. Temporal logic
+and Kripke structures build the foundation. 
+Meta-theoretical results have been established to show equivalence between attack trees 
+and CTL statements \cite{kam:18b}. 
+%As part of the meta-theory Correctness and Completeness have been 
+%proved in Isabelle \cite{kam:18b} and can be used to navigate between CTL and attack 
+%trees to find attacks. 
+This foundation provides a generic notion of state transition on which attack trees and
+temporal logic can be used to express properties. 
+The main notions used in this paper are:
+\begin{itemize}
+\item {Kripke structures and state transitions:}\\ 
+Using a generic state transition relation $\mapsto$, Kripke structures
+are defined as a set of states reachable by $\mapsto$ from an initial
+state set, for example
+\begin{ttbox}
+Kripke \{t. \ttexists i \ttin I. i \ttrelIstar t\} I
+\end{ttbox} 
+\item {CTL statements:}\\ 
+For example, we can write 
+\begin{ttbox}
+K \ttvdash {\sf EF} s
+\end{ttbox}
+to express that in Kripke structure \texttt{K} there is a path on which
+the property \texttt{s} (a set of states) will eventually hold.
+\item {Attack trees:} \\
+The datatype of attack trees has three constructors: 
+$\oplus_\vee$ creates or-trees and $\oplus_\wedge$ creates 
+and-trees.
+And-attack trees $l \ttattand s$ and or-attack trees $l \ttattor s$ 
+consist of a list of sub-attacks -- again attack trees. The third constructor 
+creates a base attack as a pair of state sets written \texttt{\ttcalN{(I,s)}}.
+For example, a two step and-attack leading from state set \texttt{I} via
+\texttt{si} to \texttt{s} is expressed as
+\begin{ttbox}
+\ttvdash [\ttcalN{(I,si)},\ttcalN{(si,s)}]\ttattand{\texttt{(I,s)}}
+\end{ttbox}
+%\begin{ttbox}
+%\ttvdash [\ttcalN{(I,s)},\ttcalN{(s,s')}]\ttattand{(I,s')}
+%\end{ttbox}
+\item {Attack tree refinement, validity and adequacy:}\\
+Attack trees have their own refinement (not to be mixed up with the
+system refinement presented in this paper as introduced in the next section).
+An abstract attack tree may be refined by spelling out the attack steps until a valid attack
+is reached:
+
+\texttt{\ttvdash A :: (\ttsigma :: state) attree)}.
+
+The validity is defined constructively (code is generated from it)
+and its adequacy with respect to a formal semantics in CTL is proved
+and can be used to facilitate actual application verification as demonstrated 
+her in the stepwise system refinements.
+\end{itemize}
+
 
 \subsubsection{Instantiation of Framework}
 The formal model of the Corona-warning app uses the Isabelle Infrastructure framework instantiating it
@@ -294,12 +355,246 @@ the formal expression of refinement, enables to pin down (i.e. exemplify) differ
 of refinement (data refinement, action refinement, trace refinement (aka spec refinement) and
 combinations thereof with concrete attack scenarios. 
 
-\section{Model}
+\section{Model for Corona-warning app}
 \label{sec:model}
 
 
-\section{Analysis}
+\subsection{Infrastructures, Policies, and Actors}
+\label{sec:infra}
+% Adapted from CSF paper
+The Isabelle Infrastructure framework supports the representation of infrastructures 
+as graphs with actors and policies attached to nodes. These infrastructures 
+are the {\it states} of the Kripke structure. % for the attack trees.
+
+The transition between states is triggered by non-parametrized
+actions \texttt{get}, \texttt{move}, and \texttt{put} 
+executed by actors. 
+Actors are given by an abstract type \texttt{actor} and a function 
+\texttt{Actor} that creates elements of that type from identities 
+(of type \texttt{string} written \texttt{''s''} in Isabelle). 
+Actors are contained in an infrastructure graph type \texttt{igraph}
+constructed by its constructor \texttt{Lgraph}. 
+\begin{ttbox}
+{\bf datatype} igraph = 
+         Lgraph (location \tttimes location)set 
+                 location \ttfun identity set
+                 identity \ttfun (string set \tttimes string set \tttimes efid)  
+                 location \ttfun string \tttimes (dlm \tttimes data) set
+                 location \ttfun efid set
+                 actor \ttfun location \ttfun (identity \tttimes efid) set
+                
+\end{ttbox}
+In the current application of the framework to the Corona-warning app case study, 
+this graph contains a set of location pairs representing the %structure 
+topology of the infrastructure
+as a graph of nodes and a function%\footnote{ We use the common $\lambda$-abstraction, 
+%e.g. \texttt{\ttlam x. True}, to define functions with parameters, here the 
+%function returning True for any input $x$.} 
+that assigns a set of actor identities to each node (location) in the graph.
+The third component of an \texttt{igraph} assigns the credentials to each actor: 
+a triple-valued function whose first range component is a set describing the credentials 
+in the possession of an actor and the second component 
+is a set defining the roles the actor can take on; 
+most prominently the third component is the \texttt{efid} assigned to the actor. This is initially
+just a natural number but will be refined to actually represent lists of ``Ephemeral'' Ids later
+when refining the specification.
+\begin{ttbox}
+{\bf datatype} efid = Efid nat
+\end{ttbox}
+The fourth component of the type \texttt{igraph}
+assigns security labelled data to locations, a feature not used in the
+current application.
+The second to last component assigns the set of efids of all currently present smart phones
+to each location of the graph. The last component finally denotes the knowledge set of each
+actor for each location: a set of pairs of actors and potential ids.
+
+Corresponding projection functions for each of the components of an 
+infrastructure graph are provided; they are named \texttt{gra} for the actual 
+set of pairs of locations, \texttt{agra} for the actor map, \texttt{cgra} for 
+the credentials, \texttt{lgra} for the %state of a location and the 
+data at that location, \texttt{egra} for the assignment of current efids to locations,
+and \texttt{kgra} for the knowledge set for each actor for each location.
+
+In the Corona-virus warning app, the initial values for the \texttt{igraph} components use
+two locations \texttt{pub} and \texttt{shop} to define the following constants (we omit the
+data map component \texttt{ex\_locs}).
+\begin{ttbox}
+ex_loc_ass \ttequiv (\ttlam x. if x = pub then \{''Alice'', ''Bob'', ''Eve''\}  
+                 else (if x = shop then \{''Charly'', ''David''\} 
+                 else \{\}))
+ex_creds \ttequiv (\ttlam x. if x = ''Alice'' then (\{\}, \{\}, Efid 1) else 
+              (if x = ''Bob'' then  (\{\},\{\}, Efid 2) else 
+              (if x = ''Charly'' then (\{\},\{\}, Efid 3) else
+              (if x = ''David'' then (\{\},\{\}, Efid 4) else
+              (if x = ''Eve'' then (\{\},\{\}, Efid 5)
+               else (\{\},\{\},Efid 0))))))
+ex_efids \ttequiv (\ttlam x. if x = pub then \{Efid 1, Efid 2, Efid 5\}
+                  else (if x = shop then \{Efid 3, Efid 4\} else \{\}))
+ex_knos \ttequiv (\ttlam x. (if x = Actor ''Eve'' then (\ttlam l. \{\} else (\ttlam l. \{\})))
+\end{ttbox}  
+These components are wrapped up into the following \texttt{igraph}.
+\begin{ttbox}
+ex_graph \ttequiv
+      Lgraph \{(pub, shop)\} ex_loc_ass ex_creds ex_locs ex_efids ex_knos
+\end{ttbox}  
+Infrastructures are given by the following datatype that 
+contains an infrastructure graph of type \texttt{igraph} 
+and a policy given by a function that assigns local policies over a graph to
+all locations of the graph. 
+\begin{ttbox}
+{\bf{datatype}} infrastructure = Infrastructure igraph 
+                                         [igraph, location] \ttfun policy set
+\end{ttbox}
+There are projection functions \texttt{graphI} and \texttt{delta} when applied
+to an infrastructure return the graph and the local policies, respectively.
+The function \texttt{local\_policies} gives the policy for each location \texttt{x}
+over an infrastructure graph \texttt{G} as a pair: the first element of this pair is 
+a function specifying the actors \texttt{y} that are entitled to perform the actions 
+specified in the set which is the second element of that pair.
+The local policies definition for the Corona-warning app, simply permits all actions to
+all actors in both locations.
+\begin{ttbox}
+  local_policies G \ttequiv
+         (\ttlam x. if x = pub then  \{(\ttlam y. True, \{get,move,put\})\}
+          else (if x = shop then \{(\ttlam y. True, \{get,move,put\})\} else \{\}))
+\end{ttbox}  
+For the Corona-warning app, the initial infrastructure contains the graph \texttt{ex\_graph}
+with its two locations pub and shop and is then wrapped up with the local policies
+into the infrastructure \texttt{Corona\_scenario} 
+that represents the ``initial'' state for the Kripke structure.
+\begin{ttbox}
+ Corona_scenario \ttequiv Infrastructure  ex_graph local_policies
+\end{ttbox}
+
+\subsection{Policies, privacy, and behaviour}
+\label{sec:}
+Policies specify the expected behaviour of actors of an infrastructure. 
+They are given by pairs of predicates (conditions) and sets of (enabled) actions.
+%\begin{ttbox}
+%{\bf type}_{\bf{synonym}} policy = ((actor \ttfun bool) \tttimes action set)
+%\end{ttbox}
+%The behaviour of actors is 
+They are defined by the \texttt{enables} predicate:
+an actor \texttt{h} is enabled to perform an action \texttt{a} 
+in infrastructure \texttt{I}, at location \texttt{l}
+if there exists a pair \texttt{(p,e)} in the local policy of \texttt{l}
+(\texttt{delta I l} projects to the local policy) such that the action 
+\texttt{a} is a member of the action set \texttt{e} and the policy 
+predicate \texttt{p} holds for actor \texttt{h}.
+\begin{ttbox}
+enables I l h a \ttequiv \ttexists (p,e) \ttin delta I l. a \ttin e \ttand p h
+\end{ttbox} 
+
+The Privacy protection goal is to avoid deanonymisation. That is, an attacker should not be able to
+disambiguate the set of pairs of real Ids and EphIds. This is abstractly expressed in the predicate
+identifiable.
+\begin{ttbox}
+identifiable eid A \ttequiv is_singleton\{(Id,Eid). (Id, Eid) \ttin A \ttand Eid = eid\}
+\end{ttbox}
+The predicate identifiable is used to express as the global policy `Eve cannot deanonymize an Ephemeral
+Id \texttt{eid} using the gathered knowledge':
+%{\bf fixes} global_policy::[infrastructure, identity] \ttfun bool
+%{\bf defines}  
+\begin{ttbox}
+  global_policy I eid \ttequiv
+             \ttneg(identifiable eid 
+                ((\ttbigcap (kgra(graphI I)(Actor ''Eve'')`(nodes(graphI I))))
+                 - \{(x,y). x = ''Eve''\}))
+\end{ttbox}
+
+\subsection{Infrastructure state transition}
+\label{sec:statetrans}
+The state transition relation uses the syntactic infix notation 
+\texttt{I \ttrelI\, I'}  to denote that infrastructures 
+\texttt{I} and \texttt{I'} are in this relation.
+%Rules for the put, get, move, process and delete actions exist.
+To give an impression of this definition, we show first the rule defining the state transition for
+the action get. Initially, this rule expresses that
+an actor that resides at a location \texttt{l} (\texttt{a \ttatI\ l})
+and is enabled by the local policy in this location to ``get'' can
+combine  all ids at the current location (contained in \texttt{egra G l}) with
+all actors at the current location (contained in \texttt{agra G l}) and add this
+set of pairs to his knowledge set \texttt{kgra G} using the function update \texttt{f(l := n)}
+redefining the function \texttt{f} for the input \texttt{l} to have now the new value \texttt{n}.
+\begin{ttbox}
+ {\bf{get\_data}}: G = graphI I \ttImp a \ttatI l \ttImp enables I l (Actor a) get \ttImp 
+   I' = Infrastructure 
+          (Lgraph (gra G)(agra G)(cgra G)(lgra G)(egra G)
+            ((kgra G)((Actor a) := ((kgra G (Actor a))(l:=
+                 \{(x,y). x \ttin agra G l \ttand y \ttin egra G l\})))))
+          (delta I)
+   \ttImp I \ttrel{n} I' 
+\end{ttbox}
+Another interesting rule for the state transition is the one for \texttt{move} whose structure
+resembles the previous one.
+\begin{ttbox}
+ {\bf{move}}: G = graphI I \ttImp  a \ttin actors_graph(graphI I) \ttImp
+    l \ttin nodes G \ttImp l' \ttin nodes G \ttImp enables I l' (Actor h) move \ttImp
+    I' = Infrastructure (move_graph_a a l l' (graphI I))(delta I)
+ \ttImp I \ttrelI I' 
+\end{ttbox}
+The semantics of this rule is embedded in the function \texttt{move\_graph\_a}
+that adapts the infrastructure state so that the moving actor \texttt{a} is now
+associated to the target location \texttt{l'} in the actor map \texttt{agra} and not
+any more at \texttt{l} and also the association of \texttt{efids} is updated accordingly.
+\begin{ttbox}
+move_graph_a n l l' g \ttequiv
+  Lgraph (gra g) 
+         (if n \ttin ((agra g) l) \ttand  n \ttnin ((agra g) l') then 
+           ((agra g)(l := (agra g l) - \{n\}))(l' := (insert n (agra g l')))
+          else (agra g))
+         (cgra g)(lgra g)
+         (if n \ttin ((agra g) l) \ttand  n \ttnin ((agra g) l') then
+               ((egra g)(l := (egra g l) - \{efemid (cgra g n)\}))
+                        (l' := (insert (efemid (cgra g n))(egra g l')))
+          else egra g)
+         (kgra g)
+\end{ttbox}  
+Based on this state transition and the above defined \texttt{Corona\_scenario}, we define the first Kripke structure.
+\begin{ttbox}
+ corona_Kripke \ttequiv Kripke \{ I. Corona_scenario \ttrelIstar I \} \{Corona_scenario\}
+\end{ttbox}
+
+\subsection{Attack analysis}
 \label{sec:ana}
+For the analysis of attacks, we negate the security property that we want to achieve,
+usually the global policy.
+
+Since we consider a predicate transformer semantics, we use
+sets of states to represent properties. 
+%For example, the attack property
+The invalidated global policy is given by the following set \texttt{shc}.
+\begin{ttbox}
+ scorona \ttequiv \{x. \ttexists n. \ttneg global_policy x (Efid n)\}
+\end{ttbox}
+The attack we are interested in is to see whether for the scenario
+\begin{ttbox}
+ Kripke\_scenario \ttequiv  Infrastructure ex_graph local_policies 
+\end{ttbox}
+from the initial state \texttt{Icorona \ttequiv \{corona\_scenario\}},
+the critical state \texttt{scorona} can be reached,
+that is, is there a valid attack \texttt{(Icorona,scorona)}?
+
+For the Kripke structure \texttt{corona\_Kripke}
+we first derive a valid and-attack using the attack tree proof calculus.
+\begin{ttbox}
+  \ttvdash [\ttcalN{(Icorona,Corona)},\ttcalN{(Corona,Corona1)},\ttcalN{(Corona1,Corona2)},
+             \ttcalN{(Corona2,Corona3)},\ttcalN{(Corona3,scorona)}]\ttattand{\texttt{(Icorona,scorona)}}
+\end{ttbox}
+The sets \texttt{Corona, Corona1, Corona2, Corona3} are the intermediate states where
+\texttt{Bob} moves to shop and \texttt{Eve} follows him collecting the Ephemeral Ids in each location.
+The collected information enables to identify Bob's Ephemeral Id.
+
+The attack tree calculus \cite{kam:18b} exhibits that an attack is possible.
+\begin{ttbox}
+ corona_Kripke \ttvdash {\sf EF} scorona
+\end{ttbox}
+We can simply apply the Correctness theorem \texttt{AT\_EF} to 
+immediately prove this CTL statement. This application of the meta-theorem 
+of Correctness of attack trees saves us proving the CTL formula tediously 
+by exploring the state space in Isabelle proofs. Alternatively, we could use 
+the generated code for the function \texttt{is\_attack\_tree} in Scala 
+(see Section \ref{sec:at}) to check that a refined attack of the above is valid.
 
 \section{Refinement}
 \label{sec:ref}
@@ -435,7 +730,7 @@ action refinement, traces may be refined by combining consecutive system events
 into atomic events thereby reducing traces. This will be detailed on the example
 below.
 
-\section{Refining the Specification}
+\subsection{Refining the Specification}
 \label{sec:corref}
 
 \section{Conclusions}
