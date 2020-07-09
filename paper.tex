@@ -78,8 +78,8 @@
 \newcommand\ttsn{\mbox{{\texttt{s}$_0$}}}
 \newcommand\ttsigmap{\mbox{{$\sigma'$}}}
 \newcommand\ttecal{\mbox{$\mathcal{E}$}}
-\newcommand\ttimg{\mbox{$\triangleleft$}}
-
+%\newcommand\ttimg{\mbox{$\triangleleft$}}
+\newcommand\ttimg{\mbox{\texttt{`}}}
 
 \begin{document}
 \frontmatter
@@ -639,18 +639,16 @@ They are logically equivalent but of different
 types: within a HOL formula $P$, for example, as below $\forall x. P \ttimp Q$, only the implication $\ttimp$
 can be used.
 \begin{ttbox}
- mod_trans ::  (\ttsigma Kripke \tttimes (\ttsigma' \ttfun \ttsigma) \tttimes \ttsigma' Kripke) 
-               \ttfun bool                  ("_ \ttmref{(\_)} _")
+ refinement :: (\ttsigma Kripke \tttimes (\ttsigma' \ttfun \ttsigma) \tttimes \ttsigma' Kripke) \ttfun bool ("_ \ttmref{(\_)} _")
   K \ttmeref K' \ttequiv \ttforall s' \ttin states K'. \ttforall s \ttin init K'. 
-             s \ttrelstar{\sigma'} s' \ttimp \ttecal(s) \ttin init K 
-             \ttand \ttecal(s) \ttrelstar{\sigma} \ttecal(s')
+             s \ttrelstar{\sigma'} s' \ttimp \ttecal(s) \ttin init K \ttand \ttecal(s) \ttrelstar{\sigma} \ttecal(s')
 \end{ttbox}
-The definition of \texttt{K \ttmeref\, K'} states that for any state $s$ 
+The definition of \texttt{K \ttmeref\, K'} states that for any state $s'$ 
 of the refined Kripke structure that can be reached by the state transition
-in zero or more steps from an initial state $s_0$ of the refined Kripke 
+in zero or more steps from an initial state $s$ of the refined Kripke 
 structure, the mapping ${\mathcal E}$ from the refined to the abstract 
 model's state must preserve this reachability, i.e., the image of
-$s_0$ must also be an initial state and from there the image of $s$
+$s$ must also be an initial state and from there the image of $s'$
 under ${\mathcal E}$ must be reached with $0$ or $n$ steps.
 
 \subsection{Property Preserving System Refinement}
@@ -677,8 +675,7 @@ The additional condition on initial states ensures that we cannot ``forget'' the
 \begin{ttbox}
 {\bf{theorem}} prop_pres: 
    K \ttmeref K'  \ttImp init K \ttsubseteq \ttecal\ttimg(init K') \ttImp
-   \ttforall s' \ttin Pow(states K'). K' \ttvdash {\sf EF} s' 
-              \ttimp K \ttvdash {\sf EF} (\ttecal\ttimg(s'))
+   \ttforall s' \ttin Pow(states K'). K' \ttvdash {\sf EF} s' \ttimp K \ttvdash {\sf EF} (\ttecal\ttimg(s'))
 \end{ttbox}
 It is remarkable, that our definition of refinement by Kripke 
 structure refinement entails property preservation and makes it possible 

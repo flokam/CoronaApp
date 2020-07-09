@@ -251,6 +251,13 @@ where "move_graph_a n l l' g \<equiv> Lgraph (gra g)
                       else egra g)
                                (kgra g)"
 
+definition put_graph_efid :: "[identity, location, igraph] \<Rightarrow> igraph"
+  where \<open>put_graph_efid n l g  \<equiv> Lgraph (gra g)(agra g)
+                            ((cgra g)(n := (credentials (cgra g n), roles (cgra g n), efemid (cgra g n))))
+                               (lgra g)
+                             ((egra g)(l := insert (efemid (cgra g n))(egra g l)))
+                              (kgra g)\<close>
+
 text \<open>The state transition relation defines the semantics for the actions. We concentrate
      only on two: move and get. Move models the moving of actors from one locations to another
      automatically posting the ephemeral ids at the new location (and stop posting them at the 
@@ -273,6 +280,9 @@ where
                        ((kgra G)((Actor a) := ((kgra G (Actor a))(l:= {(x,y). x \<in> agra G l \<and> y \<in> egra G l})))))
                    (delta I)
          \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
+| put : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow> enables I l (Actor a) put \<Longrightarrow>
+        I' = Infrastructure (put_graph_efid a l (graphI I))(delta I)
+          \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 
 (* 
 | get_data : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow>
