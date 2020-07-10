@@ -153,7 +153,7 @@ formal model that (b) allows additional automated verification of security prope
 with CTL, Kripke structures and Attack Trees within the interactive theorem prover
 Isabelle.
 
-The app now in use in Germany has been developed based on a protocol proposed by the DP-3T\cite{dp3t:github} project:
+The app now in use in Germany has been developed based on a protocol proposed by the DP-3T project \cite{dp3t:github}:
 A sophisticated security concept
 conceived by experts in the field that has strong claims with regard to mathematical support \cite{dp3t:wp} [p2].
 %The Corona-virus app has been produced based on a sophisticated security
@@ -205,7 +205,7 @@ Isabelle (sources available \cite{kam:18smc}).
 \subsection{DP-3T and PEPP-PT}
 \label{sec:history}
 We are mainly concerned with the architecture and protocols proposed by the
-DP-3T (\textit{Decentralized Privacy-Preserving Proximity Tracing}) project.
+DP-3T (\textit{Decentralized Privacy-Preserving Proximity Tracing}) project \cite{dp3t:github}.
 The main reason to focus on this particular family of protocols is the
 \textit{Exposure Notification Framework} (ENF), jointly published by Apple and Google, that adopts
 %the main
@@ -214,9 +214,8 @@ Corona-virus warning app but has the potential of being widely adopted in future
 app developments that might emerge due to the reach of players like Apple and Google.
 
 There are, however, competing architectures noteworthy, namely protocols developed under the
-roof of the \textit{Pan-European Privacy-Preserving Proximity Tracing} project (PEPP-PT), e.g.
-PEPP-PT-ROBERT \TODOref{ROBERT github repository} and PEPP-PT-NTK\TODOref{NTK ???; mentioned in
-  ``Response to Analysis of DP-3T''}.
+roof of the \textit{Pan-European Privacy-Preserving Proximity Tracing} project (PEPP-PT) \cite{pepppt:github}, e.g.
+PEPP-PT-ROBERT \cite{pepppt:ROBERT}.
 
 Neither DP-3T nor PEPP-PT are synonymous for just one single protocol. Each project endorses
 different protocols with unique properties in terms of privacy and data protection.
@@ -249,11 +248,10 @@ clients regularly to provide the means for local risk scoring, i.\,e., determini
 EphIDs match those broadcasted by now-confirmed Corona-virus patients during the last, e.\,g., 14, 
 days.
 
-In the most simple (and insecure) protocol proposed by DP-3T
-\TODOref{Low-cost decentralized proximity tracing; DP-3T Whitepaper p. 14ff}
+In the most simple (and insecure) protocol proposed by DP-3T %\cite{dp3t:wp}[p14ff]
 this basically translates into publishing the daily seeds used to derive EphIDs from.
 The protocol implemented by ENF and,
-hence, CWA adopts this low-cost design.\TODOref{CWA solution architecture ($\rightarrow$ github:CWA); probably ENF specification} DP-3T proposes two other, more sophisticated protocols that improve
+hence, CWA adopts this low-cost design \cite{cwa:arch}. DP-3T proposes two other, more sophisticated protocols that improve
 privacy and data protection properties to different degrees but are more costly to implement.
 %Aside from additional security measures,
 %\TODOfn[styC]{In short: I want to name it but don't talk about it (since we're not really concerned with% this level of detail). But this sounds just sh...}
