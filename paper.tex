@@ -525,7 +525,7 @@ redefining the function \texttt{f} for the input \texttt{l} to have now the new 
 Another interesting rule for the state transition is the one for \texttt{move} whose structure
 resembles the previous one.
 \begin{ttbox}
- {\bf{move}}: G = graphI I \ttImp  a \ttin actors_graph(graphI I) \ttImp
+ {\bf{move}}: G = graphI I \ttImp a \ttatI l \ttImp a \ttin actors_graph(graphI I) \ttImp
     l \ttin nodes G \ttImp l' \ttin nodes G \ttImp enables I l' (Actor h) move \ttImp
     I' = Infrastructure (move_graph_a a l l' (graphI I))(delta I)
  \ttImp I \ttrelI I' 
@@ -560,7 +560,7 @@ usually the global policy.
 Since we consider a predicate transformer semantics, we use
 sets of states to represent properties. 
 %For example, the attack property
-The invalidated global policy is given by the following set \texttt{shc}.
+The invalidated global policy is given by the set \texttt{scorona}.
 \begin{ttbox}
  scorona \ttequiv \{x. \ttexists n. \ttneg global_policy x (Efid n)\}
 \end{ttbox}
@@ -580,7 +580,7 @@ we first derive a valid and-attack using the attack tree proof calculus.
 \end{ttbox}
 The sets \texttt{Corona, Corona1, Corona2, Corona3} are the intermediate states where
 \texttt{Bob} moves to shop and \texttt{Eve} follows him collecting the Ephemeral Ids in each location.
-The collected information enables to identify Bob's Ephemeral Id.
+The collected information enables identifying Bob's Ephemeral Id.
 
 The attack tree calculus \cite{kam:18b} exhibits that an attack is possible.
 \begin{ttbox}
@@ -727,7 +727,7 @@ of the Corona-virus warning app considered next.
 \subsection{Refining the Specification}
 \label{sec:corref}
 Clearly, fixed Ephemeral Ids are not really ephemeral. The model presented
-in Section \ref{sec:model} is deliberately been chosen very abstractly to allow focusing on
+in Section \ref{sec:model} has deliberately been designed abstractly to allow focusing on
 the basic system architecture and finding an initial deanonymization attack.
 We now introduce ``proper'' Ephemeral Ids and show how the system datatype can be refined to a system
 that uses those instead of the fixed ones.
@@ -758,7 +758,81 @@ component, the index of the current \texttt{efid}; \texttt{efids\_inc\_ind} appl
 \texttt{efidlist} increments the index; \texttt{efids\_cur} returning the current \texttt{efid}
 from the list and \texttt{efids\_list} for the entire list (the third component).
 
+The first step of refinement replaces the simple \texttt{efid} in the infrastructure type by the
+new type \texttt{efidlist}. Note, that in the new datatype \texttt{igraph} this change affects only
+the thrird component, the credentials. The last two componenets, the set of currently present efids,
+and the knowledge set, still operate on the simple type \texttt{efid}.
+\begin{ttbox}
+{\bf datatype} igraph = 
+         Lgraph (location \tttimes location)set 
+                 location \ttfun identity set
+                 identity \ttfun (string set \tttimes string set \tttimes efidlist)  
+                 location \ttfun string \tttimes (dlm \tttimes data) set
+                 location \ttfun efid set
+                 actor \ttfun location \ttfun (identity \tttimes efid) set
+\end{ttbox}
+The refined state transition relation implements the possibility of changing the Ephemeral Ids
+by the rule for the action \texttt{put}.
+\begin{ttbox}
+ {\bf{put}}: G = graphI I \ttImp  a \ttatI l \ttImp enables I l (Actor a) put \ttImp
+      I' = Infrastructure (put_graph_efid A l (graphI I))(delta I)
+ \ttImp I \ttrelI I' 
+\end{ttbox}
+The change to the infrastructure state is implemented in the function \texttt{put\_graph\_efid} that
+increases the current index in the \texttt{efidlist} in the credential component \texttt{cgra g n} for
+the ``putting'' actor identity \texttt{n} and inserts the current \texttt{efid} from that credential
+component into the \texttt{egra} component, the set of currently ``present'' Ephemeral Ids at the location
+\texttt{l}.
+\begin{ttbox}
+put_graph_efid n l g  \ttequiv
+  Lgraph (gra g)(agra g)
+         ((cgra g)(n := (credentials (cgra g n), roles (cgra g n),
+                         efids_inc_ind(efemid (cgra g n)))))
+         (lgra g)
+         ((egra g)(l := insert (efids_cur(efemid (cgra g n)))(egra g l)))
+         (kgra g)
+\end{ttbox}
+We can now apply the refinement by defining a datatype map from the refined infrastructure type
+\texttt{InfrastructureOne.infrastructure} to the former one \texttt{Infrastructure.infrastructure}.
+\begin{ttbox}
+{\bf{definition}} refmap :: InfrastructureOne.infrastructure \ttfun
+                          Infrastructure.infrastructure
+{\bf{where}} refmap I =
+  Infrastructure.Infrastructure 
+    (Infrastructure.Lgraph
+       (InfrastructureOne.gra (graphI I))
+       (InfrastructureOne.agra (graphI I))
+        (\ttlam h. repl_efr 
+           (InfrastructureOne.cgra (graphI I)) h)
+           (InfrastructureOne.lgra (graphI I))
+           (InfrastructureOne.egra (graphI I))
+           (\ttlam a. \ttlam l.
+  (\ttlam (x,y).(x, efids_root(efemid(InfrastructureOne.cgra (graphI I) x))))
+                       \ttimg(InfrastructureOne.kgra (graphI I)) a l))                                                    
+\end{ttbox}  
+This is then plugged into the parameter \texttt{\ttecal} of the refinement operator allowing to
+prove \texttt{corona\_Kripke \ttref{\texttt{refmap}} corona\_KripkeO} where the latter is the
+refined Kripke structure.
 
+Surprisingly, we can still prove \texttt{corona\_KripkeO \ttvdash EF scoronaO} by using the
+same attack tree as in the abstract model: if Bob moves from pub to shop, he is vulnerable to
+being identifiable as long as he does not change the current \texttt{efid}. So, if Eve moves to
+the shop as well and performs a get before Bob does a put, then Eve's knowledge sets permits identifying
+Bob's current Ephemeral Id as his.
+
+\subsubsection{Second refinement step}
+The persistent attack can be abbreviated informally by the action sequence \texttt{[get,move,move,get]}
+performed by actors Eve, Bob, Eve, and Eve again, respectively.
+How can a second refinement step avoid that Eve does the last \texttt{get} by imposing that after the
+first \texttt{move} of Bob a \texttt{put} action must happen before Eve can do another \texttt{get}?
+A very simple remedy to exclude this attack is to bind a \texttt{put} action after every \texttt{move}.
+We can implement that change by a minimal update to the function \texttt{move\_graph\_a} (see Section \ref{sec:model})
+by adding an increment (highlighted in the code snippet)
+of the currently used Ephemeral Id before updating the \texttt{egre} component of the target location.
+\begin{ttbox}
+move\_graph\_a n l l' g \ttequiv ...
+  (l' := insert (efids_cur({\bf efids\_inc\_ind}(efemid (cgra g n))))(egra g l))...
+\end{ttbox}  
 
 \section{Conclusions}
 \label{sec:concl}
