@@ -702,7 +702,6 @@ reachability we provide a slightly weaker version of \texttt{strong\_mt}.
 \ttecal\ttimg(init K') \ttsubseteq init K \ttand (\ttexists s0 \ttin init K'. s0  \ttrelIstar s)
  \ttand s \ttrel{\sigma'} s' \ttimp \ttecal(s) \ttrel{\sigma} \ttecal(s') \ttImp K \ttmeref K'
 \end{ttbox}
-
 This idea of property preservation coincides with the classical idea of
 trace refinement as it is given in process algebras like CSP. In this view,
 the properties of a system are given by the set of its traces. Now, a refinement
@@ -718,10 +717,11 @@ As we see in the application to the case study, the refinement steps may
 sometimes just specialize the traces: in this case the state map 
 \texttt{\ttsigma'\ttfun \ttsigma} is just identity. 
 
-In addition, as we can observe in the following example in the second refinement
-step, we also have a simple implicit version of {\it action refinement}. In an
+In addition, we also have a simple implicit version of {\it action refinement}. In an
 action refinement, traces may be refined by combining consecutive system events
-into atomic events thereby reducing traces. This will be detailed in the second refinement step
+into atomic events thereby reducing traces.
+We can observe this kind of refinement in the second refinement step
+%This will be detailed in the second refinement step
 of the Corona-virus warning app considered next.
 
 \subsection{Refining the Specification}
@@ -833,6 +833,11 @@ of the currently used Ephemeral Id before updating the \texttt{egre} component o
 move\_graph\_a n l l' g \ttequiv ...
   (l' := insert (efids_cur({\bf efids\_inc\_ind}(efemid (cgra g n))))(egra g l))...
 \end{ttbox}  
+This is an action refinement because the move action is changed. It is a refinement, since
+any trace of the refined model can still be mapped to a trace in the more abstract model just
+omitting a few steps (the refinement relation is defined using the reflexive transitive closure
+\texttt{\ttrelIstar}.
+
 
 \section{Conclusions}
 \label{sec:concl}
