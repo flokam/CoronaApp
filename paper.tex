@@ -355,10 +355,8 @@ the formal expression of refinement, enables to pin down (i.e. exemplify) differ
 of refinement (data refinement, action refinement, trace refinement (aka spec refinement) and
 combinations thereof with concrete attack scenarios. 
 
-\section{Model for Corona-warning app}
+\section{Modeling and analyzing Corona-warning app}
 \label{sec:model}
-
-
 \subsection{Infrastructures, Policies, and Actors}
 \label{sec:infra}
 % Adapted from CSF paper
@@ -382,7 +380,6 @@ constructed by its constructor \texttt{Lgraph}.
                  location \ttfun string \tttimes (dlm \tttimes data) set
                  location \ttfun efid set
                  actor \ttfun location \ttfun (identity \tttimes efid) set
-                
 \end{ttbox}
 In the current application of the framework to the Corona-warning app case study, 
 this graph contains a set of location pairs representing the %structure 
@@ -724,11 +721,44 @@ sometimes just specialize the traces: in this case the state map
 In addition, as we can observe in the following example in the second refinement
 step, we also have a simple implicit version of {\it action refinement}. In an
 action refinement, traces may be refined by combining consecutive system events
-into atomic events thereby reducing traces. This will be detailed on the example
-below.
+into atomic events thereby reducing traces. This will be detailed in the second refinement step
+of the Corona-virus warning app considered next.
 
 \subsection{Refining the Specification}
 \label{sec:corref}
+Clearly, fixed Ephemeral Ids are not really ephemeral. The model presented
+in Section \ref{sec:model} is deliberately been chosen very abstractly to allow focusing on
+the basic system architecture and finding an initial deanonymization attack.
+We now introduce ``proper'' Ephemeral Ids and show how the system datatype can be refined to a system
+that uses those instead of the fixed ones.
+
+For the DP-3T Ephemeral Ids \TODOref{DP-3T Whitepaper}, for each day $t$ a seed $SK_t$
+is used to generate a list of length $n = 24 * 60 / L$, where $L$ is the duration for which
+the Ephemeral Ids are posted by the smart phone
+\begin{ttbox}
+  EphId1 || ... || EphIdn = PRG(PRF(SKt,``broadcast key''))
+\end{ttbox} 
+``where PRF is a pseudo-random function (e.g., HMAC-SHA256), ``broadcast key'' is a
+fixed, public string, and PRG is a pseudorandom generator (e.g. AES in counter mode)'' \TODOref{DP-3T Whitepaper}.
+
+From a cryptographic point of view, the crucial properties of the Ephemeral Ids are that
+they are purely random, therefore, they cannot be guessed, but at the same time if -- after
+the actual encounter between sender and receiver -- the seed $SK_t$ is published, it is feasible
+to relate any of the \texttt{EphIDi} to $SK_t$  for all \texttt{i} $\in \{1, \ldots, n\}$.
+For a formalisation of this crucial cryptographic property in Isabelle it suffices to define a new type
+of list of Ephemeral Ids \texttt{efidlist} containing the root $SK_t$ (the first \texttt{efid}),
+a current \texttt{efid} indicated by a list pointer of type \texttt{nat}, and the actual list of
+\texttt{efid}s.
+\begin{ttbox}
+{\bf{datatype}} efidlist = Efids "efid" "nat" "efid list"
+\end{ttbox}
+We define functions for this datatype: \texttt{efidsroot} returning the first of the three
+consituents in an \texttt{efidlist} (the root $SK_t$); \texttt{efids\_index} giving the second
+component, the index of the current \texttt{efid}; \texttt{efids\_inc\_ind} applied to an
+\texttt{efidlist} increments the index; \texttt{efids\_cur} returning the current \texttt{efid}
+from the list and \texttt{efids\_list} for the entire list (the third component).
+
+
 
 \section{Conclusions}
 \label{sec:concl}
