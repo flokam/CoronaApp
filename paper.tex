@@ -93,7 +93,7 @@
 }
 \maketitle
 \begin{abstract}
-We provide a model in the Isabelle Infrastructure framework of the recently published
+We provide a model in the Isabelle Infrastructure framework of the recently published German
 Corona-virus warning app. The app supports breaking infection chains by informing users
 whether they have been in close contact to an infected person. The app has a decentralized
 architecture that supports anonymity of users.
@@ -106,29 +106,36 @@ continuously changing ephemeral ids improves the anonymity.
 \section{Introduction}
 \label{sec:intro}
 The German Chancellor Angela Merkel has strongly supported the publication of
-the mobile phone Corona warning app by publicly proclaiming that the ``Corona
+the mobile phone Corona warning app (CWA; \cite{cwa:github}) by publicly proclaiming that the ``Corona
 App deserves your trust'' \cite{bundes:20}. Many millions of mobile phone users
 in Germany have downloaded the app with 6 million on the first day.
-This app is one amongst many similar application that aim at the very important goal
-to ``break infection chains'' by providing timely information of users whether they
-have been exposed to close contact with a person that has been infected.
+CWA is one amongst many similar applications that aim at the very important goal
+to ``break infection chains'' by providing timely information to users of whether they
+have been in close proximity to a person who tested positive for COVID-19.
 
-The Corona-virus warning app
+%The Corona-virus warning app
 %has taken a long time to develop being published only on
 %16th June 2020. It
-was a quite costly project but this was mainly due to the management of
-Telekom and SAP being in the driving seat. But the app has been designed with great
-attention on privacy:  a distributed architecture \cite{} has been adopted after a long and
+%was a quite costly project but this was mainly due to the management of
+%Telekom and SAP being in the driving seat. But the app has been designed with great
+The app was designed with great
+attention on privacy: a distributed architecture \cite{cwa:arch} has been adopted after a long and
 heated debate with supporters of a central architecture. The distributed architecture is
-based on a very clever distributed application design whereby users' phones are sending
-highly anonymized so called ``Ephemeral IDs'' at physical locations via the Bluetooth
-protocol. The app saves those IDs of people in close proximity. When at a later date an
-infected person reports his infection to a central server, the unique root ID is published
-and in the daily check all mobile phones connecting to the central server download
-the root IDs of infected people. Since the Ephemeral IDs can be mapped to the root ID
-all Ephemeral IDs that have been saved over the last 14 days allow users' phones to
-regularly check whether their user has been exposed to an infected person and issue
-a warning to the user and recommendation to contact health authorities.
+based on a very clever application design whereby users' phones broadcast
+highly anonymized so called ``Ephemeral IDs'' at physical locations via the
+Bluetooth Low Energy Beacon protocol.
+The app saves those IDs of people in close proximity.
+When at a later date an infected person reports his infection to a central server,
+all clients are provided the means to reconstruct the IDs used by this particular
+person's device over the last 14 days.
+Therefore, any client can evaluate exposure risks locally and stored contact data has never to be shared.
+%
+%, the unique root ID is published
+%and in the daily check all mobile phones connecting to the central server download
+%the root IDs of infected people. Since the Ephemeral IDs can be mapped to the root ID
+%all Ephemeral IDs that have been saved over the last 14 days allow users' phones to
+%regularly check whether their user has been exposed to an infected person and issue
+%a warning to the user and recommendation to contact health authorities.
 %The warning issued by the Corona warning app entitles to
 %having a Corona test done (which at the time of writing is not normally possible).
 
@@ -146,19 +153,32 @@ formal model that (b) allows additional automated verification of security prope
 with CTL, Kripke structures and Attack Trees within the interactive theorem prover
 Isabelle.
 
-The Corona-virus app has been produced based on a sophisticated security
-concept conceived by experts in the field, %to our knowledge, no formal verification
+The app now in use in Germany has been developed based on a protocol proposed by the DP-3T\cite{dp3t:github} project:
+A sophisticated security concept
+conceived by experts in the field that has strong claims with regard to mathematical support \cite{dp3t:wp} [p2].
+%The Corona-virus app has been produced based on a sophisticated security
+%concept conceived by experts in the field %to our knowledge, no formal verification
+%%
+%and has strong claims with regard to mathematical support:
 %
-and has strong claims with regard to mathematical support:
-
-``Such a design builds on strong, mathematically provable support for privacy and data protection goals [...]'' \TODOref{DP-3T Whitepaper p. 2} \smallskip\\
+%``Such a design builds on strong, mathematically provable support for privacy and data protection goals [...]'' \TODOref{DP-3T Whitepaper p. 2} \smallskip\\
 %  \NOTE{DP-3T on their design and how wisely chosen it is ;) We have to use this! Something along the l%ines of:}
+%
 However, there has been, as of yet, to our knowledge no formal verification been involved.
 Even if a ``post-production'' formal specification seems pointless, 
 it allows to reveal weak points of the architecture, show that the measures that have
-been conceived are suitable to cover those weak points. Thereby, we believe
-that our current work is useful to increase the trust in the Corona-virus app necessary for
-its wide adoption which in turn is crucial for it to be efficient.
+been conceived are suitable to cover those weak points,
+or where and to what extend trade offs have to be made due to inherent vulnerabilities.
+Given that the protocol implemented by the framework CWA runs on resembles only the most basic
+of the three proposed by the DP-3T project,
+a formal verified model that stresses the impact or limits of certain security measures
+might help lend some more weight to appeals like \cite{dp3t:impl}
+%to Apple and Google
+to adopt the more sophisticated protocols.
+%
+%Thereby, we believe
+%that our current work is useful to increase the trust in the Corona-virus app necessary for
+%its wide adoption which in turn is crucial for it to be efficient.
 
 The contributions of this paper are (a) formal re-engineering of the Corona-virus warning app
 (b) providing an additional security and privacy analysis with interactive theorem proving
@@ -184,11 +204,12 @@ Isabelle (sources available \cite{kam:18smc}).
 \label{sec:background}
 \subsection{DP-3T and PEPP-PT}
 \label{sec:history}
-This paper is mainly concerned with the architecture and protocols proposed by the
-Decentralized Privacy-Preserving Proximity Tracing project (DP-3T).
+We are mainly concerned with the architecture and protocols proposed by the
+DP-3T (\textit{Decentralized Privacy-Preserving Proximity Tracing}) project.
 The main reason to focus on this particular family of protocols is the
-\textit{Exposure Notification Framework}, jointly published by Apple and Google, that adopts
-the main core principles of the DP-3T proposal. This API is not only used in the German
+\textit{Exposure Notification Framework} (ENF), jointly published by Apple and Google, that adopts
+%the main
+core principles of the DP-3T proposal. This API is not only used in the German
 Corona-virus warning app but has the potential of being widely adopted in future
 app developments that might emerge due to the reach of players like Apple and Google.
 
@@ -202,26 +223,28 @@ different protocols with unique properties in terms of privacy and data protecti
 Yet, on a higher level of abstraction, it seems feasible to distinguish two basic architectures:
 protocols as endorsed by PEPP-PT might be characterized as centralized architectures whereas
 DP-3T-inspired protocols follow a (more) decentralized approach.\footnote{%
-  As we will see, DP-3T involves a central backend server. It is decentralized with regard to
-  collection and evaluation of contact information:
+  DP-3T involves a central backend server. It is decentralized with regard to
+  the collection and evaluation of contact information:
   In centralized architectures the server provides a risk scoring services, whereas decentralized
   approaches rely on local risk assessment and, thus, do not need to share contact information with
   the backend.}
+\\
 
-\subsubsection{Basic DP-3T protocol: How does it work?}
+All DP-3T protocols roughly work the same:
+%\subsubsection{Basic DP-3T protocol: How does it work?}
 %  How does it relate to ENF/CWA? (broad strokes)}
 %
-Upon installation, the app generates secret daily seeds to derive so called \textit{Ephemeral IDs}
+Upon installation, the app generates secret daily seeds to derive \textit{Ephemeral IDs}
 (EphIDs) from them. EphIDs are generated locally with cryptographic methods and cannot be connected
 to one another but only reconstructed from the secret seed they were derived from.
 
 During normal operation each client broadcasts its EphIDs via Bluetooth whilst scanning for
 EphIDs broadcasted by other devices in the vicinity. Collected EphIDs are stored locally along
 with associated meta-data such as signal attenuation and date. In DP-3T the contact information
-gathered is never shared but only evaluated locally (on the device).
+gathered is never shared but only evaluated locally.
 
-If patients are tested positive on the Corona-virus, they are entitled to upload specific data to a
-central backend server. This data is accumulated by the backend server and redistributed to all
+If patients test positive for the Corona-virus, they are entitled to upload specific data to a
+central backend server. This data is aggregated by the backend server and redistributed to all
 clients regularly to provide the means for local risk scoring, i.\,e., determining whether collected
 EphIDs match those broadcasted by now-confirmed Corona-virus patients during the last, e.\,g., 14, 
 days.
@@ -229,13 +252,27 @@ days.
 In the most simple (and insecure) protocol proposed by DP-3T
 \TODOref{Low-cost decentralized proximity tracing; DP-3T Whitepaper p. 14ff}
 this basically translates into publishing the daily seeds used to derive EphIDs from.
-Aside from additional security measures,
+The protocol implemented by ENF and,
+hence, CWA adopts this low-cost design.\TODOref{CWA solution architecture ($\rightarrow$ github:CWA); probably ENF specification} DP-3T proposes two other, more sophisticated protocols that improve
+privacy and data protection properties to different degrees but are more costly to implement.
+%Aside from additional security measures,
 %\TODOfn[styC]{In short: I want to name it but don't talk about it (since we're not really concerned with% this level of detail). But this sounds just sh...}
-like signing content the server provides as a general rule, the protocol implemented by ENF and,
-hence, CWA follows this low-cost design.\TODOref{CWA solution architecture ($\rightarrow$ github:CWA); probably ENF specification} DP-3T proposes two other, more sophisticated protocols that improve
-privacy and data protection properties to different degrees but are more costly.
-%TODOfn[styC]{``complicated'' sounds lame but ``costly'' is, perhaps, to simple/literal} to set up.
+%like signing content the server provides as a general rule, the protocol implemented by ENF and,
+%hence, CWA follows this low-cost design.\TODOref{CWA solution architecture ($\rightarrow$ github:CWA); probably ENF specification} DP-3T proposes two other, more sophisticated protocols that improve
+%privacy and data protection properties to different degrees but are more costly.
+%%TODOfn[styC]{``complicated'' sounds lame but ``costly'' is, perhaps, to simple/literal} to set up.
 
+Figure \ref{fig:dp3tprot} illustrates the basic system architecture
+along with some of the mitigation measures either implemented in CWA or proposed by DP-3T.
+
+\begin{figure}[htb]
+  \begin{center}
+    \includegraphics[width=5in]{DP-3T_basic_protocol}
+  \end{center}
+  \caption{Decentralized privacy-preserving proximity tracing protocol
+    (as implemented by CWA)}
+  \label{fig:dp3tprot}
+\end{figure}
 
 \subsection{Isabelle Infrastructure framework}
 \label{sec:isainf}
