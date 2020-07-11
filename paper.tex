@@ -91,13 +91,13 @@
 \maketitle
 \begin{abstract}
 We provide a model in the Isabelle Infrastructure framework of the recently published German
-Corona-virus warning app. The app supports breaking infection chains by informing users
+Corona-virus warning app (CWA). The app supports breaking infection chains by informing users
 whether they have been in close contact to an infected person. The app has a decentralized
 architecture that supports anonymity of users.
 We provide a formal model of the existing app with the Isabelle Infrastructure framework
 to show up some natural attacks in a very abstract model. We then use the security
 refinement process of the Isabelle Infrastructure framework to highlight how the use of
-continuously changing ephemeral ids improves the anonymity.
+continuously changing Ephemeral Ids (EphIDs) improves the anonymity.
 \end{abstract}
 
 \section{Introduction}
@@ -120,8 +120,9 @@ attention on privacy: a distributed architecture \cite{cwa:arch} has been adopte
 %heated debate with supporters of a central architecture. The distributed architecture is
 that is
 based on a very clever application design whereby clients broadcast
-highly anonymized so called ``Ephemeral Ids'' via Bluetooth and
-store those ids of people in close proximity.
+highly anonymized identifiers (ids)
+%so called ``Ephemeral Ids''
+via Bluetooth and store those ids of people in close proximity.
 %highly anonymized so called ``Ephemeral IDs'' at physical locations via the
 %Bluetooth Low Energy Beacon protocol.
 %The app saves those ids of people in close proximity.
@@ -179,7 +180,7 @@ The contributions of this paper are (a) formal re-engineering of the CWA
 certification of a novel view on the system architecture including actors, locations, and policies,
 (c) a formal definition of a security refinement process that allows to improve a system
 based on attacks found by the attack tree analysis and (d) an application of the refinement to
-improve security of the Corona-virus app specification.
+improve security of the CWA specification.
 
 In this paper, we first provide some background in Section \ref{sec:background}:
 we give a brief overview of related works
@@ -229,7 +230,7 @@ The debate among advocates of centralized architectures and those in favor of a 
 In terms of attack scenarios, we focus on, what might be classified as deanonymisation attacks: Tracking a device (see \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]) and identifying infected individuals (\cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]).
 
 \subsubsection{Basic DP-3T architecture}
-Upon installation, the app generates secret daily seeds to derive \textit{Ephemeral Ids}
+Upon installation, the app generates secret daily seeds to derive so-called \textit{Ephemeral Ids}
 (EphIDs) from them. EphIDs are generated locally with cryptographic methods and cannot be connected
 to one another but only reconstructed from the secret seed they were derived from.
 
@@ -285,7 +286,7 @@ above showing the novel contribution of this paper in blue on the top.
   \includegraphics[scale=.45]{theory_structure.pdf}
 \end{center}
 \vspace{-.5cm}
-\caption{Generic Isabelle Infrastructure framework applied to Corona-warning app.}
+\caption{Generic Isabelle Infrastructure framework applied to CWA.}
 \label{fig:theorystruc}
 \vspace{-.5cm}
 \end{figure}
@@ -350,7 +351,7 @@ her in the stepwise system refinements.
 
 
 \subsubsection{Instantiation of Framework}
-The formal model of the Corona-warning app uses the Isabelle Infrastructure framework instantiating it
+The formal model of CWA uses the Isabelle Infrastructure framework instantiating it 
 by reusing its concept of {\it actors} for users and smartphones whereby locations correspond
 to physical locations. The Ephemeral Ids, their sending and change is added to Infrastructures
 by slightly adapting the basic state type of infrastructure graphs and accordingly the semantic rules
@@ -384,7 +385,7 @@ the formal expression of refinement, enables to pin down (i.e. exemplify) differ
 of refinement (data refinement, action refinement, trace refinement (aka spec refinement) and
 combinations thereof with concrete attack scenarios. 
 
-\section{Modeling and analyzing Corona-warning app}
+\section{Modeling and analyzing CWA}
 \label{sec:model}
 \subsection{Infrastructures, Policies, and Actors}
 \label{sec:infra}
@@ -410,7 +411,7 @@ constructed by its constructor \texttt{Lgraph}.
                  location \ttfun efid set
                  actor \ttfun location \ttfun (identity \tttimes efid) set
 \end{ttbox}
-In the current application of the framework to the Corona-warning app case study, 
+In the current application of the framework to the CWA case study, 
 this graph contains a set of location pairs representing the %structure 
 topology of the infrastructure
 as a graph of nodes and a function%\footnote{ We use the common $\lambda$-abstraction, 
@@ -422,7 +423,7 @@ a triple-valued function whose first range component is a set describing the cre
 in the possession of an actor and the second component 
 is a set defining the roles the actor can take on; 
 most prominently the third component is the \texttt{efid} assigned to the actor. This is initially
-just a natural number but will be refined to actually represent lists of ``Ephemeral'' Ids later
+just a natural number but will be refined to actually represent lists of Ephemeral Ids later
 when refining the specification.
 \begin{ttbox}
 {\bf datatype} efid = Efid nat
@@ -477,14 +478,14 @@ The function \texttt{local\_policies} gives the policy for each location \texttt
 over an infrastructure graph \texttt{G} as a pair: the first element of this pair is 
 a function specifying the actors \texttt{y} that are entitled to perform the actions 
 specified in the set which is the second element of that pair.
-The local policies definition for the Corona-warning app, simply permits all actions to
+The local policies definition for the CWA, simply permits all actions to
 all actors in both locations.
 \begin{ttbox}
   local_policies G \ttequiv
          (\ttlam x. if x = pub then  \{(\ttlam y. True, \{get,move,put\})\}
           else (if x = shop then \{(\ttlam y. True, \{get,move,put\})\} else \{\}))
 \end{ttbox}  
-For the Corona-warning app, the initial infrastructure contains the graph \texttt{ex\_graph}
+For the CWA, the initial infrastructure contains the graph \texttt{ex\_graph}
 with its two locations pub and shop and is then wrapped up with the local policies
 into the infrastructure \texttt{Corona\_scenario} 
 that represents the ``initial'' state for the Kripke structure.
@@ -512,7 +513,7 @@ enables I l h a \ttequiv \ttexists (p,e) \ttin delta I l. a \ttin e \ttand p h
 \end{ttbox} 
 
 The Privacy protection goal is to avoid deanonymization. That is, an attacker should not be able to
-disambiguate the set of pairs of real Ids and EphIds. This is abstractly expressed in the predicate
+disambiguate the set of pairs of real ids and EphIDs. This is abstractly expressed in the predicate
 identifiable.
 \begin{ttbox}
 identifiable eid A \ttequiv is_singleton\{(Id,Eid). (Id, Eid) \ttin A \ttand Eid = eid\}
@@ -765,7 +766,7 @@ For the DP-3T Ephemeral Ids \cite{dp3t:wp}, for each day $t$ a seed $SK_t$
 is used to generate a list of length $n = 24 * 60 / L$, where $L$ is the duration for which
 the Ephemeral Ids are posted by the smart phone
 \begin{ttbox}
-  EphId1 || ... || EphIdn = PRG(PRF(SKt,``broadcast key''))
+  EphID1 || ... || EphIDn = PRG(PRF(SKt,``broadcast key''))
 \end{ttbox} 
 ``where PRF is a pseudo-random function (e.g., HMAC-SHA256), ``broadcast key'' is a
 fixed, public string, and PRG is a pseudorandom generator (e.g. AES in counter mode)'' \cite{dp3t:wp}.
@@ -890,7 +891,7 @@ time intervals obfuscating the relationship between user and his pseudonym\footn
 
 Now, the refinement shows that although the Ephemeral Ids change regularly the same attack that has been
 identified on the very abstract level (fixed ids) persists.
-The refinement allows refining the datatype (Id $\mapsto$ EphId) but also delivers the usual trace
+The refinement allows refining the datatype (Id $\mapsto$ EphID) but also delivers the usual trace
 refinement (behaviours of the refined systems are a subset of the traces of the abstract system).
 This persistence of the attack precisely shows which part of the system behaviour is responsible for the
 attack. In a second refinement step using action refinement based on this insight from the (repeated)
