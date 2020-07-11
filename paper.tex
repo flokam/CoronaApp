@@ -272,6 +272,14 @@ along with some of the mitigation measures either implemented in CWA or proposed
   \label{fig:dp3tprot}
 \end{figure}
 
+\subsubsection{Attack scenarios}
+There is a variety of noteworthy privacy and security issues that deserve formal consideration (and verification). The debate among %emerging between
+advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
+
+In terms of attack scenarios, we focus on, what might be classified as deanonymisation attacks: Tracking a device (see \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]) and identifying infected individuals (\cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]).
+As first step, both attacks start with deanonymizing Ephemeral Ids,
+i.\,e. linking them the particular devices.
+
 \subsection{Isabelle Infrastructure framework}
 \label{sec:isainf}
 %\TODO{Adapt: this is copied from FMBC paper}
@@ -874,58 +882,8 @@ omitting a few steps (the refinement relation is defined using the reflexive tra
 \texttt{\ttrelIstar}.
 
 
-\section{Conclusions}
+\section{Summary and discussion of relevance of the approach}
 \label{sec:concl}
-\subsection{Protection goals of attacks}
-Bluetooth based proximity tracing gives rise to a variety of noteworthy privacy and security issues that deserve formal consideration (and verification). The debate emerging between advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
-
-In terms of attack scenarios, connecting an Ephemeral Id to a particular device is the first step into multiple different attacks, we want to classify as deanonymisation attacks:
-\begin{itemize}
-\item \textbf{Tracking a device}
-  \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]\\
-  Bluetooth enabled devices introduce some fundamental risks, that are not
-  specific to proximity detection: If the Bluetooth signal is linked to a fixed
-  identifier, say a MAC address, constant broadcasting makes
-  a device trackable.
-  Periodically changing Ephemeral Ids can be an effective mitigation\footnote{%
-    In addition Bluetooth has to be configured to use rotating MAC addresses
-    instead of fixed ones, as is the default in modern smartphone operating
-    systems. Also, rotation of Bluetooth identifiers has to happen
-    in sync with MAC address randomization; the Apple/Google proposal
-    \cite{enf:bluetooth} ensures this.}
-  as they limit the time frame in which a certain id can be used to
-  track the corresponding device, hence, rendering the attack not impossible
-  but significantly less severe.
-\item \textbf{Identify infected individuals}
-  \cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]\\
-  Like any notification about, e.\,g., a STD, might inform a spouse about the
-  infidelity of the other, given the right circumstances, being notified about a
-  possible exposure to COVID-19 might reveal illicit information to
-  the recipient like who it was that tested positive for the virus.
-  This is an inherent vulnerability of any such system,
-  whether it is analogous or digital (digitally aided).\footnote{
-    As DP-3T emphasizes, it it, indeed, inherent to proximity tracing in general
-    \cite{dp3t:psre}[p6].
-    The likelihood of said circumstances to occur, however,
-    might increase when notifications are carried out automatically.
-    Therefore, we feel that it is, nonetheless, worth considering.}
-  In contrast to tracking a Bluetooth enabled device,
-  this attack is not considerably mitigated by changing Ephemeral Ids:
-  %Once connected to a device or individual, an Ephemeral Id might yield the
-  %desired information for up to 14 days
-  A positive test result can be reported for as much as 14 days after the
-  compromised Ephemeral Id was used and still reveal the desired information.
-\end{itemize}
-
-\begin{figure}[htb]
-  \begin{center}
-    \includegraphics[width=6in]{DP-3T_deanonymisation_attacks}
-  \end{center}
-  \caption{Two deanynomisation attacks: Tracking users and identifying confirmed COVID-19 cases}
-  \label{fig:dp3tprot}
-\end{figure}
-
-\subsection{Summary and discussion of relevance of the approach}
 We can establish in our formal framework an attack that even a system using changing
 Ephemeral ids can be broken if the attacker physically follows a victim. This is a basic attack on
 anonymity: a user's connection between his Ephemeral Ids and personal details (Iphone MAC or name)
