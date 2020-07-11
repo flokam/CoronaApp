@@ -175,7 +175,7 @@ Hence, a formal verified model that stresses the impact or limits of certain sec
 might give more weight to appeals like \cite{dp3t:impl}
 to adopt the more sophisticated protocols.
 
-The contributions of this paper are (a) formal re-engineering of the CWA
+The contributions of this paper are (a) formal re-engineering of CWA
 (b) providing an additional security and privacy analysis with interactive theorem proving
 certification of a novel view on the system architecture including actors, locations, and policies,
 (c) a formal definition of a security refinement process that allows to improve a system
@@ -189,7 +189,7 @@ We then introduce the Isabelle Infrastructure framework (Section \ref{sec:isainf
 Next, we present our model (Section \ref{sec:model}) and analysis of privacy and
 attacks (Section \ref{sec:ana}). The found attack on the first abstract specification
 motivates refinement. The formal definition of refinement for the Isabelle Infrastructure
-framework is introduced and illustrated on the CWA (Section \ref{sec:ref})
+framework is introduced and illustrated on CWA (Section \ref{sec:ref})
 before drawing some conclusions (Section \ref{sec:concl}).
 
 The formal model in the Isabelle insider framework is fully mechanized and proved in
@@ -204,7 +204,7 @@ DP-3T (\textit{Decentralized Privacy-Preserving Proximity Tracing}) project \cit
 The main reason to focus on this particular family of protocols is the
 \textit{Exposure Notification Framework} (ENF), jointly published by Apple and Google \cite{enf:proj}, that adopts
 %the main
-core principles of the DP-3T proposal. This API is not only used in the German
+core principles of the DP-3T proposal. This API is not only used in 
 CWA but has the potential of being widely adopted in future
 app developments that might emerge due to the reach of players like Apple and Google.
 
@@ -360,7 +360,7 @@ presented in Section \ref{sec:model}.
 Technically, an Isabelle theory file \texttt{Infrastructure.thy} builds on top of the theories for Kripke 
 structures and CTL (\texttt{MC.thy}), attack trees (\texttt{AT.thy}), and security refinement 
 (\texttt{Refinement.thy}). Thus all these concepts can be used to specify the formal model
-for the CWA, express relevant and interesting properties, and conduct
+for CWA, express relevant and interesting properties, and conduct
 interactive proofs (with the full support of the powerful and highly automated proof support
 of Isabelle).
 %The CWA theory itself is an adaptation of the Infrastructure theory of the 
@@ -442,7 +442,7 @@ the credentials, \texttt{lgra} for the %state of a location and the
 data at that location, \texttt{egra} for the assignment of current efids to locations,
 and \texttt{kgra} for the knowledge set for each actor for each location.
 
-In the CWA, the initial values for the \texttt{igraph} components use
+In CWA, the initial values for the \texttt{igraph} components use
 two locations \texttt{pub} and \texttt{shop} to define the following constants (we omit the
 data map component \texttt{ex\_locs}).
 \begin{ttbox}
@@ -478,14 +478,14 @@ The function \texttt{local\_policies} gives the policy for each location \texttt
 over an infrastructure graph \texttt{G} as a pair: the first element of this pair is 
 a function specifying the actors \texttt{y} that are entitled to perform the actions 
 specified in the set which is the second element of that pair.
-The local policies definition for the CWA, simply permits all actions to
+The local policies definition for CWA, simply permits all actions to
 all actors in both locations.
 \begin{ttbox}
   local_policies G \ttequiv
          (\ttlam x. if x = pub then  \{(\ttlam y. True, \{get,move,put\})\}
           else (if x = shop then \{(\ttlam y. True, \{get,move,put\})\} else \{\}))
 \end{ttbox}  
-For the CWA, the initial infrastructure contains the graph \texttt{ex\_graph}
+For CWA, the initial infrastructure contains the graph \texttt{ex\_graph}
 with its two locations pub and shop and is then wrapped up with the local policies
 into the infrastructure \texttt{Corona\_scenario} 
 that represents the ``initial'' state for the Kripke structure.
@@ -752,7 +752,7 @@ action refinement, traces may be refined by combining consecutive system events
 into atomic events thereby reducing traces.
 We can observe this kind of refinement in the second refinement step
 %This will be detailed in the second refinement step
-of the CWA considered next.
+of CWA considered next.
 
 \subsection{Refining the Specification}
 \label{sec:corref}
