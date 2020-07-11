@@ -238,6 +238,16 @@ different protocols with unique properties in terms of privacy and data protecti
 %  approaches rely on local risk assessment and, thus, do not need to share contact information with
 %  the backend.}
 
+There is a variety of noteworthy privacy and security issues. %that deserve formal consideration (and verification).
+The debate among %emerging between
+advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
+
+In terms of attack scenarios, we focus on, what might be classified as deanonymisation attacks: Tracking a device (see \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]) and identifying infected individuals (\cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]).
+%As first step, both attacks start with deanonymizing Ephemeral Ids,
+%i.\,e. linking them the particular devices.
+Both attacks rely on deanonymisation of Ephemeral Ids,
+i.\,e. linking ids to particular devices.
+
 \subsubsection{Basic DP-3T architecture}
 %All DP-3T protocols roughly work the same:
 %\subsubsection{Basic DP-3T protocol: How does it work?}
@@ -284,16 +294,16 @@ along with some of the mitigation measures either implemented in CWA or proposed
 \vspace{-.5cm}
 \end{figure}
 
-\subsubsection{Attack scenarios}
-There is a variety of noteworthy privacy and security issues. %that deserve formal consideration (and verification).
-The debate among %emerging between
-advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
+%\subsubsection{Attack scenarios}
+%There is a variety of noteworthy privacy and security issues. %that deserve formal consideration (and verification).
+%The debate among %emerging between
+%advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
 
-In terms of attack scenarios, we focus on, what might be classified as deanonymisation attacks: Tracking a device (see \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]) and identifying infected individuals (\cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]).
-%As first step, both attacks start with deanonymizing Ephemeral Ids,
-%i.\,e. linking them the particular devices.
-Both attacks rely on deanonymisation of Ephemeral Ids,
-i.\,e. linking ids to particular devices.
+%In terms of attack scenarios, we focus on, what might be classified as deanonymisation attacks: Tracking a device (see \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]) and identifying infected individuals (\cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]).
+%%As first step, both attacks start with deanonymizing Ephemeral Ids,
+%%i.\,e. linking them the particular devices.
+%Both attacks rely on deanonymisation of Ephemeral Ids,
+%i.\,e. linking ids to particular devices.
 
 \subsection{Isabelle Infrastructure framework}
 \label{sec:isainf}
