@@ -189,7 +189,7 @@ to adopt the more sophisticated protocols.
 %that our current work is useful to increase the trust in the Corona-virus app necessary for
 %its wide adoption which in turn is crucial for it to be efficient.
 
-The contributions of this paper are (a) formal re-engineering of the Corona-virus warning app
+The contributions of this paper are (a) formal re-engineering of the CWA
 (b) providing an additional security and privacy analysis with interactive theorem proving
 certification of a novel view on the system architecture including actors, locations, and policies,
 (c) a formal definition of a security refinement process that allows to improve a system
@@ -203,7 +203,7 @@ We then introduce the Isabelle Infrastructure framework (Section \ref{sec:isainf
 Next, we present our model (Section \ref{sec:model}) and analysis of privacy and
 attacks (Section \ref{sec:ana}). The found attack on the first abstract specification
 motivates refinement. The formal definition of refinement for the Isabelle Infrastructure
-framework is introduced and illustrated on the Corona-virus warning app (Section \ref{sec:ref})
+framework is introduced and illustrated on the CWA (Section \ref{sec:ref})
 before drawing some conclusions (Section \ref{sec:concl}).
 
 The formal model in the Isabelle insider framework is fully mechanized and proved in
@@ -219,7 +219,7 @@ The main reason to focus on this particular family of protocols is the
 \textit{Exposure Notification Framework} (ENF), jointly published by Apple and Google \cite{enf:proj}, that adopts
 %the main
 core principles of the DP-3T proposal. This API is not only used in the German
-Corona-virus warning app but has the potential of being widely adopted in future
+CWA but has the potential of being widely adopted in future
 app developments that might emerge due to the reach of players like Apple and Google.
 
 There are, however, competing architectures noteworthy, namely protocols developed under the
@@ -323,7 +323,7 @@ above showing the novel contribution of this paper in blue on the top.
 \begin{figure}
 \vspace{-.5cm}
   \begin{center}
-  \includegraphics[scale=.35]{theory_structure.pdf}
+  \includegraphics[scale=.45]{theory_structure.pdf}
 \end{center}
 \vspace{-.5cm}
 \caption{Generic Isabelle Infrastructure framework applied to Corona-warning app.}
@@ -400,10 +400,10 @@ presented in Section \ref{sec:model}.
 Technically, an Isabelle theory file \texttt{Infrastructure.thy} builds on top of the theories for Kripke 
 structures and CTL (\texttt{MC.thy}), attack trees (\texttt{AT.thy}), and security refinement 
 (\texttt{Refinement.thy}). Thus all these concepts can be used to specify the formal model
-for the Corona-virus warning app, express relevant and interesting properties, and conduct
+for the CWA, express relevant and interesting properties, and conduct
 interactive proofs (with the full support of the powerful and highly automated proof support
 of Isabelle).
-%The Corona-virus warning app theory itself is an adaptation of the Infrastructure theory of the 
+%The CWA theory itself is an adaptation of the Infrastructure theory of the 
 %Isabelle Infrastructure framework and reuses (or slightly adapts) existing concepts. 
 %In the remainder of this paper, we introduce the model that we conceived for . 
 All Isabelle sources are available online \cite{kam:20gitsc}.
@@ -482,7 +482,7 @@ the credentials, \texttt{lgra} for the %state of a location and the
 data at that location, \texttt{egra} for the assignment of current efids to locations,
 and \texttt{kgra} for the knowledge set for each actor for each location.
 
-In the Corona-virus warning app, the initial values for the \texttt{igraph} components use
+In the CWA, the initial values for the \texttt{igraph} components use
 two locations \texttt{pub} and \texttt{shop} to define the following constants (we omit the
 data map component \texttt{ex\_locs}).
 \begin{ttbox}
@@ -792,7 +792,7 @@ action refinement, traces may be refined by combining consecutive system events
 into atomic events thereby reducing traces.
 We can observe this kind of refinement in the second refinement step
 %This will be detailed in the second refinement step
-of the Corona-virus warning app considered next.
+of the CWA considered next.
 
 \subsection{Refining the Specification}
 \label{sec:corref}
