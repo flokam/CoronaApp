@@ -264,12 +264,14 @@ Figure \ref{fig:dp3tprot} illustrates the basic system architecture
 along with some of the mitigation measures either implemented in CWA or proposed by DP-3T.
 
 \begin{figure}[htb]
+\vspace{-.5cm}
   \begin{center}
     \includegraphics[width=5in]{DP-3T_basic_protocol}
   \end{center}
-  \caption{Decentralized privacy-preserving proximity tracing protocol
-    (as implemented by CWA)}
+\vspace{-.5cm}
+  \caption{Decentralized privacy-preserving proximity tracing protocol of CWA}
   \label{fig:dp3tprot}
+\vspace{-.5cm}
 \end{figure}
 
 \subsection{Isabelle Infrastructure framework}
@@ -288,12 +290,14 @@ Figure \ref{fig:theorystruc} gives an overview of the Isabelle Infrastructure
 framework with its layers of object-logics -- each level below embeds the one
 above showing the novel contribution of this paper in blue on the top. 
 \begin{figure}
-\begin{center}
-  \includegraphics[scale=.5]{theory_structure.pdf}
+\vspace{-.5cm}
+  \begin{center}
+  \includegraphics[scale=.35]{theory_structure.pdf}
 \end{center}
-%\vspace{-.5cm}
+\vspace{-.5cm}
 \caption{Generic Isabelle Infrastructure framework applied to Corona-warning app.}
 \label{fig:theorystruc}
+\vspace{-.5cm}
 \end{figure}
 
 
@@ -399,7 +403,7 @@ The Isabelle Infrastructure framework supports the representation of infrastruct
 as graphs with actors and policies attached to nodes. These infrastructures 
 are the {\it states} of the Kripke structure. % for the attack trees.
 
-The transition between states is triggered by non-parametrized
+The transition between states is triggered by non-parameterized
 actions \texttt{get}, \texttt{move}, and \texttt{put} 
 executed by actors. 
 Actors are given by an abstract type \texttt{actor} and a function 
@@ -434,7 +438,7 @@ when refining the specification.
 {\bf datatype} efid = Efid nat
 \end{ttbox}
 The fourth component of the type \texttt{igraph}
-assigns security labelled data to locations, a feature not used in the
+assigns security labeled data to locations, a feature not used in the
 current application.
 The second to last component assigns the set of efids of all currently present smart phones
 to each location of the graph. The last component finally denotes the knowledge set of each
@@ -517,7 +521,7 @@ predicate \texttt{p} holds for actor \texttt{h}.
 enables I l h a \ttequiv \ttexists (p,e) \ttin delta I l. a \ttin e \ttand p h
 \end{ttbox} 
 
-The Privacy protection goal is to avoid deanonymisation. That is, an attacker should not be able to
+The Privacy protection goal is to avoid deanonymization. That is, an attacker should not be able to
 disambiguate the set of pairs of real Ids and EphIds. This is abstractly expressed in the predicate
 identifiable.
 \begin{ttbox}
@@ -767,20 +771,21 @@ the basic system architecture and finding an initial deanonymization attack.
 We now introduce ``proper'' Ephemeral Ids and show how the system datatype can be refined to a system
 that uses those instead of the fixed ones.
 
-For the DP-3T Ephemeral Ids \TODOref{DP-3T Whitepaper}, for each day $t$ a seed $SK_t$
+For the DP-3T Ephemeral Ids \cite{dp3t:wp}, for each day $t$ a seed $SK_t$
 is used to generate a list of length $n = 24 * 60 / L$, where $L$ is the duration for which
 the Ephemeral Ids are posted by the smart phone
 \begin{ttbox}
   EphId1 || ... || EphIdn = PRG(PRF(SKt,``broadcast key''))
 \end{ttbox} 
 ``where PRF is a pseudo-random function (e.g., HMAC-SHA256), ``broadcast key'' is a
-fixed, public string, and PRG is a pseudorandom generator (e.g. AES in counter mode)'' \TODOref{DP-3T Whitepaper}.
+fixed, public string, and PRG is a pseudo-random generator (e.g. AES in counter mode)'' \cite{dp3t:wp}
+%\TODOref{DP-3T Whitepaper}.
 
 From a cryptographic point of view, the crucial properties of the Ephemeral Ids are that
 they are purely random, therefore, they cannot be guessed, but at the same time if -- after
 the actual encounter between sender and receiver -- the seed $SK_t$ is published, it is feasible
 to relate any of the \texttt{EphIDi} to $SK_t$  for all \texttt{i} $\in \{1, \ldots, n\}$.
-For a formalisation of this crucial cryptographic property in Isabelle it suffices to define a new type
+For a formalization of this crucial cryptographic property in Isabelle it suffices to define a new type
 of list of Ephemeral Ids \texttt{efidlist} containing the root $SK_t$ (the first \texttt{efid}),
 a current \texttt{efid} indicated by a list pointer of type \texttt{nat}, and the actual list of
 \texttt{efid}s.
@@ -788,32 +793,36 @@ a current \texttt{efid} indicated by a list pointer of type \texttt{nat}, and th
 {\bf{datatype}} efidlist = Efids "efid" "nat" "efid list"
 \end{ttbox}
 We define functions for this datatype: \texttt{efidsroot} returning the first of the three
-consituents in an \texttt{efidlist} (the root $SK_t$); \texttt{efids\_index} giving the second
+constituents in an \texttt{efidlist} (the root $SK_t$); \texttt{efids\_index} giving the second
 component, the index of the current \texttt{efid}; \texttt{efids\_inc\_ind} applied to an
 \texttt{efidlist} increments the index; \texttt{efids\_cur} returning the current \texttt{efid}
 from the list and \texttt{efids\_list} for the entire list (the third component).
 
 The first step of refinement replaces the simple \texttt{efid} in the infrastructure type by the
 new type \texttt{efidlist}. Note, that in the new datatype \texttt{igraph} this change affects only
-the thrird component, the credentials. The last two componenets, the set of currently present efids,
-and the knowledge set, still operate on the simple type \texttt{efid}.
+the third component, the credentials to become
 \begin{ttbox}
-{\bf datatype} igraph = 
-         Lgraph (location \tttimes location)set 
-                 location \ttfun identity set
-                 identity \ttfun (string set \tttimes string set \tttimes efidlist)  
-                 location \ttfun string \tttimes (dlm \tttimes data) set
-                 location \ttfun efid set
-                 actor \ttfun location \ttfun (identity \tttimes efid) set
-\end{ttbox}
+   identity \ttfun (string set \tttimes string set \tttimes efidlist)
+\end{ttbox}  
+The last two components, the set of currently present efids,
+and the knowledge set, remain the same and still operating on the simple type \texttt{efid}.
+%\begin{ttbox}
+%{\bf datatype} igraph = 
+%         Lgraph (location \tttimes location)set 
+%                 location \ttfun identity set
+%
+%                 location \ttfun string \tttimes (dlm \tttimes data) set
+%                 location \ttfun efid set
+%                 actor \ttfun location \ttfun (identity \tttimes efid) set
+%\end{ttbox}
 The refined state transition relation implements the possibility of changing the Ephemeral Ids
-by the rule for the action \texttt{put}.
-\begin{ttbox}
- {\bf{put}}: G = graphI I \ttImp  a \ttatI l \ttImp enables I l (Actor a) put \ttImp
-      I' = Infrastructure (put_graph_efid A l (graphI I))(delta I)
- \ttImp I \ttrelI I' 
-\end{ttbox}
-The change to the infrastructure state is implemented in the function \texttt{put\_graph\_efid} that
+by the rule for the action \texttt{put} that resembles very much the rule for \texttt{get}.
+%\begin{ttbox}
+% {\bf{put}}: G = graphI I \ttImp  a \ttatI l \ttImp enables I l (Actor a) put \ttImp
+%      I' = Infrastructure (put_graph_efid A l (graphI I))(delta I)
+% \ttImp I \ttrelI I' 
+%\end{ttbox}
+The important change to the infrastructure state is implemented in the function \texttt{put\_graph\_efid} that
 increases the current index in the \texttt{efidlist} in the credential component \texttt{cgra g n} for
 the ``putting'' actor identity \texttt{n} and inserts the current \texttt{efid} from that credential
 component into the \texttt{egra} component, the set of currently ``present'' Ephemeral Ids at the location
@@ -863,7 +872,7 @@ first \texttt{move} of Bob a \texttt{put} action must happen before Eve can do a
 A very simple remedy to exclude this attack is to bind a \texttt{put} action after every \texttt{move}.
 We can implement that change by a minimal update to the function \texttt{move\_graph\_a} (see Section \ref{sec:model})
 by adding an increment (highlighted in the code snippet)
-of the currently used Ephemeral Id before updating the \texttt{egre} component of the target location.
+of the currently used Ephemeral Id before updating the \texttt{egra} component of the target location.
 \begin{ttbox}
 move\_graph\_a n l l' g \ttequiv ...
   (l' := insert (efids_cur({\bf efids\_inc\_ind}(efemid (cgra g n))))(egra g l))...
@@ -874,11 +883,11 @@ omitting a few steps (the refinement relation is defined using the reflexive tra
 \texttt{\ttrelIstar}.
 
 
-\section{Conclusions}
+\section{Summary and discussion of relevance of the approach}
+%{Conclusions}
 \label{sec:concl}
-\subsection{Protection goals of attacks}
-
-\subsection{Summary and discussion of relevance of the approach}
+%\subsection{Protection goals of attacks}
+%\subsection
 We can establish in our formal framework an attack that even a system using changing
 Ephemeral ids can be broken if the attacker physically follows a victim. This is a basic attack on
 anonymity: a user's connection between his Ephemeral Ids and personal details (Iphone MAC or name)
@@ -896,9 +905,10 @@ The refinement allows refining the datatype (Id $\mapsto$ EphId) but also delive
 refinement (behaviours of the refined systems are a subset of the traces of the abstract system).
 This persistence of the attack precisely shows which part of the system behaviour is responsible for the
 attack. In a second refinement step using action refinement based on this insight from the (repeated)
-attack, we can exclude the dangerous attack trace\footnote{Implication on the actual protection goals
-  that are endangered by the attack on privacy are discussed in the larger context of the Corona-warning
-  app (see previous Section)}.
+attack, we can exclude the dangerous attack trace.
+%\footnote{Implication on the actual protection goals
+%  that are endangered by the attack on privacy are discussed in the larger context of the Corona-warning
+%  app (see previous Section)}.
 
 Clearly, the abstract attack we establish is obvious on an informal level but the persistence of the attack
 on the refined system is less obvious. The remedy by a second refinement step is an evident restriction of
