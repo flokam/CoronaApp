@@ -119,16 +119,25 @@ have been in close proximity to a person who tested positive for COVID-19.
 %was a quite costly project but this was mainly due to the management of
 %Telekom and SAP being in the driving seat. But the app has been designed with great
 The app was designed with great
-attention on privacy: a distributed architecture \cite{cwa:arch} has been adopted after a long and
-heated debate with supporters of a central architecture. The distributed architecture is
-based on a very clever application design whereby users' phones broadcast
-highly anonymized so called ``Ephemeral IDs'' at physical locations via the
-Bluetooth Low Energy Beacon protocol.
-The app saves those ids of people in close proximity.
-When at a later date an infected person reports his infection to a central server,
-all clients are provided the means to reconstruct the ids used by this particular
-person's device over the last 14 days.
-Therefore, exposure risks can be evaluated locally and stored contact data has never to be shared.
+attention on privacy: a distributed architecture \cite{cwa:arch} has been adopted %after a long and
+%heated debate with supporters of a central architecture. The distributed architecture is
+that is
+based on a very clever application design whereby clients broadcast
+highly anonymized so called ``Ephemeral IDs'' via Bluetooth and
+store those ids of people in close proximity.
+%highly anonymized so called ``Ephemeral IDs'' at physical locations via the
+%Bluetooth Low Energy Beacon protocol.
+%The app saves those ids of people in close proximity.
+Infected persons report their infection by uploading their ids to a central server, providing all clients the means to assess exposure risk locally,
+hence, stored contact data has never to be shared.
+%Infected persons report their infection to a central server,
+%which, in turn, provides all clients the means to reconstruct the ids
+%used by reported cases over the last 14 days.
+%
+%When at a later date an infected person reports his infection to a central server,
+%all clients are provided the means to reconstruct the ids used by this particular
+%person's device over the last 14 days.
+%Therefore, exposure risks can be evaluated locally and stored contact data has never to be shared.
 %
 %, the unique root ID is published
 %and in the daily check all mobile phones connecting to the central server download
@@ -168,11 +177,11 @@ However, there has been, as of yet, to our knowledge no formal verification been
 Even if a ``post-production'' formal specification seems pointless, 
 it allows to reveal weak points of the architecture, show that the measures that have
 been conceived are suitable to cover those weak points,
-or where and to what extend trade offs have to be made due to inherent vulnerabilities.
-Given that the protocol implemented by the framework CWA runs on resembles only the most basic
-of the three proposed by the DP-3T project,
+or to what extend trade offs have to be made due to inherent vulnerabilities.
+Given that the protocol implemented by CWA resembles only the most basic
+of the three protocols proposed by the DP-3T project,
 a formal verified model that stresses the impact or limits of certain security measures
-might help lend some more weight to appeals like \cite{dp3t:impl}
+might give more weight to appeals like \cite{dp3t:impl}
 %to Apple and Google
 to adopt the more sophisticated protocols.
 %
@@ -189,7 +198,7 @@ improve security of the Corona-virus app specification.
 
 In this paper, we first provide some background in Section \ref{sec:background}:
 we give a brief overview of related works
-and relevant parts of the Corona-virus warning app (Section \ref{sec:history}).
+and the protocol of the Corona-virus warning app (Section \ref{sec:history}).
 We then introduce the Isabelle Infrastructure framework (Section \ref{sec:isainf}).
 Next, we present our model (Section \ref{sec:model}) and analysis of privacy and
 attacks (Section \ref{sec:ana}). The found attack on the first abstract specification
@@ -215,21 +224,22 @@ app developments that might emerge due to the reach of players like Apple and Go
 
 There are, however, competing architectures noteworthy, namely protocols developed under the
 roof of the \textit{Pan-European Privacy-Preserving Proximity Tracing} project (PEPP-PT) \cite{pepppt:github}, e.g.
-PEPP-PT-ROBERT \cite{pepppt:ROBERT}.
+PEPP-PT-ROBERT \cite{pepppt:ROBERT},
+that might be characterized as centralized architectures.
 
 Neither DP-3T nor PEPP-PT are synonymous for just one single protocol. Each project endorses
 different protocols with unique properties in terms of privacy and data protection.
-Yet, on a higher level of abstraction, it seems feasible to distinguish two basic architectures:
-protocols as endorsed by PEPP-PT might be characterized as centralized architectures whereas
-DP-3T-inspired protocols follow a (more) decentralized approach.\footnote{%
-  DP-3T involves a central backend server. It is decentralized with regard to
-  the collection and evaluation of contact information:
-  In centralized architectures the server provides a risk scoring services, whereas decentralized
-  approaches rely on local risk assessment and, thus, do not need to share contact information with
-  the backend.}
+%Yet, on a higher level of abstraction, it seems feasible to distinguish two basic architectures:
+%protocols as endorsed by PEPP-PT might be characterized as centralized architectures whereas
+%DP-3T-inspired protocols follow a (more) decentralized approach.\footnote{%
+%  DP-3T involves a central backend server. It is decentralized with regard to
+%  the collection and evaluation of contact information:
+%  In centralized architectures the server provides a risk scoring services, whereas decentralized
+%  approaches rely on local risk assessment and, thus, do not need to share contact information with
+%  the backend.}
 
-\subsubsection{The basic DP-3T architecture}
-All DP-3T protocols roughly work the same:
+\subsubsection{Basic DP-3T architecture}
+%All DP-3T protocols roughly work the same:
 %\subsubsection{Basic DP-3T protocol: How does it work?}
 %  How does it relate to ENF/CWA? (broad strokes)}
 %
@@ -266,7 +276,7 @@ along with some of the mitigation measures either implemented in CWA or proposed
 \begin{figure}
 \vspace{-.5cm}
   \begin{center}
-    \includegraphics[width=5in]{DP-3T_basic_protocol}
+    \includegraphics[width=4in]{DP-3T_basic_protocol}
   \end{center}
 \vspace{-.5cm}
   \caption{Decentralized privacy-preserving proximity tracing protocol of CWA}
@@ -275,12 +285,15 @@ along with some of the mitigation measures either implemented in CWA or proposed
 \end{figure}
 
 \subsubsection{Attack scenarios}
-There is a variety of noteworthy privacy and security issues that deserve formal consideration (and verification). The debate among %emerging between
+There is a variety of noteworthy privacy and security issues. %that deserve formal consideration (and verification).
+The debate among %emerging between
 advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
 
 In terms of attack scenarios, we focus on, what might be classified as deanonymisation attacks: Tracking a device (see \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]) and identifying infected individuals (\cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]).
-As first step, both attacks start with deanonymizing Ephemeral Ids,
-i.\,e. linking them the particular devices.
+%As first step, both attacks start with deanonymizing Ephemeral Ids,
+%i.\,e. linking them the particular devices.
+Both attacks rely on deanonymisation of Ephemeral Ids,
+i.\,e. linking ids to particular devices.
 
 \subsection{Isabelle Infrastructure framework}
 \label{sec:isainf}
