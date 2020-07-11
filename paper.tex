@@ -124,11 +124,11 @@ heated debate with supporters of a central architecture. The distributed archite
 based on a very clever application design whereby users' phones broadcast
 highly anonymized so called ``Ephemeral IDs'' at physical locations via the
 Bluetooth Low Energy Beacon protocol.
-The app saves those IDs of people in close proximity.
+The app saves those ids of people in close proximity.
 When at a later date an infected person reports his infection to a central server,
-all clients are provided the means to reconstruct the IDs used by this particular
+all clients are provided the means to reconstruct the ids used by this particular
 person's device over the last 14 days.
-Therefore, any client can evaluate exposure risks locally and stored contact data has never to be shared.
+Therefore, exposure risks can be evaluated locally and stored contact data has never to be shared.
 %
 %, the unique root ID is published
 %and in the daily check all mobile phones connecting to the central server download
@@ -188,8 +188,8 @@ based on attacks found by the attack tree analysis and (d) an application of the
 improve security of the Corona-virus app specification.
 
 In this paper, we first provide some background in Section \ref{sec:background}:
-we give a detailed overview of the development history %and security and privacy
-and relevant parts of the Corona-virus warning app (Section \ref{sec:history})
+we give a brief overview of related works
+and relevant parts of the Corona-virus warning app (Section \ref{sec:history}).
 We then introduce the Isabelle Infrastructure framework (Section \ref{sec:isainf}).
 Next, we present our model (Section \ref{sec:model}) and analysis of privacy and
 attacks (Section \ref{sec:ana}). The found attack on the first abstract specification
@@ -207,7 +207,7 @@ Isabelle (sources available \cite{kam:18smc}).
 We are mainly concerned with the architecture and protocols proposed by the
 DP-3T (\textit{Decentralized Privacy-Preserving Proximity Tracing}) project \cite{dp3t:github}.
 The main reason to focus on this particular family of protocols is the
-\textit{Exposure Notification Framework} (ENF) \cite{enf:proj}, jointly published by Apple and Google, that adopts
+\textit{Exposure Notification Framework} (ENF), jointly published by Apple and Google \cite{enf:proj}, that adopts
 %the main
 core principles of the DP-3T proposal. This API is not only used in the German
 Corona-virus warning app but has the potential of being widely adopted in future
@@ -227,8 +227,8 @@ DP-3T-inspired protocols follow a (more) decentralized approach.\footnote{%
   In centralized architectures the server provides a risk scoring services, whereas decentralized
   approaches rely on local risk assessment and, thus, do not need to share contact information with
   the backend.}
-\\
 
+\subsubsection{The basic DP-3T architecture}
 All DP-3T protocols roughly work the same:
 %\subsubsection{Basic DP-3T protocol: How does it work?}
 %  How does it relate to ENF/CWA? (broad strokes)}
@@ -259,11 +259,11 @@ privacy and data protection properties to different degrees but are more costly 
 %hence, CWA follows this low-cost design.\TODOref{CWA solution architecture ($\rightarrow$ github:CWA); probably ENF specification} DP-3T proposes two other, more sophisticated protocols that improve
 %privacy and data protection properties to different degrees but are more costly.
 %%TODOfn[styC]{``complicated'' sounds lame but ``costly'' is, perhaps, to simple/literal} to set up.
+%\pagebreak
 
 Figure \ref{fig:dp3tprot} illustrates the basic system architecture
 along with some of the mitigation measures either implemented in CWA or proposed by DP-3T.
-
-\begin{figure}[htb]
+\begin{figure}
   \begin{center}
     \includegraphics[width=5in]{DP-3T_basic_protocol}
   \end{center}
