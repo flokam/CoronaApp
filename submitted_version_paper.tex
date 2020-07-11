@@ -106,14 +106,14 @@ continuously changing ephemeral ids improves the anonymity.
 \section{Introduction}
 \label{sec:intro}
 The German Chancellor Angela Merkel has strongly supported the publication of
-the mobile phone Corona warning app (CWA; \cite{cwa:github}) by publicly proclaiming that the ``Corona
+the mobile phone Corona-virus warning app (CWA; \cite{cwa:github}) by publicly proclaiming that the ``Corona
 App deserves your trust'' \cite{bundes:20}. Many millions of mobile phone users
 in Germany have downloaded the app with 6 million on the first day.
 CWA is one amongst many similar applications that aim at the very important goal
 to ``break infection chains'' by providing timely information to users of whether they
 have been in close proximity to a person who tested positive for COVID-19.
 
-%The Corona-virus warning app
+%The CWA
 %has taken a long time to develop being published only on
 %16th June 2020. It
 %was a quite costly project but this was mainly due to the management of
@@ -164,15 +164,15 @@ conceived by experts in the field that has strong claims with regard to mathemat
 %``Such a design builds on strong, mathematically provable support for privacy and data protection goals [...]'' \TODOref{DP-3T Whitepaper p. 2} \smallskip\\
 %  \NOTE{DP-3T on their design and how wisely chosen it is ;) We have to use this! Something along the l%ines of:}
 %
-However, there has been, as of yet, to our knowledge no formal verification been involved.
+However, there has, as of yet, to our knowledge no formal verification been involved.
 Even if a ``post-production'' formal specification seems pointless, 
 it allows to reveal weak points of the architecture, show that the measures that have
 been conceived are suitable to cover those weak points,
-or where and to what extend trade offs have to be made due to inherent vulnerabilities.
-Given that the protocol implemented by the framework CWA runs on resembles only the most basic
-of the three proposed by the DP-3T project,
-a formal verified model that stresses the impact or limits of certain security measures
-might help lend some more weight to appeals like \cite{dp3t:impl}
+or where and to what extent trade offs have to be made due to inherent vulnerabilities.
+The protocol implemented by the framework CWA resembles only the most basic
+of the three proposed by the DP-3T project.
+Hence, a formal verified model that stresses the impact or limits of certain security measures
+might give more weight to appeals like \cite{dp3t:impl} 
 %to Apple and Google
 to adopt the more sophisticated protocols.
 %
@@ -180,7 +180,7 @@ to adopt the more sophisticated protocols.
 %that our current work is useful to increase the trust in the Corona-virus app necessary for
 %its wide adoption which in turn is crucial for it to be efficient.
 
-The contributions of this paper are (a) formal re-engineering of the Corona-virus warning app
+The contributions of this paper are (a) formal re-engineering of the CWA
 (b) providing an additional security and privacy analysis with interactive theorem proving
 certification of a novel view on the system architecture including actors, locations, and policies,
 (c) a formal definition of a security refinement process that allows to improve a system
@@ -189,12 +189,12 @@ improve security of the Corona-virus app specification.
 
 In this paper, we first provide some background in Section \ref{sec:background}:
 we give a detailed overview of the development history %and security and privacy
-and relevant parts of the Corona-virus warning app (Section \ref{sec:history})
+and relevant parts of the CWA (Section \ref{sec:history})
 We then introduce the Isabelle Infrastructure framework (Section \ref{sec:isainf}).
 Next, we present our model (Section \ref{sec:model}) and analysis of privacy and
 attacks (Section \ref{sec:ana}). The found attack on the first abstract specification
 motivates refinement. The formal definition of refinement for the Isabelle Infrastructure
-framework is introduced and illustrated on the Corona-virus warning app (Section \ref{sec:ref})
+framework is introduced and illustrated on the CWA (Section \ref{sec:ref})
 before drawing some conclusions (Section \ref{sec:concl}).
 
 The formal model in the Isabelle insider framework is fully mechanized and proved in
@@ -210,7 +210,7 @@ The main reason to focus on this particular family of protocols is the
 \textit{Exposure Notification Framework} (ENF) \cite{enf:proj}, jointly published by Apple and Google, that adopts
 %the main
 core principles of the DP-3T proposal. This API is not only used in the German
-Corona-virus warning app but has the potential of being widely adopted in future
+CWA but has the potential of being widely adopted in future
 app developments that might emerge due to the reach of players like Apple and Google.
 
 There are, however, competing architectures noteworthy, namely protocols developed under the
@@ -292,7 +292,7 @@ above showing the novel contribution of this paper in blue on the top.
 \begin{figure}
 \vspace{-.5cm}
   \begin{center}
-  \includegraphics[scale=.35]{theory_structure.pdf}
+  \includegraphics[scale=.45]{theory_structure.pdf}
 \end{center}
 \vspace{-.5cm}
 \caption{Generic Isabelle Infrastructure framework applied to Corona-warning app.}
@@ -369,10 +369,10 @@ presented in Section \ref{sec:model}.
 Technically, an Isabelle theory file \texttt{Infrastructure.thy} builds on top of the theories for Kripke 
 structures and CTL (\texttt{MC.thy}), attack trees (\texttt{AT.thy}), and security refinement 
 (\texttt{Refinement.thy}). Thus all these concepts can be used to specify the formal model
-for the Corona-virus warning app, express relevant and interesting properties, and conduct
+for the CWA, express relevant and interesting properties, and conduct
 interactive proofs (with the full support of the powerful and highly automated proof support
 of Isabelle).
-%The Corona-virus warning app theory itself is an adaptation of the Infrastructure theory of the 
+%The CWA theory itself is an adaptation of the Infrastructure theory of the 
 %Isabelle Infrastructure framework and reuses (or slightly adapts) existing concepts. 
 %In the remainder of this paper, we introduce the model that we conceived for . 
 All Isabelle sources are available online \cite{kam:20gitsc}.
@@ -451,7 +451,7 @@ the credentials, \texttt{lgra} for the %state of a location and the
 data at that location, \texttt{egra} for the assignment of current efids to locations,
 and \texttt{kgra} for the knowledge set for each actor for each location.
 
-In the Corona-virus warning app, the initial values for the \texttt{igraph} components use
+In the CWA, the initial values for the \texttt{igraph} components use
 two locations \texttt{pub} and \texttt{shop} to define the following constants (we omit the
 data map component \texttt{ex\_locs}).
 \begin{ttbox}
@@ -761,7 +761,7 @@ action refinement, traces may be refined by combining consecutive system events
 into atomic events thereby reducing traces.
 We can observe this kind of refinement in the second refinement step
 %This will be detailed in the second refinement step
-of the Corona-virus warning app considered next.
+of the CWA considered next.
 
 \subsection{Refining the Specification}
 \label{sec:corref}
