@@ -26,9 +26,9 @@
 \newcommand{\symb}[1]{\makebox{\it #1}} 
 \newcommand\ie{i.e.\!\,, }
 \newcommand\rel{Re${\cal{L}}$}
-\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
-\newcommand*{\TODOfn}[2][noteC]{\TODO[#1]{[\footnote{\TODO[#1]{#2}}]}}
-\newcommand*{\TODOref}[2][todoC]{\TODOfn[#1]{\textbf{BIB-REF}: #2}}
+%\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
+%\newcommand*{\TODOfn}[2][noteC]{\TODO[#1]{[\footnote{\TODO[#1]{#2}}]}}
+%\newcommand*{\TODOref}[2][todoC]{\TODOfn[#1]{\textbf{BIB-REF}: #2}}
 \newcommand\ttand{\mbox{{$\land$}}}
 \newcommand\ttor{\mbox{{$\lor$}}}
 \newcommand\ttcap{\mbox{{$\cap$}}}
@@ -767,14 +767,14 @@ the basic system architecture and finding an initial deanonymization attack.
 We now introduce ``proper'' Ephemeral Ids and show how the system datatype can be refined to a system
 that uses those instead of the fixed ones.
 
-For the DP-3T Ephemeral Ids \TODOref{DP-3T Whitepaper}, for each day $t$ a seed $SK_t$
+For the DP-3T Ephemeral Ids \cite{dp3t:wp}, for each day $t$ a seed $SK_t$
 is used to generate a list of length $n = 24 * 60 / L$, where $L$ is the duration for which
 the Ephemeral Ids are posted by the smart phone
 \begin{ttbox}
   EphId1 || ... || EphIdn = PRG(PRF(SKt,``broadcast key''))
 \end{ttbox} 
 ``where PRF is a pseudo-random function (e.g., HMAC-SHA256), ``broadcast key'' is a
-fixed, public string, and PRG is a pseudorandom generator (e.g. AES in counter mode)'' \TODOref{DP-3T Whitepaper}.
+fixed, public string, and PRG is a pseudorandom generator (e.g. AES in counter mode)'' \cite{dp3t:wp}.
 
 From a cryptographic point of view, the crucial properties of the Ephemeral Ids are that
 they are purely random, therefore, they cannot be guessed, but at the same time if -- after
