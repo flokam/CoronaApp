@@ -106,14 +106,14 @@ continuously changing ephemeral ids improves the anonymity.
 \section{Introduction}
 \label{sec:intro}
 The German Chancellor Angela Merkel has strongly supported the publication of
-the mobile phone Corona warning app (CWA; \cite{cwa:github}) by publicly proclaiming that the ``Corona
+the mobile phone Corona-virus warning app (CWA; \cite{cwa:github}) by publicly proclaiming that the ``Corona
 App deserves your trust'' \cite{bundes:20}. Many millions of mobile phone users
 in Germany have downloaded the app with 6 million on the first day.
 CWA is one amongst many similar applications that aim at the very important goal
 to ``break infection chains'' by providing timely information to users of whether they
 have been in close proximity to a person who tested positive for COVID-19.
 
-%The Corona-virus warning app
+%The CWA
 %has taken a long time to develop being published only on
 %16th June 2020. It
 %was a quite costly project but this was mainly due to the management of
@@ -124,11 +124,11 @@ heated debate with supporters of a central architecture. The distributed archite
 based on a very clever application design whereby users' phones broadcast
 highly anonymized so called ``Ephemeral IDs'' at physical locations via the
 Bluetooth Low Energy Beacon protocol.
-The app saves those ids of people in close proximity.
+The app saves those IDs of people in close proximity.
 When at a later date an infected person reports his infection to a central server,
-all clients are provided the means to reconstruct the ids used by this particular
+all clients are provided the means to reconstruct the IDs used by this particular
 person's device over the last 14 days.
-Therefore, exposure risks can be evaluated locally and stored contact data has never to be shared.
+Therefore, any client can evaluate exposure risks locally and stored contact data has never to be shared.
 %
 %, the unique root ID is published
 %and in the daily check all mobile phones connecting to the central server download
@@ -164,15 +164,15 @@ conceived by experts in the field that has strong claims with regard to mathemat
 %``Such a design builds on strong, mathematically provable support for privacy and data protection goals [...]'' \TODOref{DP-3T Whitepaper p. 2} \smallskip\\
 %  \NOTE{DP-3T on their design and how wisely chosen it is ;) We have to use this! Something along the l%ines of:}
 %
-However, there has been, as of yet, to our knowledge no formal verification been involved.
+However, there has, as of yet, to our knowledge no formal verification been involved.
 Even if a ``post-production'' formal specification seems pointless, 
 it allows to reveal weak points of the architecture, show that the measures that have
 been conceived are suitable to cover those weak points,
-or where and to what extend trade offs have to be made due to inherent vulnerabilities.
-Given that the protocol implemented by the framework CWA runs on resembles only the most basic
-of the three proposed by the DP-3T project,
-a formal verified model that stresses the impact or limits of certain security measures
-might help lend some more weight to appeals like \cite{dp3t:impl}
+or where and to what extent trade offs have to be made due to inherent vulnerabilities.
+The protocol implemented by the framework CWA resembles only the most basic
+of the three proposed by the DP-3T project.
+Hence, a formal verified model that stresses the impact or limits of certain security measures
+might give more weight to appeals like \cite{dp3t:impl} 
 %to Apple and Google
 to adopt the more sophisticated protocols.
 %
@@ -180,7 +180,7 @@ to adopt the more sophisticated protocols.
 %that our current work is useful to increase the trust in the Corona-virus app necessary for
 %its wide adoption which in turn is crucial for it to be efficient.
 
-The contributions of this paper are (a) formal re-engineering of the Corona-virus warning app
+The contributions of this paper are (a) formal re-engineering of the CWA
 (b) providing an additional security and privacy analysis with interactive theorem proving
 certification of a novel view on the system architecture including actors, locations, and policies,
 (c) a formal definition of a security refinement process that allows to improve a system
@@ -188,13 +188,13 @@ based on attacks found by the attack tree analysis and (d) an application of the
 improve security of the Corona-virus app specification.
 
 In this paper, we first provide some background in Section \ref{sec:background}:
-we give a brief overview of related works
-and relevant parts of the Corona-virus warning app (Section \ref{sec:history}).
+we give a detailed overview of the development history %and security and privacy
+and relevant parts of the CWA (Section \ref{sec:history})
 We then introduce the Isabelle Infrastructure framework (Section \ref{sec:isainf}).
 Next, we present our model (Section \ref{sec:model}) and analysis of privacy and
 attacks (Section \ref{sec:ana}). The found attack on the first abstract specification
 motivates refinement. The formal definition of refinement for the Isabelle Infrastructure
-framework is introduced and illustrated on the Corona-virus warning app (Section \ref{sec:ref})
+framework is introduced and illustrated on the CWA (Section \ref{sec:ref})
 before drawing some conclusions (Section \ref{sec:concl}).
 
 The formal model in the Isabelle insider framework is fully mechanized and proved in
@@ -207,10 +207,10 @@ Isabelle (sources available \cite{kam:18smc}).
 We are mainly concerned with the architecture and protocols proposed by the
 DP-3T (\textit{Decentralized Privacy-Preserving Proximity Tracing}) project \cite{dp3t:github}.
 The main reason to focus on this particular family of protocols is the
-\textit{Exposure Notification Framework} (ENF), jointly published by Apple and Google \cite{enf:proj}, that adopts
+\textit{Exposure Notification Framework} (ENF) \cite{enf:proj}, jointly published by Apple and Google, that adopts
 %the main
 core principles of the DP-3T proposal. This API is not only used in the German
-Corona-virus warning app but has the potential of being widely adopted in future
+CWA but has the potential of being widely adopted in future
 app developments that might emerge due to the reach of players like Apple and Google.
 
 There are, however, competing architectures noteworthy, namely protocols developed under the
@@ -227,8 +227,8 @@ DP-3T-inspired protocols follow a (more) decentralized approach.\footnote{%
   In centralized architectures the server provides a risk scoring services, whereas decentralized
   approaches rely on local risk assessment and, thus, do not need to share contact information with
   the backend.}
+\\
 
-\subsubsection{The basic DP-3T architecture}
 All DP-3T protocols roughly work the same:
 %\subsubsection{Basic DP-3T protocol: How does it work?}
 %  How does it relate to ENF/CWA? (broad strokes)}
@@ -259,11 +259,11 @@ privacy and data protection properties to different degrees but are more costly 
 %hence, CWA follows this low-cost design.\TODOref{CWA solution architecture ($\rightarrow$ github:CWA); probably ENF specification} DP-3T proposes two other, more sophisticated protocols that improve
 %privacy and data protection properties to different degrees but are more costly.
 %%TODOfn[styC]{``complicated'' sounds lame but ``costly'' is, perhaps, to simple/literal} to set up.
-%\pagebreak
 
 Figure \ref{fig:dp3tprot} illustrates the basic system architecture
 along with some of the mitigation measures either implemented in CWA or proposed by DP-3T.
-\begin{figure}
+
+\begin{figure}[htb]
 \vspace{-.5cm}
   \begin{center}
     \includegraphics[width=5in]{DP-3T_basic_protocol}
@@ -273,14 +273,6 @@ along with some of the mitigation measures either implemented in CWA or proposed
   \label{fig:dp3tprot}
 \vspace{-.5cm}
 \end{figure}
-
-\subsubsection{Attack scenarios}
-There is a variety of noteworthy privacy and security issues that deserve formal consideration (and verification). The debate among %emerging between
-advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
-
-In terms of attack scenarios, we focus on, what might be classified as deanonymisation attacks: Tracking a device (see \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]) and identifying infected individuals (\cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]).
-As first step, both attacks start with deanonymizing Ephemeral Ids,
-i.\,e. linking them the particular devices.
 
 \subsection{Isabelle Infrastructure framework}
 \label{sec:isainf}
@@ -300,7 +292,7 @@ above showing the novel contribution of this paper in blue on the top.
 \begin{figure}
 \vspace{-.5cm}
   \begin{center}
-  \includegraphics[scale=.35]{theory_structure.pdf}
+  \includegraphics[scale=.45]{theory_structure.pdf}
 \end{center}
 \vspace{-.5cm}
 \caption{Generic Isabelle Infrastructure framework applied to Corona-warning app.}
@@ -329,7 +321,7 @@ are defined as a set of states reachable by $\mapsto$ from an initial
 state set, for example
 \begin{ttbox}
 Kripke \{t. \ttexists i \ttin I. i \ttrelIstar t\} I
-\end{ttbox}
+\end{ttbox} 
 \item {CTL statements:}\\ 
 For example, we can write 
 \begin{ttbox}
@@ -377,10 +369,10 @@ presented in Section \ref{sec:model}.
 Technically, an Isabelle theory file \texttt{Infrastructure.thy} builds on top of the theories for Kripke 
 structures and CTL (\texttt{MC.thy}), attack trees (\texttt{AT.thy}), and security refinement 
 (\texttt{Refinement.thy}). Thus all these concepts can be used to specify the formal model
-for the Corona-virus warning app, express relevant and interesting properties, and conduct
+for the CWA, express relevant and interesting properties, and conduct
 interactive proofs (with the full support of the powerful and highly automated proof support
 of Isabelle).
-%The Corona-virus warning app theory itself is an adaptation of the Infrastructure theory of the 
+%The CWA theory itself is an adaptation of the Infrastructure theory of the 
 %Isabelle Infrastructure framework and reuses (or slightly adapts) existing concepts. 
 %In the remainder of this paper, we introduce the model that we conceived for . 
 All Isabelle sources are available online \cite{kam:20gitsc}.
@@ -459,7 +451,7 @@ the credentials, \texttt{lgra} for the %state of a location and the
 data at that location, \texttt{egra} for the assignment of current efids to locations,
 and \texttt{kgra} for the knowledge set for each actor for each location.
 
-In the Corona-virus warning app, the initial values for the \texttt{igraph} components use
+In the CWA, the initial values for the \texttt{igraph} components use
 two locations \texttt{pub} and \texttt{shop} to define the following constants (we omit the
 data map component \texttt{ex\_locs}).
 \begin{ttbox}
@@ -769,7 +761,7 @@ action refinement, traces may be refined by combining consecutive system events
 into atomic events thereby reducing traces.
 We can observe this kind of refinement in the second refinement step
 %This will be detailed in the second refinement step
-of the Corona-virus warning app considered next.
+of the CWA considered next.
 
 \subsection{Refining the Specification}
 \label{sec:corref}
@@ -810,12 +802,12 @@ new type \texttt{efidlist}. Note, that in the new datatype \texttt{igraph} this 
 the third component, the credentials to become
 \begin{ttbox}
    identity \ttfun (string set \tttimes string set \tttimes efidlist)
-\end{ttbox}
+\end{ttbox}  
 The last two components, the set of currently present efids,
 and the knowledge set, remain the same and still operating on the simple type \texttt{efid}.
 %\begin{ttbox}
-%{\bf datatype} igraph =
-%         Lgraph (location \tttimes location)set
+%{\bf datatype} igraph = 
+%         Lgraph (location \tttimes location)set 
 %                 location \ttfun identity set
 %
 %                 location \ttfun string \tttimes (dlm \tttimes data) set
@@ -827,7 +819,7 @@ by the rule for the action \texttt{put} that resembles very much the rule for \t
 %\begin{ttbox}
 % {\bf{put}}: G = graphI I \ttImp  a \ttatI l \ttImp enables I l (Actor a) put \ttImp
 %      I' = Infrastructure (put_graph_efid A l (graphI I))(delta I)
-% \ttImp I \ttrelI I'
+% \ttImp I \ttrelI I' 
 %\end{ttbox}
 The important change to the infrastructure state is implemented in the function \texttt{put\_graph\_efid} that
 increases the current index in the \texttt{efidlist} in the credential component \texttt{cgra g n} for
@@ -894,6 +886,7 @@ omitting a few steps (the refinement relation is defined using the reflexive tra
 %{Conclusions}
 \label{sec:concl}
 %\subsection{Protection goals of attacks}
+%\subsection{Summary and discussion of relevance of the approach}
 We can establish in our formal framework an attack that even a system using changing
 Ephemeral ids can be broken if the attacker physically follows a victim. This is a basic attack on
 anonymity: a user's connection between his Ephemeral Ids and personal details (Iphone MAC or name)
