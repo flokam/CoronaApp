@@ -26,8 +26,6 @@
 \newcommand\ie{i.e.\!\,, }
 \newcommand\rel{Re${\cal{L}}$}
 %\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
-%\newcommand*{\TODOfn}[2][noteC]{\TODO[#1]{[\footnote{\TODO[#1]{#2}}]}}
-%\newcommand*{\TODOref}[2][todoC]{\TODOfn[#1]{\textbf{BIB-REF}: #2}}
 \newcommand\ttand{\mbox{{$\land$}}}
 \newcommand\ttor{\mbox{{$\lor$}}}
 \newcommand\ttcap{\mbox{{$\cap$}}}
@@ -122,7 +120,7 @@ attention on privacy: a distributed architecture \cite{cwa:arch} has been adopte
 %heated debate with supporters of a central architecture. The distributed architecture is
 that is
 based on a very clever application design whereby clients broadcast
-highly anonymized so called ``Ephemeral IDs'' via Bluetooth and
+highly anonymized so called ``Ephemeral Ids'' via Bluetooth and
 store those ids of people in close proximity.
 %highly anonymized so called ``Ephemeral IDs'' at physical locations via the
 %Bluetooth Low Energy Beacon protocol.
@@ -164,13 +162,6 @@ Isabelle.
 The app now in use in Germany has been developed based on a protocol proposed by the DP-3T project \cite{dp3t:github}:
 A sophisticated security concept
 conceived by experts in the field that has strong claims with regard to mathematical support \cite{dp3t:wp} [p2].
-%The Corona-virus app has been produced based on a sophisticated security
-%concept conceived by experts in the field %to our knowledge, no formal verification
-%%
-%and has strong claims with regard to mathematical support:
-%
-%``Such a design builds on strong, mathematically provable support for privacy and data protection goals [...]'' \TODOref{DP-3T Whitepaper p. 2} \smallskip\\
-%  \NOTE{DP-3T on their design and how wisely chosen it is ;) We have to use this! Something along the l%ines of:}
 %
 However, there has, as of yet, to our knowledge no formal verification been involved.
 Even if a ``post-production'' formal specification seems pointless, 
@@ -181,12 +172,7 @@ The protocol implemented by the framework CWA resembles only the most basic
 of the three protocols proposed by the DP-3T project.
 Hence, a formal verified model that stresses the impact or limits of certain security measures
 might give more weight to appeals like \cite{dp3t:impl}
-%to Apple and Google
 to adopt the more sophisticated protocols.
-%
-%Thereby, we believe
-%that our current work is useful to increase the trust in the Corona-virus app necessary for
-%its wide adoption which in turn is crucial for it to be efficient.
 
 The contributions of this paper are (a) formal re-engineering of the CWA
 (b) providing an additional security and privacy analysis with interactive theorem proving
@@ -238,20 +224,11 @@ different protocols with unique properties in terms of privacy and data protecti
 %  the backend.}
 
 There is a variety of noteworthy privacy and security issues. %that deserve formal consideration (and verification).
-The debate among %emerging between
-advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
+The debate among advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
 
 In terms of attack scenarios, we focus on, what might be classified as deanonymisation attacks: Tracking a device (see \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]) and identifying infected individuals (\cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]).
-%As first step, both attacks start with deanonymizing Ephemeral Ids,
-%i.\,e. linking them the particular devices.
-%Both attacks rely on deanonymisation of Ephemeral Ids,
-%i.\,e. linking ids to particular devices.
 
 \subsubsection{Basic DP-3T architecture}
-%All DP-3T protocols roughly work the same:
-%\subsubsection{Basic DP-3T protocol: How does it work?}
-%  How does it relate to ENF/CWA? (broad strokes)}
-%
 Upon installation, the app generates secret daily seeds to derive \textit{Ephemeral Ids}
 (EphIDs) from them. EphIDs are generated locally with cryptographic methods and cannot be connected
 to one another but only reconstructed from the secret seed they were derived from.
@@ -272,13 +249,6 @@ this basically translates into publishing the daily seeds used to derive EphIDs 
 The protocol implemented by ENF and,
 hence, CWA adopts this low-cost design \cite{cwa:arch}. DP-3T proposes two other, more sophisticated protocols that improve
 privacy and data protection properties to different degrees but are more costly to implement.
-%Aside from additional security measures,
-%\TODOfn[styC]{In short: I want to name it but don't talk about it (since we're not really concerned with% this level of detail). But this sounds just sh...}
-%like signing content the server provides as a general rule, the protocol implemented by ENF and,
-%hence, CWA follows this low-cost design.\TODOref{CWA solution architecture ($\rightarrow$ github:CWA); probably ENF specification} DP-3T proposes two other, more sophisticated protocols that improve
-%privacy and data protection properties to different degrees but are more costly.
-%%TODOfn[styC]{``complicated'' sounds lame but ``costly'' is, perhaps, to simple/literal} to set up.
-%\pagebreak
 %
 Figure \ref{fig:dp3tprot} illustrates the basic system architecture
 along with some of the mitigation measures either implemented in CWA or proposed by DP-3T.
@@ -293,16 +263,6 @@ along with some of the mitigation measures either implemented in CWA or proposed
 \vspace{-.5cm}
 \end{figure}
 
-%\subsubsection{Attack scenarios}
-%There is a variety of noteworthy privacy and security issues. %that deserve formal consideration (and verification).
-%The debate among %emerging between
-%advocates of centralized architectures and those in favor of a decentralized approach in particular yields a lot of interesting material detailing different attacks and possible mitigation strategies: \cite{pepppt:dp3tana}, \cite{pepppt:dp3tresp}, \cite{dp3t:psre}.
-
-%In terms of attack scenarios, we focus on, what might be classified as deanonymisation attacks: Tracking a device (see \cite{dp3t:psre}[p9], \cite{pepppt:dp3tana}[p8]) and identifying infected individuals (\cite{dp3t:psre}[p5], \cite{pepppt:dp3tana}[p9]).
-%%As first step, both attacks start with deanonymizing Ephemeral Ids,
-%%i.\,e. linking them the particular devices.
-%Both attacks rely on deanonymisation of Ephemeral Ids,
-%i.\,e. linking ids to particular devices.
 
 \subsection{Isabelle Infrastructure framework}
 \label{sec:isainf}
