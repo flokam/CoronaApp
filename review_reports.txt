@@ -1,0 +1,76 @@
+*** COPY of the reviewer reports with some comments on doing them inlined ***
+
+Review 1
+
+Overall evaluation:
+
+This paper tackles a topic that, nowadays, is clearly on the spotlight and it is of paramount importance for the society. In particular, the authors of this work first review the workload of the German Corona-virus warning app and, next, they perform a formal analysis of the level of privacy that this app provides and the attacks that it may suffer. This privacy analysis is relevant due to the fact that this app has been deployed to production without any formal verification of its privacy-preserving strength.
+
+In my opinion, the privacy analysis done in this paper is sound and, as I have already mentioned, the topic is relevant for the society. I also think that the contribution of this work is quite limited due to the fact that the authors are merely analyzing the work done by others. It is true that the authors also present a refinement to overcome the limitations found but, as far as I see, the main contribution of this paper is the aforementioned privacy analysis. In my opinion, this issue reduces the relevance of this work but, in any case, it is still interesting enough to suggest its acceptance
+
+>>> Nothing to be done to improve this
+
+Review 2
+
+Overall evaluation:
+
+The paper suggests a study of the basic ephemeral-id broadcast protocol of the DP-3T project using the Isabelle Infrastructure (based on Kripke structures and refinement methods). 
+
+Authors show that the protocol can be modeled and that the solution can identify potential attacks (not straightforward though). With some refinement steps, the system can become more secure. 
+
+It would have been interesting to compare the decentralized DP-3T protocol with the centralized ROBERT solution through the Isabelle infrastructure.
+>> Future work, remark in Conclusions.
+
+Below are some detailed comments:
+
+- Figure 1 is a nice introduction to DP-3T. Nevertheless, authors might have explained it a bit more. 
+
+- Section 3.1, 3.2 are very much appreciated especially by readers with no expertise. 
+
+- Section 3.3 becomes a bit more complicates. Authors might have described the attack scenatio first and then state move_graph_a. Furthermore, theorem AT_EF could not be found in the paper. 
+
+>>>> Re-arrange the attack scenario so that attack scenarion comes first, the add move_graph definition and AT_EF
+DONE
+
+- It is not clear if the attack is valid if several users follow Bob's trajectory?
+
+>>>> Good question: it depends on the order of things: if they actually follow, then the final attack would still be
+  possible since the attacker Eve has a moment "alone" with Bob (there can be other users in the new location shop that
+  have not been in the pub but as long as there are no others that have been there previously, the attacker still manages
+  to single out Bob before the others come to "obfuscate" her). 
+
+
+Review 3
+
+Overall evaluation:
+
+The authors show how a corona virus contact tracing app can be analyzed formally with the Isabelle Infrastructure framework. The particular app analyzed is the German Corona virus warning app (CWA), which is also available in open source. This is the first use of formal methods for security analysis of a corona tracing app. The authors demonstrate the use of Isabell infrastructure framework in modelling a simplistic (rather insecure) version of the app - a version that does not use continuously update user IDs. After showing possible privacy attacks on that app, the authors show a refinement of the original model that uses updated (ephemeral) IDs. The formal analysis shows that the attack goal becomes harder to establish (but not impossible).
+
+This paper is interesting, timely, and well written. It assumes prior knowledge of formal methods, in particular the Isabelle infrastructure framework. Some of the formalization takes some time to digest and could be explained better. However, that would make the paper longer. I believe the paper and approach will be of much interest for attendees.
+
+Strengths:
+
++ interesting and timely topic
++ first approach of using formal methods to analyze security of corona apps
++ well written presentation
+
+Weaknesses:
+
++ some of the formalisms could be explained more thoroughly
++ assumes prior knowledge of specific formal methods
+
+>>> the weaknesses are addressed by the amendments for Reviewer 2
+
+Review 4
+
+Overall evaluation:
+
+Building on the previous work of the Isabelle Infrastructure framework, the authors have shown in the present paper a formal specification and verification of the anonymity property of the Corona-virus warning app that has been developed based on a protocol proposed by the DP-3T project and has been used in Germany.
+
+Three types of scenarios are discussed in the paper. With the first scenario, Alice, Bob, and Eve having Ephemeral ids 1, 2, and 5, respectively, are in a pub; Charlie and David having Ephemeral ids 3 and 4, respectively, are in a shop. Since these Ephemeral ids are assumed to be fixed, if Bob moves to the shop and Eve follows him collecting the Ephemeral ids in each location, Eve is enabled to identify Bob's Ephemeral id. With the second scenario, Ephemeral ids can be changed by users' put actions. Even with this change, a similar attack is shown to be still possible. If Bob moves from the pub to the shop and if Eve also moves to the shop and collects the Ephemeral ids before Bob performs the put action, then Eve can identify Bob's Ephemeral id. To this de-anonymization, the authors have proposed a solution, which constitutes the third scenario. That is, they have proposed that every user should bind the put action after every move.
+
+The discussions above are fully formally developed in terms of temporal logic and Kripke structures. In particular, the concept of refinement, which is also studied in the field of process algebras, is shown to play important roles to analyze the three types of scenarios above in a systematic way. In my opinion, since the refinement of security protocols involves subtlety and is error-prone, the formal and systematic approach presented in this paper seems to be valuable.
+
+On the other hand, the proposed theoretical framework seems to be applicable to a wider class of systems including pseudonyms and location information. If the paper focuses on the novel Corona-virus warning app, as the title of the paper indicates, it would have been better if the authors specify more explicitly from a practical viewpoint, how their results can contribute to the actual improvement of the design of the Corona-virus warning app and its underlying protocols.
+
+>>> difficult to fix, maybe add something to Conclusions
