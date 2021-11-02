@@ -222,12 +222,12 @@ defines "scoronaT \<equiv> {x. \<exists> n. \<not> global_policyT'' x (Efid n)}"
 
 begin
 
-lemma refmapOne_lem: "\<forall>s::InfrastructureTwo.infrastructure.
+lemma refmapTwo_lem: "\<forall>s::InfrastructureTwo.infrastructure.
        (Corona_scenarioT, s) \<in> {(x::InfrastructureTwo.infrastructure, y::InfrastructureTwo.infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<longrightarrow>
        (\<forall>s'::InfrastructureTwo.infrastructure. s \<rightarrow>\<^sub>n s' \<longrightarrow> rmapT s \<rightarrow>\<^sub>n rmapT s')"
   oops
 
-theorem refmapOne: "corona_Kripke \<sqsubseteq>\<^sub>rmapT corona_KripkeT"
+theorem refmapTwo: "corona_KripkeO \<sqsubseteq>\<^sub>rmapT corona_KripkeT"
   oops
 
 lemma step1: "corona_scenarioT  \<rightarrow>\<^sub>n corona_scenarioT'"

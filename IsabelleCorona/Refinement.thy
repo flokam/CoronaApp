@@ -133,5 +133,8 @@ theorem strong_mt'[rule_format]:
    apply (rule CollectI)
 by simp
 
+definition RR_cycle :: "[('a::state) kripke, ('a'::state)kripke, 'a' set] \<Rightarrow> bool"
+  where "RR_cycle K K' s = (\<exists> (E:: ('a'::state) \<Rightarrow> 'a). (K \<turnstile> EF (E `s)) \<and> (K \<sqsubseteq>\<^sub>E K')  \<longrightarrow> \<not>(K' \<turnstile> EF s))"
+
 end
 

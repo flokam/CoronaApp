@@ -55,10 +55,10 @@ knowledge about who might be who. \<close>
 datatype location = Location nat
 datatype efid = Efid nat
 datatype igraph = Lgraph "(location * location)set" "location \<Rightarrow> identity set"
-                           "identity \<Rightarrow> (string set * string set * efid)"  
+                           "identity \<Rightarrow>  efid"  
                            "location \<Rightarrow> string * (dlm * data) set"
                            "location \<Rightarrow> efid set"
-                           "actor \<Rightarrow> location \<Rightarrow> (identity * efid)set"
+                           "identity \<Rightarrow> location \<Rightarrow> (identity * efid)set"
 
 datatype infrastructure = 
          Infrastructure "igraph" 
@@ -70,13 +70,13 @@ primrec gra :: "igraph \<Rightarrow> (location * location)set"
 where  "gra(Lgraph g a c l e k) = g"
 primrec agra :: "igraph \<Rightarrow> (location \<Rightarrow> identity set)"
 where  "agra(Lgraph g a c l e k) = a"
-primrec cgra :: "igraph \<Rightarrow> (identity \<Rightarrow> string set * string set * efid)"
+primrec cgra :: "igraph \<Rightarrow> identity \<Rightarrow> efid"
 where  "cgra(Lgraph g a c l e k) = c"
 primrec lgra :: "igraph \<Rightarrow> (location \<Rightarrow> string * (dlm * data) set)"
   where  "lgra(Lgraph g a c l e k) = l"
 primrec egra :: "igraph \<Rightarrow> location \<Rightarrow> efid set"
   where  "egra(Lgraph g a c l e k) = e"
-primrec kgra:: "[igraph, actor, location] \<Rightarrow> (identity * efid)set"
+primrec kgra:: "[igraph, identity, location] \<Rightarrow> (identity * efid)set"
   where "kgra(Lgraph g a c l e k) = k"
 
 definition nodes :: "igraph \<Rightarrow> location set" 
@@ -92,23 +92,11 @@ primrec graphI :: "infrastructure \<Rightarrow> igraph"
 where "graphI (Infrastructure g d) = g"
 primrec delta :: "[infrastructure, igraph, location] \<Rightarrow> policy set"
 where "delta (Infrastructure g d) = d"
-primrec tspace :: "[infrastructure, identity ] \<Rightarrow> string set * string set * efid"
+primrec tspace :: "[infrastructure, identity ] \<Rightarrow> efid"
   where "tspace (Infrastructure g d) = cgra g"
 primrec lspace :: "[infrastructure, location ] \<Rightarrow> string * (dlm * data)set"
   where "lspace (Infrastructure g d) = lgra g"
 
-definition credentials :: "string set * string set * efid \<Rightarrow> string set"
-  where  "credentials lxl \<equiv> (fst lxl)"
-definition has :: "[igraph, identity * string] \<Rightarrow> bool"
-  where "has G ac \<equiv> snd ac \<in> credentials(cgra G (fst ac))"
-definition roles :: "string set * string set * efid \<Rightarrow> string set"
-  where  "roles lxl \<equiv> (fst (snd lxl))"
-definition efemid :: "string set * string set * efid \<Rightarrow> efid"
-  where "efemid lxl \<equiv> snd(snd lxl)"
-definition role :: "[igraph, identity * string] \<Rightarrow> bool"
-  where "role G ac \<equiv> snd ac \<in> roles(cgra G (fst ac))"
-definition isin :: "[igraph,location, string] \<Rightarrow> bool" 
-  where "isin G l s \<equiv> s = fst (lgra G l)"
 
 text \<open>Predicates and projections for the labels to encode their meaning.\<close>
 definition owner :: "dlm * data \<Rightarrow> actor" where "owner d \<equiv> fst(fst d)"
@@ -246,16 +234,16 @@ where "move_graph_a n l l' g \<equiv> Lgraph (gra g)
                      else (agra g))
                                (cgra g)(lgra g)
                      (if n \<in> ((agra g) l) &  n \<notin> ((agra g) l') then
-                       ((egra g)(l := (egra g l) - {efemid (cgra g n)}))
-                                (l' := (insert (efemid (cgra g n))(egra g l')))
+                       ((egra g)(l := (egra g l) - {cgra g n}))
+                                (l' := (insert (cgra g n)(egra g l')))
                       else egra g)
                                (kgra g)"
 
 definition put_graph_efid :: "[identity, location, igraph] \<Rightarrow> igraph"
   where \<open>put_graph_efid n l g  \<equiv> Lgraph (gra g)(agra g)
-                            ((cgra g)(n := (credentials (cgra g n), roles (cgra g n), efemid (cgra g n))))
+                               (cgra g)
                                (lgra g)
-                             ((egra g)(l := insert (efemid (cgra g n))(egra g l)))
+                             ((egra g)(l := insert ((cgra g n))(egra g l)))
                               (kgra g)\<close>
 
 text \<open>The state transition relation defines the semantics for the actions. We concentrate
@@ -273,46 +261,18 @@ where
   move: "\<lbrakk> G = graphI I; a @\<^bsub>G\<^esub> l; l \<in> nodes G; l' \<in> nodes G;
           (a) \<in> actors_graph(graphI I); enables I l' (Actor a) move;
          I' = Infrastructure (move_graph_a a l l' (graphI I))(delta I) \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'" 
-| get : "\<lbrakk> G = graphI I; a @\<^bsub>G\<^esub> l;
+| get : "\<lbrakk> G = graphI I; a @\<^bsub>G\<^esub> l; l \<in> nodes G;
         enables I l (Actor a) get;
         I' = Infrastructure 
                    (Lgraph (gra G)(agra G)(cgra G)(lgra G)(egra G)
-                       ((kgra G)((Actor a) := ((kgra G (Actor a))(l:= {(x,y). x \<in> agra G l \<and> y \<in> egra G l})))))
+                       ((kgra G)(a := ((kgra G a)(l:= {(x,y). x \<in> agra G l \<and> y \<in> egra G l})))))
                    (delta I)
          \<rbrakk> \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 | put : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow> enables I l (Actor a) put \<Longrightarrow>
         I' = Infrastructure (put_graph_efid a l (graphI I))(delta I)
           \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
 
-(* 
-| get_data : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow>
-        enables I l' (Actor a) get \<Longrightarrow> 
-       ((Actor a', as), n) \<in> snd (lgra G l') \<Longrightarrow> Actor a \<in> as \<Longrightarrow> 
-        I' = Infrastructure 
-                   (Lgraph (gra G)(agra G)(cgra G)
-                   ((lgra G)(l := (fst (lgra G l), 
-                                   snd (lgra G l)  \<union> {((Actor a', as), n)}))) 
-                            (egra G))
-                   (delta I)
-         \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
-| process : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow>
-        enables I l (Actor a) eval \<Longrightarrow> 
-       ((Actor a', as), n) \<in> snd (lgra G l) \<Longrightarrow> Actor a \<in> as \<Longrightarrow>
-        I' = Infrastructure 
-                   (Lgraph (gra G)(agra G)(cgra G)
-                   ((lgra G)(l := (fst (lgra G l), 
-                    snd (lgra G l)  - {((Actor a', as), n)}
-                    \<union> {(f :: label_fun) \<Updown> ((Actor a', as), n)})))
-                           (egra G))
-                   (delta I)
-         \<Longrightarrow> I \<rightarrow>\<^sub>n I'"  
-| put : "G = graphI I \<Longrightarrow> a @\<^bsub>G\<^esub> l \<Longrightarrow> enables I l (Actor a) put \<Longrightarrow>
-        I' = Infrastructure 
-                  (Lgraph (gra G)(agra G)(cgra G)
-                          ((lgra G)(l := (s, snd (lgra G l) \<union> {((Actor a, as), n)})))(egre G))
-                   (delta I)
-          \<Longrightarrow> I \<rightarrow>\<^sub>n I'"
-*)
+
 text \<open>Note that the type infrastructure can now be instantiated to the axiomatic type class 
       @{text\<open>state\<close>} which enables the use of the underlying Kripke structures and CTL.\<close>
 instantiation "infrastructure" :: state
@@ -331,7 +291,268 @@ end
 
 lemma move_graph_eq: "move_graph_a a l l g = g"  
   by (simp add: move_graph_a_def, case_tac g, force)
-     
+
+
+lemma delta_invariant: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow>  delta(z) = delta(z')"
+  apply clarify
+  apply (erule state_transition_in.cases)
+  by simp+
+
+lemma same_actors0[rule_format]: "\<forall> z z'.  z \<rightarrow>\<^sub>n z' \<longrightarrow> actors_graph (graphI z) = actors_graph (graphI z')"
+proof (clarify, erule state_transition_in.cases)
+  show "\<And>z z' G I a l l' I'.
+       z = I \<Longrightarrow>
+       z' = I' \<Longrightarrow>
+       G = graphI I \<Longrightarrow>
+       a @\<^bsub>G\<^esub> l \<Longrightarrow>
+       l \<in> nodes G \<Longrightarrow>
+       l' \<in> nodes G \<Longrightarrow>
+       a \<in> actors_graph (graphI I) \<Longrightarrow>
+       enables I l' (Actor a) move \<Longrightarrow>
+       I' = Infrastructure (move_graph_a a l l' (graphI I)) (delta I) \<Longrightarrow>
+       actors_graph (graphI z) = actors_graph (graphI z')"
+    apply (simp add: actors_graph_def)
+    apply (rule equalityI)
+     apply (rule subsetI)
+     apply (rule CollectI)
+     apply (drule CollectD)
+     apply (erule exE, erule conjE)+
+    apply (simp add: move_graph_a_def)
+proof -
+  fix z :: infrastructure and z' :: infrastructure and G :: igraph and I :: infrastructure and a :: "char list" and l :: location and l' :: location and I' :: infrastructure and x :: "char list" and y :: location and ya :: location
+assume a1: "x \<in> agra (graphI I) ya"
+assume a2: "ya \<in> nodes (graphI I)"
+assume a3: "l' \<in> nodes (graphI I)"
+assume "l \<in> nodes (graphI I)"
+  have f4: "\<forall>f fa fb fc fd i. nodes (Lgraph (gra i) f fd fa fc fb) = nodes i"
+by (simp add: nodes_def)
+obtain bb :: bool where
+f5: "bb = ((a \<notin> agra (graphI I) l \<or> a \<in> agra (graphI I) l') \<or> (\<exists>X56. (X56 \<noteq> l \<or> (l \<noteq> l' \<or> l' \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I))(l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> (x = a \<or> x \<in> agra (graphI I) l')) \<and> (l = l' \<or> l \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> x \<in> agra (graphI I) l \<and> x \<noteq> a)) \<and> (X56 = l \<or> (X56 \<noteq> l' \<or> l' \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> (x = a \<or> x \<in> agra (graphI I) l')) \<and> (X56 = l' \<or> X56 \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> x \<in> agra (graphI I) X56))))"
+by blast
+then have "bb \<and> (a \<in> agra (graphI I) l \<and> a \<notin> agra (graphI I) l' \<or> bb \<and> (\<exists>l. l \<in> nodes (Lgraph (gra (graphI I)) (agra (graphI I)) (cgra (graphI I)) (lgra (graphI I)) (egra (graphI I)) (kgra (graphI I))) \<and> x \<in> agra (graphI I) l))"
+using f4 a3 a2 a1 by metis
+then show "(a \<in> agra (graphI I) l \<and> a \<notin> agra (graphI I) l' \<longrightarrow> (\<exists>la. (la = l \<longrightarrow> (l = l' \<longrightarrow> l' \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I))(l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> (x = a \<or> x \<in> agra (graphI I) l')) \<and> (l \<noteq> l' \<longrightarrow> l \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> x \<in> agra (graphI I) l \<and> x \<noteq> a)) \<and> (la \<noteq> l \<longrightarrow> (la = l' \<longrightarrow> l' \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> (x = a \<or> x \<in> agra (graphI I) l')) \<and> (la \<noteq> l' \<longrightarrow> la \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> x \<in> agra (graphI I) la)))) \<and> ((a \<in> agra (graphI I) l \<longrightarrow> a \<in> agra (graphI I) l') \<longrightarrow> (a \<in> agra (graphI I) l \<and> a \<notin> agra (graphI I) l' \<longrightarrow> (\<exists>la. (la = l \<longrightarrow> (l = l' \<longrightarrow> l' \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I))(l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> (x = a \<or> x \<in> agra (graphI I) l')) \<and> (l \<noteq> l' \<longrightarrow> l \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> x \<in> agra (graphI I) l \<and> x \<noteq> a)) \<and> (la \<noteq> l \<longrightarrow> (la = l' \<longrightarrow> l' \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> (x = a \<or> x \<in> agra (graphI I) l')) \<and> (la \<noteq> l' \<longrightarrow> la \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> x \<in> agra (graphI I) la)))) \<and> (\<exists>l. l \<in> nodes (Lgraph (gra (graphI I)) (agra (graphI I)) (cgra (graphI I)) (lgra (graphI I)) (egra (graphI I)) (kgra (graphI I))) \<and> x \<in> agra (graphI I) l))"
+  using f5 by blast
+next show "\<And>z z' G I a l l' I'.
+       z = I \<Longrightarrow>
+       z' = Infrastructure (move_graph_a a l l' (graphI I)) (delta I) \<Longrightarrow>
+       G = graphI I \<Longrightarrow>
+       a @\<^bsub>graphI I\<^esub> l \<Longrightarrow>
+       l \<in> nodes (graphI I) \<Longrightarrow>
+       l' \<in> nodes (graphI I) \<Longrightarrow>
+       \<exists>y. y \<in> nodes (graphI I) \<and> a \<in> agra (graphI I) y \<Longrightarrow>
+       enables I l' (Actor a) move \<Longrightarrow>
+       I' = Infrastructure (move_graph_a a l l' (graphI I)) (delta I) \<Longrightarrow>
+       {x. \<exists>y. y \<in> nodes (move_graph_a a l l' (graphI I)) \<and> x \<in> agra (move_graph_a a l l' (graphI I)) y}
+       \<subseteq> {x. \<exists>y. y \<in> nodes (graphI I) \<and> x \<in> agra (graphI I) y}"
+    apply (simp add: enables_def move_graph_a_def)
+    apply (rule conjI)
+     apply (rule impI)+
+     apply (rule subsetI)
+     apply (rule CollectI)
+     apply (drule CollectD)
+     apply (erule exE)+
+    apply (erule conjE)+
+  proof -
+    fix z :: infrastructure and z' :: infrastructure and G :: igraph and I :: infrastructure and a :: "char list" and l :: location and l' :: location and I' :: infrastructure and x :: "char list" and y :: location and ya :: location
+    assume a1: "G = graphI I"
+    assume a2: "ya = l \<longrightarrow> (l = l' \<longrightarrow> l' \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I))(l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> (x = a \<or> x \<in> agra (graphI I) l')) \<and> (l \<noteq> l' \<longrightarrow> l \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> x \<in> agra (graphI I) l \<and> x \<noteq> a)"
+    assume a3: "l \<in> nodes (graphI I)"
+    assume a4: "l' \<in> nodes (graphI I)"
+    assume a5: "a \<in> agra (graphI I) y"
+    assume a6: "ya \<noteq> l \<longrightarrow> (ya = l' \<longrightarrow> l' \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> (x = a \<or> x \<in> agra (graphI I) l')) \<and> (ya \<noteq> l' \<longrightarrow> ya \<in> nodes (Lgraph (gra (graphI I)) ((agra (graphI I)) (l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l'))) (cgra (graphI I)) (lgra (graphI I)) ((egra (graphI I)) (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))) (kgra (graphI I))) \<and> x \<in> agra (graphI I) ya)"
+    assume a7: "y \<in> nodes (graphI I)"
+    have "ya = l' \<or> ya = l \<or> (\<exists>l. x \<in> agra G l \<and> l \<in> nodes G)"
+      using a6 a1 nodes_def by force
+    then show "\<exists>l. l \<in> nodes (graphI I) \<and> x \<in> agra (graphI I) l"
+      using a7 a6 a5 a4 a3 a2 a1 by (metis (full_types))
+  next show "\<And>z z' G I a l l' I'.
+       z = I \<Longrightarrow>
+       z' =
+       Infrastructure
+        (Lgraph (gra (graphI I))
+          (if a \<in> agra (graphI I) l \<and> a \<notin> agra (graphI I) l'
+           then (agra (graphI I))(l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l')) else agra (graphI I))
+          (cgra (graphI I)) (lgra (graphI I))
+          (if a \<in> agra (graphI I) l \<and> a \<notin> agra (graphI I) l'
+           then (egra (graphI I))
+                (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))
+           else egra (graphI I))
+          (kgra (graphI I)))
+        (delta I) \<Longrightarrow>
+       G = graphI I \<Longrightarrow>
+       a @\<^bsub>graphI I\<^esub> l \<Longrightarrow>
+       l \<in> nodes (graphI I) \<Longrightarrow>
+       l' \<in> nodes (graphI I) \<Longrightarrow>
+       \<exists>y. y \<in> nodes (graphI I) \<and> a \<in> agra (graphI I) y \<Longrightarrow>
+       \<exists>x\<in>delta I (graphI I) l'. case x of (p, e) \<Rightarrow> move \<in> e \<and> p (Actor a) \<Longrightarrow>
+       I' =
+       Infrastructure
+        (Lgraph (gra (graphI I))
+          (if a \<in> agra (graphI I) l \<and> a \<notin> agra (graphI I) l'
+           then (agra (graphI I))(l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l')) else agra (graphI I))
+          (cgra (graphI I)) (lgra (graphI I))
+          (if a \<in> agra (graphI I) l \<and> a \<notin> agra (graphI I) l'
+           then (egra (graphI I))
+                (l := egra (graphI I) l - {cgra (graphI I) a}, l' := insert (cgra (graphI I) a) (egra (graphI I) l'))
+           else egra (graphI I))
+          (kgra (graphI I)))
+        (delta I) \<Longrightarrow>
+       (a \<in> agra (graphI I) l \<longrightarrow> a \<in> agra (graphI I) l') \<longrightarrow>
+       (a \<in> agra (graphI I) l \<and> a \<notin> agra (graphI I) l' \<longrightarrow>
+        {x. \<exists>y. (y = l \<longrightarrow>
+                 (l = l' \<longrightarrow>
+                  l' \<in> nodes
+                         (Lgraph (gra (graphI I)) ((agra (graphI I))(l' := insert a (agra (graphI I) l')))
+                           (cgra (graphI I)) (lgra (graphI I))
+                           ((egra (graphI I))(l' := insert (cgra (graphI I) a) (egra (graphI I) l')))
+                           (kgra (graphI I))) \<and>
+                  (x = a \<or> x \<in> agra (graphI I) l')) \<and>
+                 (l \<noteq> l' \<longrightarrow>
+                  l \<in> nodes
+                        (Lgraph (gra (graphI I))
+                          ((agra (graphI I))(l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l')))
+                          (cgra (graphI I)) (lgra (graphI I))
+                          ((egra (graphI I))
+                           (l := egra (graphI I) l - {cgra (graphI I) a},
+                            l' := insert (cgra (graphI I) a) (egra (graphI I) l')))
+                          (kgra (graphI I))) \<and>
+                  x \<in> agra (graphI I) l \<and> x \<noteq> a)) \<and>
+                (y \<noteq> l \<longrightarrow>
+                 (y = l' \<longrightarrow>
+                  l' \<in> nodes
+                         (Lgraph (gra (graphI I))
+                           ((agra (graphI I))(l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l')))
+                           (cgra (graphI I)) (lgra (graphI I))
+                           ((egra (graphI I))
+                            (l := egra (graphI I) l - {cgra (graphI I) a},
+                             l' := insert (cgra (graphI I) a) (egra (graphI I) l')))
+                           (kgra (graphI I))) \<and>
+                  (x = a \<or> x \<in> agra (graphI I) l')) \<and>
+                 (y \<noteq> l' \<longrightarrow>
+                  y \<in> nodes
+                        (Lgraph (gra (graphI I))
+                          ((agra (graphI I))(l := agra (graphI I) l - {a}, l' := insert a (agra (graphI I) l')))
+                          (cgra (graphI I)) (lgra (graphI I))
+                          ((egra (graphI I))
+                           (l := egra (graphI I) l - {cgra (graphI I) a},
+                            l' := insert (cgra (graphI I) a) (egra (graphI I) l')))
+                          (kgra (graphI I))) \<and>
+                  x \<in> agra (graphI I) y))}
+        \<subseteq> {x. \<exists>y. y \<in> nodes (graphI I) \<and> x \<in> agra (graphI I) y}) \<and>
+       {x. \<exists>y. y \<in> nodes
+                     (Lgraph (gra (graphI I)) (agra (graphI I)) (cgra (graphI I)) (lgra (graphI I)) (egra (graphI I))
+                       (kgra (graphI I))) \<and>
+               x \<in> agra (graphI I) y}
+       \<subseteq> {x. \<exists>y. y \<in> nodes (graphI I) \<and> x \<in> agra (graphI I) y} "
+      using nodes_def by auto
+  qed
+qed
+next show "\<And>z z' G I a l I'.
+       z = I \<Longrightarrow>
+       z' = I' \<Longrightarrow>
+       G = graphI I \<Longrightarrow>
+       a @\<^bsub>G\<^esub> l \<Longrightarrow>
+       enables I l (Actor a) put \<Longrightarrow>
+       I' = Infrastructure (put_graph_efid a l (graphI I)) (delta I) \<Longrightarrow>
+       actors_graph (graphI z) = actors_graph (graphI z') "
+    by (simp add: actors_graph_def nodes_def put_graph_efid_def)
+next show "\<And>z z' G I a l I'.
+       z = I \<Longrightarrow>
+       z' = I' \<Longrightarrow>
+       G = graphI I \<Longrightarrow>
+       a @\<^bsub>G\<^esub> l \<Longrightarrow>
+       l \<in> nodes G \<Longrightarrow>
+       enables I l (Actor a) get \<Longrightarrow>
+       I' =
+       Infrastructure
+        (Lgraph (gra G) (agra G) (cgra G) (lgra G) (egra G)
+          ((kgra G)(a := (kgra G a)(l := {(x, y). x \<in> agra G l \<and> y \<in> egra G l}))))
+        (delta I) \<Longrightarrow>
+       actors_graph (graphI z) = actors_graph (graphI z') "
+    by (simp add: actors_graph_def nodes_def)
+qed
+
+lemma same_actors: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* 
+              \<Longrightarrow> actors_graph(graphI I) = actors_graph(graphI y)"
+proof (erule rtrancl_induct)
+  show "actors_graph (graphI I) = actors_graph (graphI I)"
+    by (rule refl)
+next show "\<And>(y::infrastructure) z::infrastructure.
+       (I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+       (y, z) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y} \<Longrightarrow>
+       actors_graph (graphI I) = actors_graph (graphI y) \<Longrightarrow>
+       actors_graph (graphI I) = actors_graph (graphI z)"
+    by (drule CollectD, simp, drule same_actors0, simp)  
+qed
+
+
+(* locations invariants *)
+ lemma same_nodes0[rule_format]: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow> nodes(graphI z) = nodes(graphI z')"   
+    apply clarify
+  apply (erule Infrastructure.state_transition_in.cases)
+  by (simp add: move_graph_a_def atI_def actors_graph_def nodes_def put_graph_efid_def)+
+
+lemma same_nodes: "(c, s) \<in> {(x::Infrastructure.infrastructure, y::Infrastructure.infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*
+\<Longrightarrow> Infrastructure.nodes (graphI c) = Infrastructure.nodes (graphI s)"
+  apply (erule rtrancl_induct)
+   apply (rule refl)
+  apply (drule CollectD)
+    apply simp
+    apply (drule same_nodes0)
+  by simp  
+
+(* delta invariants *)
+lemma init_state_policy0: "\<lbrakk> \<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow>  delta(z) = delta(z'); 
+                          (x,y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<rbrakk> \<Longrightarrow> 
+                          delta(x) = delta(y)"  
+  apply (rule mp)
+  prefer 2
+   apply (rotate_tac 1)
+    apply assumption
+  thm rtrancl_induct
+  apply (erule rtrancl_induct)  
+    apply (rule impI)
+   apply (rule refl)
+    apply (subgoal_tac "delta y = delta z")
+   apply (erule impE)
+    apply assumption
+    apply (rule impI)
+   apply (rule trans)
+    apply assumption+
+  apply (drule_tac x = y in spec)
+  apply (drule_tac x = z in spec)
+    apply (rotate_tac -1)
+  apply (erule impE)
+    apply simp
+by assumption
+ 
+lemma init_state_policy: "\<lbrakk> (x,y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<rbrakk> \<Longrightarrow> 
+                          delta(x) = delta(y)"  
+  apply (rule init_state_policy0)
+    apply (rule delta_invariant)
+  by assumption
+
+(* efids invariants *)
+lemma eroots_inj_inv0: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow>  
+inj(cgra (graphI z)) \<longrightarrow> inj (cgra (graphI z'))"
+    apply clarify
+  apply (erule Infrastructure.state_transition_in.cases)
+  apply (simp add: move_graph_a_def)
+  apply simp
+  by (simp add: put_graph_efid_def)
+
+lemma eroots_inj_inv: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* 
+              \<Longrightarrow> inj(cgra (graphI I)) \<longrightarrow> inj (cgra (graphI y))"
+proof (erule rtrancl_induct)
+  show "inj (cgra (graphI I)) \<longrightarrow> inj (cgra (graphI I))" by simp
+next show "\<And>y z. (I, y) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+           (y, z) \<in> {(x, y). x \<rightarrow>\<^sub>n y} \<Longrightarrow>
+           inj (cgra (graphI I)) \<longrightarrow> inj (cgra (graphI y)) \<Longrightarrow> inj (cgra (graphI I)) \<longrightarrow> inj (cgra (graphI z)) "
+    using eroots_inj_inv0 by auto
+qed
+
+
 end
 
   

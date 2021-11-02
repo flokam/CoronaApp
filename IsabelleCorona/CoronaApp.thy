@@ -52,17 +52,17 @@ defines global_policy'_def: "global_policy' I eid \<equiv>
 fixes global_policy'' :: "[infrastructure, efid] \<Rightarrow> bool"
 defines global_policy''_def: "global_policy'' I eid \<equiv>  
              \<not>(identifiable' eid 
-                ((\<Inter> (kgra(graphI I)(Actor ''Eve'')`(nodes(graphI I))))
+                ((\<Inter> (kgra(graphI I)(''Eve'')`(nodes(graphI I))))
                  - {(x,y). x = ''Eve''}))"
 
 
-fixes ex_creds :: "identity \<Rightarrow> (string set * string set * efid)"
+fixes ex_creds :: "identity \<Rightarrow> efid"
 defines ex_creds_def: 
-          "ex_creds \<equiv> (\<lambda> x. if x = ''Alice'' then ({}, {}, Efid 1) else 
-                            (if x = ''Bob'' then  ({},{}, Efid 2) else 
-                            (if x = ''Charly'' then ({},{}, Efid 3) else
-                            (if x = ''David'' then ({},{}, Efid 4) else
-                            (if x = ''Eve'' then ({},{}, Efid 5) else ({},{},Efid 0))))))"
+          "ex_creds \<equiv> (\<lambda> x. if x = ''Alice'' then Efid 1 else 
+                            (if x = ''Bob'' then  Efid 2 else 
+                            (if x = ''Charly'' then Efid 3 else
+                            (if x = ''David'' then Efid 4 else
+                            (if x = ''Eve'' then Efid 5 else Efid 0)))))"
 
 fixes ex_locs :: "location \<Rightarrow> string * (dlm * data) set"
 defines "ex_locs \<equiv> (\<lambda> x. ('''',{}))"
@@ -101,14 +101,14 @@ defines ex_efids''_def: "ex_efids'' \<equiv>
                 else (if x = shop then {Efid 5, Efid 2, Efid 3, Efid 4}
                       else {}))"
 
-fixes ex_knos :: "actor \<Rightarrow> location \<Rightarrow> (identity * efid) set"
-defines ex_knos_def: "ex_knos \<equiv> (\<lambda> x :: actor. 
-                  (if x = Actor ''Eve'' then (\<lambda> l :: location. {} :: (identity * efid) set) 
+fixes ex_knos :: "identity \<Rightarrow> location \<Rightarrow> (identity * efid) set"
+defines ex_knos_def: "ex_knos \<equiv> (\<lambda> x :: identity. 
+                  (if x = ''Eve'' then (\<lambda> l :: location. {} :: (identity * efid) set) 
                    else (\<lambda> l :: location. {} :: (identity * efid) set)))"
 
-fixes ex_knos' :: "actor \<Rightarrow> location \<Rightarrow> (identity * efid) set"
-defines ex_knos'_def: "ex_knos' \<equiv> (\<lambda> x :: actor. 
-                  (if x = Actor ''Eve'' then 
+fixes ex_knos' :: "identity \<Rightarrow> location \<Rightarrow> (identity * efid) set"
+defines ex_knos'_def: "ex_knos' \<equiv> (\<lambda> x :: identity. 
+                  (if x = ''Eve'' then 
                      (\<lambda> l :: location.
                         (if l = pub then 
                                   ({(''Alice'', Efid 1),(''Alice'', Efid 2),(''Alice'', Efid 5),
@@ -117,9 +117,9 @@ defines ex_knos'_def: "ex_knos' \<equiv> (\<lambda> x :: actor.
                          else {})) 
                    else (\<lambda> l :: location. {} :: (identity * efid) set)))"
 
-fixes ex_knos'' :: "actor \<Rightarrow> location \<Rightarrow> (identity * efid) set"
-defines ex_knos''_def: "ex_knos'' \<equiv> (\<lambda> x :: actor.                       
-                  (if x = Actor ''Eve'' then 
+fixes ex_knos'' :: "identity \<Rightarrow> location \<Rightarrow> (identity * efid) set"
+defines ex_knos''_def: "ex_knos'' \<equiv> (\<lambda> x :: identity.                       
+                  (if x = ''Eve'' then 
                       (\<lambda> l :: location.
                            (if l = pub then 
                                   ({(''Alice'', Efid 1),(''Alice'', Efid 2),(''Alice'', Efid 5),
@@ -288,20 +288,22 @@ next show "''Eve'' @\<^bsub>graphI corona_scenario\<^esub> pub"
     by (simp add: corona_scenario_def ex_graph_def ex_loc_ass_def atI_def nodes_def)
 next show "enables corona_scenario pub (Actor ''Eve'') get"
     by (simp add: enables_def corona_scenario_def ex_graph_def local_policies_def
-                    ex_creds_def ex_locs_def has_def credentials_def)
+                    ex_creds_def ex_locs_def)
+next show "pub \<in> nodes (graphI corona_scenario)"
+    using corona_scenario_def ex_graph_def nodes_def by auto 
 next show "corona_scenario' =
     Infrastructure
      (Lgraph (gra (graphI corona_scenario)) (agra (graphI corona_scenario)) (cgra (graphI corona_scenario))
        (lgra (graphI corona_scenario)) (egra (graphI corona_scenario))
        ((kgra (graphI corona_scenario))
-        (Actor ''Eve'' := (kgra (graphI corona_scenario) (Actor ''Eve''))
+        (''Eve'' := (kgra (graphI corona_scenario) (''Eve''))
            (pub := {(x, y). x \<in> agra (graphI corona_scenario) pub \<and> y \<in> egra (graphI corona_scenario) pub}))))
      (delta corona_scenario)"
     apply (simp add: corona_scenario'_def ex_graph'_def move_graph_a_def 
                      corona_scenario_def ex_graph_def pub_def shop_def 
                      ex_loc_ass'_def ex_loc_ass_def ex_efids'_def ex_efids_def 
                      ex_knos_def ex_knos'_def ex_creds_def)
-    apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
+    apply (rule ext, simp add: insert_Diff_if shop_def pub_def)
       apply (rule impI, rule ext)
 by auto[1]
 qed
@@ -330,9 +332,9 @@ next show "corona_scenario'' =
     apply (simp add: corona_scenario'_def ex_graph''_def move_graph_a_def corona_scenario''_def 
                      ex_graph'_def ex_loc_ass_def ex_loc_ass'_def shop_def pub_def)
     apply (rule conjI)
-      apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
+      apply (rule ext, simp add: insert_Diff_if shop_def pub_def)
     apply (simp add: ex_efids_def ex_efids'_def shop_def pub_def ex_creds_def)
-    by (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)
+    by (rule ext, simp add: insert_Diff_if shop_def pub_def)
 qed
 
 lemma step2r: "corona_scenario'  \<rightarrow>\<^sub>n* corona_scenario''"
@@ -359,9 +361,9 @@ next show \<open>corona_scenario''' =
     apply (simp add: corona_scenario'''_def ex_graph'''_def move_graph_a_def pub_def shop_def
                      corona_scenario''_def ex_graph''_def ex_loc_ass''_def ex_loc_ass'_def)
     apply (rule conjI)
-     apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)+
+     apply (rule ext, simp add: insert_Diff_if shop_def pub_def)+
     apply (simp add: ex_efids'_def ex_efids''_def shop_def pub_def ex_creds_def)
-    by (simp add: insert_Diff_if shop_def efemid_def pub_def)
+    by (simp add: insert_Diff_if shop_def pub_def)
 qed
    
 lemma step3r: "corona_scenario''  \<rightarrow>\<^sub>n* corona_scenario'''"
@@ -376,20 +378,22 @@ proof (rule_tac l = shop and a = "''Eve''" in get, rule refl)
    by (simp add: corona_scenario'''_def ex_graph'''_def pub_def shop_def atI_def ex_loc_ass''_def)
 next show \<open>enables corona_scenario''' shop (Actor ''Eve'') get\<close>
     by (simp add: enables_def corona_scenario'''_def local_policies_def)
+next show "shop \<in> nodes (graphI corona_scenario''')"
+    using corona_scenario'''_def ex_graph'''_def nodes_def by auto
 next show \<open>corona_scenario'''' =
     Infrastructure
      (Lgraph (gra (graphI corona_scenario''')) (agra (graphI corona_scenario''')) (cgra (graphI corona_scenario'''))
        (lgra (graphI corona_scenario''')) (egra (graphI corona_scenario'''))
        ((kgra (graphI corona_scenario'''))
-        (Actor ''Eve'' := (kgra (graphI corona_scenario''') (Actor ''Eve''))
+        (''Eve'' := (kgra (graphI corona_scenario''') (''Eve''))
            (shop := {(x, y). x \<in> agra (graphI corona_scenario''') shop \<and> y \<in> egra (graphI corona_scenario''') shop}))))
      (delta corona_scenario''') \<close>
     apply (simp add: corona_scenario'''_def ex_graph'''_def move_graph_a_def pub_def shop_def
                      corona_scenario''''_def ex_graph''''_def ex_loc_ass''_def ex_loc_ass'_def)
-     apply (rule ext, simp add: insert_Diff_if shop_def efemid_def pub_def)+
+     apply (rule ext, simp add: insert_Diff_if shop_def pub_def)+
     apply (simp add: ex_efids''_def shop_def pub_def ex_knos'_def ex_knos''_def)
     apply (rule impI, rule ext)
-    apply (simp add: insert_Diff_if shop_def efemid_def pub_def)
+    apply (simp add: insert_Diff_if shop_def pub_def)
     by auto
 qed
 
