@@ -1575,7 +1575,7 @@ next show "\<And>s s' G I a l I'.
       apply (simp add: efids_root_efids_inc_lem ext_image)
       apply (rule ext_ifte)
       apply (metis InfrastructureOne.graphI.simps InfrastructureOne.put_graph_efid_def InfrastructureOne.same_actors0 InfrastructureOne.same_nodes0 InfrastructureOne.state_transition_in.put)
-(* here *)
+(* *)
       apply (subgoal_tac "InfrastructureOne.kgra
         (InfrastructureOne.graphI
           (InfrastructureOne.infrastructure.Infrastructure
@@ -1599,8 +1599,17 @@ next show "\<And>s s' G I a l I'.
       apply fastforce
       using InfrastructureOne.same_actors coronaO_efids_list_inj efids_list_inj_refl apply blast
         apply (simp add: ran_efids_list_disjoint_refl range_disjoint_corona_scenarioO)
-      apply simp
-      sorry
+       apply simp
+      prefer 2
+      using InfrastructureOne.put_graph_efid_def efids_root_efids_inc_lem apply force
+(* here *)
+      thm efid_kgra_in_range_invariantOO
+      apply (rule_tac l = la and h' = aa in efid_kgra_in_range_invariantOO)
+      apply assumption
+      using efid_in_range_corona_scenarioO apply fastforce
+         apply (meson efid_kgra_in_range_corona_scenarioO)
+        apply (erule conjE, assumption)+
+      by force
   qed
 qed
 

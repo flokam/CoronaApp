@@ -1101,6 +1101,7 @@ next show " \<And>y z. \<forall>l\<in>InfrastructureOne.nodes (InfrastructureOne
 qed
 
 
+
 lemma efids_root_efids_inc_lem: "efids_root (efids_inc_ind el) = efids_root el"
   by (case_tac el, simp add: efids_inc_ind_def efids_root_def)
 
@@ -2091,7 +2092,8 @@ proof (erule rtrancl_induct, simp)
 by assumption+
 qed
 
-lemma kgra_in_egra: "(\<forall> z. (\<forall> z'. (z \<rightarrow>\<^sub>n z') \<longrightarrow>
+(*
+lemma kgra_in_egra[rule_format]: "(\<forall> z. (\<forall> z'. (z \<rightarrow>\<^sub>n z') \<longrightarrow>
 (\<forall> a l ab b. (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z) a l \<longrightarrow>
               (\<exists> l. b \<in> egra (graphI z) l)) \<longrightarrow>
 (\<forall> a l ab b. (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z') a l \<longrightarrow>
@@ -2164,8 +2166,12 @@ next show "\<And>z z' a l ab b G I aa la I'.
         (InfrastructureOne.delta I) \<Longrightarrow>
        \<exists>l. b \<in> InfrastructureOne.egra (InfrastructureOne.graphI z') l"
     apply (unfold put_graph_efid_def)
+    apply (subgoal_tac "(ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z) a l")
+    prefer 2
+    apply fastforce
     apply (case_tac "l = la")
-   
+apply simp
+   *)
 end
 
  
