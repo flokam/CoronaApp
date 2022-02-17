@@ -4,7 +4,7 @@ begin
 locale scenarioCoronaOne = scenarioCorona +
 
   fixes corona_actorsO :: "identity set"
-defines corona_actorsO_def: "corona_actorsO \<equiv> {''Alice'', ''Bob'', ''Charly'', ''David'', ''Eve''}"
+defines corona_actorsO_def: "corona_actorsO \<equiv> {''Alice'', ''Bob'', ''Charly'', ''David'', ''Eve'', ''Flo''}"
 
 fixes corona_locationsO :: "location set"
 defines corona_locationsO_def: "corona_locationsO \<equiv> {Location 0, Location 1}"
@@ -38,6 +38,12 @@ defines global_policyO''_def: "global_policyO'' I eid \<equiv>
                 ((\<Inter> (kgra(graphI I)(''Eve'')`(nodes(graphI I))))
                  - {(x,y). x = ''Eve''}))"
 
+fixes global_policyO :: "[infrastructure, efid] \<Rightarrow> bool"
+defines global_policyO_def: "global_policyO I eid \<equiv>  
+             \<forall> L. L \<subseteq> nodes(graphI I) \<longrightarrow> (\<not>(identifiableO' eid 
+               ((\<Inter> (kgra(graphI I)(''Eve'')`L))
+                          - {(x,y). x = ''Eve''})))"
+
 fixes ex_credsO :: "identity \<Rightarrow> efidlist"
 defines ex_credsO_def: 
           "ex_credsO \<equiv> (\<lambda> x. if x = ''Alice'' then (Efids (Efid 1) 0 (\<lambda> n. Efid (2^(n+1)))) else 
@@ -45,7 +51,8 @@ defines ex_credsO_def:
                             (if x = ''Charly'' then (Efids (Efid 3) 0 (\<lambda> n. Efid (5^(n+1)))) else
                             (if x = ''David'' then (Efids (Efid 4) 0 (\<lambda> n. Efid (7^(n+1)))) else
                             (if x = ''Eve'' then (Efids (Efid 5) 0 (\<lambda> n. Efid (11^(n+1)))) else 
-                                 (Efids (Efid 0) 0 (\<lambda> n. Efid (13^(n+1)))))))))"
+                            (if x = ''Flo'' then (Efids (Efid 6) 0 (\<lambda> n. Efid (13^(n+1)))) else 
+                                 (Efids (Efid 0) 0 (\<lambda> n. Efid (17^(n+1))))))))))"
 
 fixes ex_locsO :: "location \<Rightarrow> string * (dlm * data) set"
 defines "ex_locsO \<equiv> (\<lambda> x. ('''',{}))"
@@ -53,35 +60,35 @@ defines "ex_locsO \<equiv> (\<lambda> x. ('''',{}))"
 fixes ex_loc_assO :: "location \<Rightarrow> identity set"
 defines ex_loc_assO_def: "ex_loc_assO \<equiv>
           (\<lambda> x. if x = pubO then {''Alice'', ''Bob'', ''Eve''}  
-                 else (if x = shopO then {''Charly'', ''David''} 
+                 else (if x = shopO then {''Charly'', ''David'', ''Flo''} 
                        else {}))"
 fixes ex_loc_assO' :: "location \<Rightarrow> identity set"
 defines ex_loc_assO'_def: "ex_loc_assO' \<equiv>
           (\<lambda> x. if x = pubO then {''Alice'', ''Eve''}  
-                 else (if x = shopO then { ''Bob'', ''Charly'', ''David''} 
+                 else (if x = shopO then { ''Bob'', ''Charly'', ''David'', ''Flo''} 
                        else {}))"
 fixes ex_loc_assO'' :: "location \<Rightarrow> identity set"
 defines ex_loc_assO''_def: "ex_loc_assO'' \<equiv>
           (\<lambda> x. if x = pubO then {''Alice''}  
-                 else (if x = shopO then {''Eve'', ''Bob'', ''Charly'', ''David''} 
+                 else (if x = shopO then {''Eve'', ''Bob'', ''Charly'', ''David'', ''Flo''} 
                        else {}))"
 
 fixes ex_efidsO :: "location \<Rightarrow> efid set"
 defines ex_efidsO_def: "ex_efidsO \<equiv> 
           (\<lambda> x. if x = pubO then {Efid 2, Efid 3, Efid 11}
-                else (if x = shopO then {Efid 5, Efid 7}
+                else (if x = shopO then {Efid 5, Efid 7, Efid 13}
                       else {}))"
 
 fixes ex_efidsO' :: "location \<Rightarrow> efid set"
 defines ex_efidsO'_def: "ex_efidsO' \<equiv> 
           (\<lambda> x. if x = pubO then {Efid 2, Efid 11}
-                else (if x = shopO then {Efid 3, Efid 5, Efid 7}
+                else (if x = shopO then {Efid 3, Efid 5, Efid 7, Efid 13}
                       else {}))"
 
 fixes ex_efidsO'' :: "location \<Rightarrow> efid set"
 defines ex_efidsO''_def: "ex_efidsO'' \<equiv> 
           (\<lambda> x. if x = pubO then {Efid 2}
-                else (if x = shopO then {Efid 11, Efid 3, Efid 5, Efid 7}
+                else (if x = shopO then {Efid 11, Efid 3, Efid 5, Efid 7, Efid 13}
                       else {}))"
 
 fixes ex_knosO :: "identity \<Rightarrow> location \<Rightarrow> (identity * efid) set"
@@ -109,10 +116,12 @@ defines ex_knosO''_def: "ex_knosO'' \<equiv> (\<lambda> x :: identity.
                                     (''Bob'', Efid 2),(''Bob'', Efid 3),(''Bob'', Efid 11),
                                     (''Eve'', Efid 2),(''Eve'', Efid 3),(''Eve'', Efid 11)})
                             else (if l = shopO then 
-                                     ({(''Eve'', Efid 11),(''Eve'', Efid 3),(''Eve'', Efid 5),(''Eve'', Efid 7),
-                                       (''Bob'', Efid 11),(''Bob'', Efid 3),(''Bob'', Efid 5),(''Bob'', Efid 7), 
-                                       (''Charly'', Efid 11),(''Charly'', Efid 3),(''Charly'', Efid 5),(''Charly'', Efid 7),
-                                       (''David'', Efid 11),(''David'', Efid 3),(''David'', Efid 5),(''David'', Efid 7)})
+                                     ({(''Eve'', Efid 11),(''Eve'', Efid 3),(''Eve'', Efid 5),(''Eve'', Efid 7), (''Eve'', Efid 13),
+                                       (''Bob'', Efid 11),(''Bob'', Efid 3),(''Bob'', Efid 5),(''Bob'', Efid 7), (''Bob'', Efid 13),
+                                       (''Charly'', Efid 11),(''Charly'', Efid 3),(''Charly'', Efid 5),(''Charly'', Efid 7), (''Charly'', Efid 13),
+                                       (''David'', Efid 11),(''David'', Efid 3),(''David'', Efid 5),(''David'', Efid 7), (''David'', Efid 13),
+                                       (''Flo'', Efid 11),(''Flo'', Efid 3),(''Flo'', Efid 5),(''Flo'', Efid 7), (''Flo'', Efid 13)
+})
                                    else {})))
                    else (\<lambda> l :: location. {} :: (identity * efid) set)))"
 
@@ -198,7 +207,7 @@ defines CoronaO'_def: "CoronaO' \<equiv> {corona_scenarioO'}"
 fixes corona_scenarioO'' :: "infrastructure"
 defines corona_scenarioO''_def: "corona_scenarioO'' \<equiv> Infrastructure ex_graphO'' local_policiesO"
 fixes CoronaO'' :: "infrastructure set"
-defines Corona''_def: "CoronaO'' \<equiv> {corona_scenarioO''}"
+defines CoronaO''_def: "CoronaO'' \<equiv> {corona_scenarioO''}"
 fixes corona_scenarioO''' :: "infrastructure"
 defines corona_scenarioO'''_def: "corona_scenarioO''' \<equiv> Infrastructure ex_graphO''' local_policiesO"
 fixes CoronaO''' :: "infrastructure set"
@@ -214,6 +223,8 @@ fixes corona_KripkeO
 defines "corona_KripkeO \<equiv> Kripke corona_statesO IcoronaO"
 fixes scoronaO 
 defines "scoronaO \<equiv> {x. \<exists> n. \<not> global_policyO'' x (Efid n)}"  
+fixes scoronaO' 
+defines "scoronaO' \<equiv> {x. \<exists> n. \<not> global_policyO x (Efid n)}"  
 
 begin
 (* For the encoding of the efids as powers of primes we need some mathematical facts to 
@@ -356,6 +367,36 @@ lemma prime_13: "prime 13"
   apply (simp add: prime_def)
   by (smt (z3) Groups.add_ac(2) One_nat_def Suc_leI add_Suc_right add_le_cancel_left add_left_cancel le_less_trans mult.commute mult_2 n_less_n_mult_m nat.simps(1) nat_arith.rule0 nat_le_linear nat_neq_iff not_less numeral.simps(2) numeral.simps(3) power2_eq_square times_nat.simps(2) zero_less_one)
 
+
+lemma square_le: "(n :: nat) \<le> m \<Longrightarrow> n^2 \<le> m^2"
+  using power2_nat_le_eq_le by blast
+
+lemma five_sq: "(5 :: nat)\<^sup>2 = (25 :: nat)"
+  by auto
+
+lemma fivelem: "(5 :: nat) \<le> (q :: nat) \<Longrightarrow> (25 :: nat) \<le> (q :: nat)^2" 
+  apply (subgoal_tac "(5 :: nat)^2 = 25")
+   apply (metis scenarioCoronaOne.square_le)
+by (rule five_sq)
+
+lemma q4_gr: "(q :: nat) > 4 \<Longrightarrow> q^2 > 17"
+  apply (subgoal_tac "5 \<le> (q :: nat)")
+  prefer 2
+   apply simp
+  apply (subgoal_tac "(25 :: nat) \<le> (q :: nat)^2")
+  apply linarith
+  using scenarioCoronaOne.fivelem by auto
+
+lemma prime_17: "prime 17"
+  apply (rule prime_check_upto_squareroot)
+   apply simp
+  apply (subgoal_tac "q = 2 \<or> q = 3")
+  using Groups.add_ac(2) apply auto[1]
+  apply (subgoal_tac "q \<le> 4")
+  apply (simp add: prime_def)
+  apply (metis Suc_leI add_Suc_right antisym even_numeral le_neq_implies_less nat_arith.rule0 numeral_2_eq_2 numeral_3_eq_3 numeral_Bit0)
+  by (meson not_le scenarioCoronaOne.q4_gr)
+
 lemma coprime_sym: "coprime a b \<Longrightarrow> coprime b a"
   by (rule Rings.algebraic_semidom_class.coprime_imp_coprime)
 
@@ -463,6 +504,10 @@ lemma coprime_11_7: "coprime (11 :: nat) (7:: nat)"
   apply (rule prime_11)
   by (rule prime_7)
 
+lemma coprime_7_11: "coprime (7:: nat) 11"
+  by (rule coprime_sym, rule coprime_11_7)
+
+
 lemma coprime_11_5: "coprime (11 :: nat) 5"
   apply (rule prime_coprime)
     apply simp
@@ -496,10 +541,61 @@ lemma coprime_11_13: "coprime (11 :: nat) 13"
 lemma coprime_13_11: "coprime (13:: nat) 11"
   by (rule coprime_sym, rule coprime_11_13)
 
+lemma coprime_2_17: "coprime (2:: nat) 17"
+  apply (rule prime_coprime)
+    apply arith
+  apply (rule prime_2)
+  by (rule prime_17)
+
+lemma coprime_17_2: "coprime (17:: nat) 2"
+  by (rule coprime_sym, rule coprime_2_17)
+
+lemma coprime_3_17: "coprime (3:: nat) 17"
+  apply (rule prime_coprime)
+    apply arith
+  apply (rule prime_3)
+  by (rule prime_17)
+
+lemma coprime_17_3: "coprime (17:: nat) 3"
+  by (rule coprime_sym, rule coprime_3_17)
+
+lemma coprime_5_17: "coprime (5:: nat) 17"
+  apply (rule prime_coprime)
+    apply arith
+  apply (rule prime_5)
+  by (rule prime_17)
+
+lemma coprime_17_5: "coprime (17:: nat) 5"
+  by (rule coprime_sym, rule coprime_5_17)
+
+lemma coprime_7_17: "coprime (7:: nat) 17"
+  apply (rule prime_coprime)
+    apply arith
+  apply (rule prime_7)
+  by (rule prime_17)
+
+lemma coprime_17_7: "coprime (17:: nat) 7"
+  by (rule coprime_sym, rule coprime_7_17)
+
+lemma coprime_11_17: "coprime (11:: nat) 17"
+  apply (rule prime_coprime)
+    apply arith
+  apply (rule prime_11)
+  by (rule prime_17)
+
+lemma coprime_17_11: "coprime (17:: nat) 11"
+  by (rule coprime_sym, rule coprime_11_17)
+
+lemma coprime_13_17: "coprime (13:: nat) 17"
+  apply (rule prime_coprime)
+    apply arith
+  apply (rule prime_13)
+  by (rule prime_17)
+
+lemma coprime_17_13: "coprime (17:: nat) 13"
+  by (rule coprime_sym, rule coprime_13_17)
 
 
-(*  by (smt (z3) One_nat_def Suc_numeral add_Suc_right add_numeral_left coprime_imp_coprime coprime_right_2_iff_odd dvd_add_right_iff group_cancel.add1 inc.simps(1) nat_1_add_1 numeral_3_eq_3 numeral_Bit0 numeral_nat(2) numeral_nat(3) numeral_plus_numeral numerals(1) odd_numeral plus_nat.simps(2) semiring_norm(2) semiring_norm(26) semiring_norm(4) semiring_norm(5) semiring_norm(8))
-*)
 
 
 lemma coprime_range_disjointO: 
@@ -543,16 +639,16 @@ proof (simp add: corona_scenarioO_def corona_actorsO_def ex_graphO_def actors_gr
                  ex_loc_assO_def, rule equalityI)
   show "{x. \<exists>y. (y = shopO \<longrightarrow>
              (shopO = pubO \<longrightarrow> x = ''Alice'' \<or> x = ''Bob'' \<or> x = ''Eve'') \<and>
-             (shopO \<noteq> pubO \<longrightarrow> x = ''Charly'' \<or> x = ''David'')) \<and>
+             (shopO \<noteq> pubO \<longrightarrow> x = ''Charly'' \<or> x = ''David'' \<or> x = ''Flo'')) \<and>
             (y \<noteq> shopO \<longrightarrow>
              (y = pubO \<longrightarrow> (\<exists>y. y = shopO \<or> y = pubO \<and> pubO = shopO) \<and> (x = ''Alice'' \<or> x = ''Bob'' \<or> x = ''Eve'')) \<and>
              y = pubO)}
-    \<subseteq> {''Alice'', ''Bob'', ''Charly'', ''David'', ''Eve''}"
+    \<subseteq> {''Alice'', ''Bob'', ''Charly'', ''David'', ''Eve'', ''Flo''}"
     by auto
-next show "{''Alice'', ''Bob'', ''Charly'', ''David'', ''Eve''}
+next show "{''Alice'', ''Bob'', ''Charly'', ''David'', ''Eve'', ''Flo''}
     \<subseteq> {x. \<exists>y. (y = shopO \<longrightarrow>
                 (shopO = pubO \<longrightarrow> x = ''Alice'' \<or> x = ''Bob'' \<or> x = ''Eve'') \<and>
-                (shopO \<noteq> pubO \<longrightarrow> x = ''Charly'' \<or> x = ''David'')) \<and>
+                (shopO \<noteq> pubO \<longrightarrow> x = ''Charly'' \<or> x = ''David'' \<or> x = ''Flo'')) \<and>
                (y \<noteq> shopO \<longrightarrow>
                 (y = pubO \<longrightarrow> (\<exists>y. y = shopO \<or> y = pubO \<and> pubO = shopO) \<and> (x = ''Alice'' \<or> x = ''Bob'' \<or> x = ''Eve'')) \<and>
                 y = pubO)}"
@@ -576,17 +672,6 @@ lemma isthere_lem00: " a \<in>  agra (graphI corona_scenarioO) l \<Longrightarro
              shopO_def pubO_def)
   by (smt One_nat_def char.inject insertE list.inject location.inject mem_Collect_eq n_not_Suc_n shopO_def singleton_conv)
 
-(*
-lemma isthere_lem: "(corona_scenarioO, s) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow> a \<in>  agra (graphI s) l  \<Longrightarrow>
-efids_cur ((InfrastructureOne.cgra (graphI s) a)) \<in> egra (graphI s) l"
-  apply (frule same_nodes)
-  apply (erule rtrancl_induct)
-   apply (simp add: corona_scenarioO_def ex_graphO_def ex_loc_assO_def  ex_credsO_def ex_efidsO_def shopO_def pubO_def)
-   apply (rule conjI)
-    apply (rule impI)+
-  apply (rule conjI)
-*)
-
 lemma isthere_lem': "(corona_scenarioO, s) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow> a \<in>  agra (graphI s) l  \<Longrightarrow>
 efids_cur (InfrastructureOne.cgra (graphI s) a) \<in> egra (graphI s) l"
   apply (erule rtrancl_induct)
@@ -601,37 +686,6 @@ lemma efids_root_lem: "a \<in> actors_graph (InfrastructureOne.graphI corona_sce
   apply (simp add: repl_efr_def ex_graphO_def ex_credsO_def)
   by (smt CollectD InfrastructureOne.actors_graph_def InfrastructureOne.agra.simps InfrastructureOne.gra.simps InfrastructureOne.nodes_def ex_loc_assO_def insertE prod.inject singletonD)
 
-lemma efids_root_lem: "a \<noteq> a' \<Longrightarrow>
-                  efids_root (cgra (InfrastructureOne.graphI corona_scenarioO) a) \<noteq> 
-                  efids_root (cgra (InfrastructureOne.graphI corona_scenarioO) a')"
-    apply (simp add: corona_scenarioO_def ex_graphO_def ex_credsO_def)
-  apply (rule conjI)
-  apply blast
-  apply (rule impI)+
-  apply (rule conjI)
-   apply blast
-  apply (rule impI)+
-  apply (rule conjI)
-   apply blast
-  apply (rule impI)+
-  apply (rule conjI)
-   apply blast
-  apply (rule impI)
-  apply (rule conjI)
-   apply blast
-  apply (rule impI)+
-  oops
-
-(*
-lemma efids_root_injective: "(corona_scenarioO, I) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* 
-      \<Longrightarrow> a \<in> InfrastructureOne.agra (InfrastructureOne.graphI I) l \<Longrightarrow>
-          l \<in> InfrastructureOne.nodes (InfrastructureOne.graphI I) \<Longrightarrow>
-          xa \<in> InfrastructureOne.agra (InfrastructureOne.graphI I) l \<Longrightarrow>
-          xa \<noteq> a \<Longrightarrow>
-          efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI I) xa) \<noteq>
-          efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI I) a)"
-  oops
-*)
 
 lemma efids_root_minus: "(corona_scenarioO, I) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* 
       \<Longrightarrow> a \<in> InfrastructureOne.agra (InfrastructureOne.graphI I) l 
@@ -646,35 +700,6 @@ lemma efids_root_minus: "(corona_scenarioO, I) \<in> {(x::infrastructure, y::inf
   using efids_root_lem inj_on_def apply blast
   by (metis (mono_tags, lifting) InfrastructureOne.actors_graph_def inj_on_def mem_Collect_eq)
 
-(*
-lemma actor_egra_loc_lem00: "l \<in> InfrastructureOne.nodes (InfrastructureOne.graphI corona_scenarioO)  \<Longrightarrow>
-       xa \<in> InfrastructureOne.agra (InfrastructureOne.graphI corona_scenarioO) l \<Longrightarrow>
-       b = efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI corona_scenarioO) xa) \<Longrightarrow>
-       b \<in> InfrastructureOne.egra (InfrastructureOne.graphI corona_scenarioO) l"
-  apply (simp add: corona_scenarioO_def ex_graphO_def ex_loc_assO_def nodes_def ex_credsO_def ex_efidsO_def
-             shopO_def pubO_def)
-
-
-
-lemma actor_egra_loc_lem: "(corona_scenarioO, I) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* 
-      \<Longrightarrow> l \<in> InfrastructureOne.nodes (InfrastructureOne.graphI I)  \<Longrightarrow>
-       xa \<in> InfrastructureOne.agra (InfrastructureOne.graphI I) l \<Longrightarrow>
-       b = efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI I) xa) \<Longrightarrow>
-       b \<in> InfrastructureOne.egra (InfrastructureOne.graphI I) l"
-*)
-
-(*
-
-
-  apply (erule contrapos_nn, rule mp)
-   prefer 2
-   apply assumption
-  apply (subgoal_tac "inj (\<lambda> x. efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI corona_scenarioO) x)) ")
-  apply (simp add: inj_def)
-  apply (rule_tac I=corona_scenarioO in eroots_inj_inv)
-  apply simp
-*)
-
 
 text \<open>Other invariants are that the efids at egra l are in fact efids of the actors at
       that location, i.e. 
@@ -682,55 +707,6 @@ text \<open>Other invariants are that the efids at egra l are in fact efids of t
                       .....        /\ e = efid_root (cgra G a) 
       
       \<close>
-(*
-lemma refmapOne_move_a: "InfrastructureOne.nodes (InfrastructureOne.graphI corona_scenarioO) =
-       InfrastructureOne.nodes (InfrastructureOne.graphI I) \<Longrightarrow>
-       InfrastructureOne.delta corona_scenarioO = InfrastructureOne.delta I  \<Longrightarrow>
-       l \<in> InfrastructureOne.nodes (InfrastructureOne.graphI I) \<Longrightarrow>
-       l' \<in> InfrastructureOne.nodes (InfrastructureOne.graphI I) \<Longrightarrow>
-       a \<in> InfrastructureOne.actors_graph (InfrastructureOne.graphI I) \<Longrightarrow>
-       rmapO  (InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.move_graph_a a l l' (InfrastructureOne.graphI I)) (InfrastructureOne.delta I)) =
-       Infrastructure.infrastructure.Infrastructure (Infrastructure.move_graph_a a l l' (Infrastructure.graphI (rmapO I)))
-        (Infrastructure.delta (rmapO I))"
-    apply (simp add: rmapO_def ref_map_def move_graph_a_def  corona_scenarioO_def Infrastructure.move_graph_a_def)
-  apply (simp add: repl_efr_def ex_graphO_def)
-  apply (rule conjI)
-  prefer 2
-   apply blast
-  apply (rule impI)+
-  apply (rule ext)
-  apply simp
-  apply (rule impI)+
-  apply (rule equalityI)
-   apply (simp add: image_def)
-   apply (rule subsetI)
-   apply (erule CollectE)
-   apply (erule conjE)
-   apply (erule bexE)
-   apply (rule CollectD, simp)
-   apply (erule conjE)
-   apply (rule conjI)
-    apply (rule_tac x = xa in bexI)
-     apply (rule refl)
-    apply assumption
-(* *)
-  prefer 2
-   apply blast
-  thm inj_on_contraD
-  apply (rule_tac f = "(\<lambda> x. efids_root(InfrastructureOne.cgra (InfrastructureOne.graphI I) x))" 
-                and A = "actors_graph (InfrastructureOne.graphI I)" in inj_on_contraD)
-  apply (rule_tac I = I in eroots_inj_on_inv, simp)
-
-  apply blast
-  apply blast
-   apply (rule impI)
-   apply (rule equalityI)
-  prefer 2
-
-  oops
-*)
-
 (* We need to develop the starting points for the invariants that are needed to unleash the
    lemma is_there_lem needed in the get case.*)
 lemma range_disjoint_corona_scenarioO[rule_format]: "(\<forall> a \<in> actors_graph (InfrastructureOne.graphI corona_scenarioO). 
@@ -738,16 +714,17 @@ lemma range_disjoint_corona_scenarioO[rule_format]: "(\<forall> a \<in> actors_g
      ((range (efids_list (InfrastructureOne.cgra (InfrastructureOne.graphI corona_scenarioO) a)) \<inter> 
       (range (efids_list (InfrastructureOne.cgra (InfrastructureOne.graphI corona_scenarioO) a')))) = {})))"
 proof (unfold corona_scenarioO_def ex_graphO_def ex_credsO_def, simp)
-  show " \<forall>a\<in>InfrastructureOne.actors_graph
+  show "\<forall>a\<in>InfrastructureOne.actors_graph
          (InfrastructureOne.igraph.Lgraph {(pubO, shopO)} ex_loc_assO
            (\<lambda>x. if x = ''Alice'' then Efids (Efid 1) 0 (\<lambda>n. Efid (2 ^ (n + 1)))
                 else if x = ''Bob'' then Efids (Efid 2) 0 (\<lambda>n. Efid (3 ^ (n + 1)))
                      else if x = ''Charly'' then Efids (Efid 3) 0 (\<lambda>n. Efid (5 ^ (n + 1)))
                           else if x = ''David'' then Efids (Efid 4) 0 (\<lambda>n. Efid (7 ^ (n + 1)))
                                else if x = ''Eve'' then Efids (Efid 5) 0 (\<lambda>n. Efid (11 ^ (n + 1)))
-                                    else Efids (Efid 0) 0 (\<lambda>n. Efid (13 ^ (n + 1))))
+                                    else if x = ''Flo'' then Efids (Efid 6) 0 (\<lambda>n. Efid (13 ^ (n + 1)))
+                                         else Efids (Efid 0) 0 (\<lambda>n. Efid (17 ^ (n + 1))))
            ex_locsO ex_efidsO ex_knosO).
-       (a = ''Eve'' \<longrightarrow>
+       (a = ''Flo'' \<longrightarrow>
         (\<forall>a'\<in>InfrastructureOne.actors_graph
                (InfrastructureOne.igraph.Lgraph {(pubO, shopO)} ex_loc_assO
                  (\<lambda>x. if x = ''Alice'' then Efids (Efid 1) 0 (\<lambda>n. Efid (2 ^ (n + 1)))
@@ -755,19 +732,22 @@ proof (unfold corona_scenarioO_def ex_graphO_def ex_credsO_def, simp)
                            else if x = ''Charly'' then Efids (Efid 3) 0 (\<lambda>n. Efid (5 ^ (n + 1)))
                                 else if x = ''David'' then Efids (Efid 4) 0 (\<lambda>n. Efid (7 ^ (n + 1)))
                                      else if x = ''Eve'' then Efids (Efid 5) 0 (\<lambda>n. Efid (11 ^ (n + 1)))
-                                          else Efids (Efid 0) 0 (\<lambda>n. Efid (13 ^ (n + 1))))
+                                          else if x = ''Flo'' then Efids (Efid 6) 0 (\<lambda>n. Efid (13 ^ (n + 1)))
+                                               else Efids (Efid 0) 0 (\<lambda>n. Efid (17 ^ (n + 1))))
                  ex_locsO ex_efidsO ex_knosO).
-            (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
-            (a' \<noteq> ''David'' \<longrightarrow>
-             (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
-             (a' \<noteq> ''Charly'' \<longrightarrow>
-              (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
-              (a' \<noteq> ''Bob'' \<longrightarrow>
-               (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
-               (a' \<noteq> ''Alice'' \<longrightarrow>
-                ''Eve'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {})))))) \<and>
-       (a \<noteq> ''Eve'' \<longrightarrow>
-        (a = ''David'' \<longrightarrow>
+            (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
+            (a' \<noteq> ''Eve'' \<longrightarrow>
+             (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
+             (a' \<noteq> ''David'' \<longrightarrow>
+              (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
+              (a' \<noteq> ''Charly'' \<longrightarrow>
+               (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
+               (a' \<noteq> ''Bob'' \<longrightarrow>
+                (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
+                (a' \<noteq> ''Alice'' \<longrightarrow>
+                 ''Flo'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (17 * 17 ^ x)) = {}))))))) \<and>
+       (a \<noteq> ''Flo'' \<longrightarrow>
+        (a = ''Eve'' \<longrightarrow>
          (\<forall>a'\<in>InfrastructureOne.actors_graph
                 (InfrastructureOne.igraph.Lgraph {(pubO, shopO)} ex_loc_assO
                   (\<lambda>x. if x = ''Alice'' then Efids (Efid 1) 0 (\<lambda>n. Efid (2 ^ (n + 1)))
@@ -775,19 +755,22 @@ proof (unfold corona_scenarioO_def ex_graphO_def ex_credsO_def, simp)
                             else if x = ''Charly'' then Efids (Efid 3) 0 (\<lambda>n. Efid (5 ^ (n + 1)))
                                  else if x = ''David'' then Efids (Efid 4) 0 (\<lambda>n. Efid (7 ^ (n + 1)))
                                       else if x = ''Eve'' then Efids (Efid 5) 0 (\<lambda>n. Efid (11 ^ (n + 1)))
-                                           else Efids (Efid 0) 0 (\<lambda>n. Efid (13 ^ (n + 1))))
+                                           else if x = ''Flo'' then Efids (Efid 6) 0 (\<lambda>n. Efid (13 ^ (n + 1)))
+                                                else Efids (Efid 0) 0 (\<lambda>n. Efid (17 ^ (n + 1))))
                   ex_locsO ex_efidsO ex_knosO).
-             (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
-             (a' \<noteq> ''Eve'' \<longrightarrow>
-              (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
-              (a' \<noteq> ''Charly'' \<longrightarrow>
-               (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
-               (a' \<noteq> ''Bob'' \<longrightarrow>
-                (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
-                (a' \<noteq> ''Alice'' \<longrightarrow>
-                 ''David'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {})))))) \<and>
-        (a \<noteq> ''David'' \<longrightarrow>
-         (a = ''Charly'' \<longrightarrow>
+             (a' = ''Flo'' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {}) \<and>
+             (a' \<noteq> ''Flo'' \<longrightarrow>
+              (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
+              (a' \<noteq> ''David'' \<longrightarrow>
+               (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
+               (a' \<noteq> ''Charly'' \<longrightarrow>
+                (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
+                (a' \<noteq> ''Bob'' \<longrightarrow>
+                 (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
+                 (a' \<noteq> ''Alice'' \<longrightarrow>
+                  ''Eve'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (11 * 11 ^ x)) \<inter> range (\<lambda>x. Efid (17 * 17 ^ x)) = {}))))))) \<and>
+        (a \<noteq> ''Eve'' \<longrightarrow>
+         (a = ''David'' \<longrightarrow>
           (\<forall>a'\<in>InfrastructureOne.actors_graph
                  (InfrastructureOne.igraph.Lgraph {(pubO, shopO)} ex_loc_assO
                    (\<lambda>x. if x = ''Alice'' then Efids (Efid 1) 0 (\<lambda>n. Efid (2 ^ (n + 1)))
@@ -795,19 +778,22 @@ proof (unfold corona_scenarioO_def ex_graphO_def ex_credsO_def, simp)
                              else if x = ''Charly'' then Efids (Efid 3) 0 (\<lambda>n. Efid (5 ^ (n + 1)))
                                   else if x = ''David'' then Efids (Efid 4) 0 (\<lambda>n. Efid (7 ^ (n + 1)))
                                        else if x = ''Eve'' then Efids (Efid 5) 0 (\<lambda>n. Efid (11 ^ (n + 1)))
-                                            else Efids (Efid 0) 0 (\<lambda>n. Efid (13 ^ (n + 1))))
+                                            else if x = ''Flo'' then Efids (Efid 6) 0 (\<lambda>n. Efid (13 ^ (n + 1)))
+                                                 else Efids (Efid 0) 0 (\<lambda>n. Efid (17 ^ (n + 1))))
                    ex_locsO ex_efidsO ex_knosO).
-              (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
-              (a' \<noteq> ''Eve'' \<longrightarrow>
-               (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
-               (a' \<noteq> ''David'' \<longrightarrow>
-                (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
-                (a' \<noteq> ''Bob'' \<longrightarrow>
-                 (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
-                 (a' \<noteq> ''Alice'' \<longrightarrow>
-                  ''Charly'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {})))))) \<and>
-         (a \<noteq> ''Charly'' \<longrightarrow>
-          (a = ''Bob'' \<longrightarrow>
+              (a' = ''Flo'' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {}) \<and>
+              (a' \<noteq> ''Flo'' \<longrightarrow>
+               (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
+               (a' \<noteq> ''Eve'' \<longrightarrow>
+                (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
+                (a' \<noteq> ''Charly'' \<longrightarrow>
+                 (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
+                 (a' \<noteq> ''Bob'' \<longrightarrow>
+                  (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
+                  (a' \<noteq> ''Alice'' \<longrightarrow>
+                   ''David'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (7 * 7 ^ x)) \<inter> range (\<lambda>x. Efid (17 * 17 ^ x)) = {}))))))) \<and>
+         (a \<noteq> ''David'' \<longrightarrow>
+          (a = ''Charly'' \<longrightarrow>
            (\<forall>a'\<in>InfrastructureOne.actors_graph
                   (InfrastructureOne.igraph.Lgraph {(pubO, shopO)} ex_loc_assO
                     (\<lambda>x. if x = ''Alice'' then Efids (Efid 1) 0 (\<lambda>n. Efid (2 ^ (n + 1)))
@@ -815,19 +801,22 @@ proof (unfold corona_scenarioO_def ex_graphO_def ex_credsO_def, simp)
                               else if x = ''Charly'' then Efids (Efid 3) 0 (\<lambda>n. Efid (5 ^ (n + 1)))
                                    else if x = ''David'' then Efids (Efid 4) 0 (\<lambda>n. Efid (7 ^ (n + 1)))
                                         else if x = ''Eve'' then Efids (Efid 5) 0 (\<lambda>n. Efid (11 ^ (n + 1)))
-                                             else Efids (Efid 0) 0 (\<lambda>n. Efid (13 ^ (n + 1))))
+                                             else if x = ''Flo'' then Efids (Efid 6) 0 (\<lambda>n. Efid (13 ^ (n + 1)))
+                                                  else Efids (Efid 0) 0 (\<lambda>n. Efid (17 ^ (n + 1))))
                     ex_locsO ex_efidsO ex_knosO).
-               (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
-               (a' \<noteq> ''Eve'' \<longrightarrow>
-                (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
-                (a' \<noteq> ''David'' \<longrightarrow>
-                 (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
-                 (a' \<noteq> ''Charly'' \<longrightarrow>
-                  (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
-                  (a' \<noteq> ''Alice'' \<longrightarrow>
-                   ''Bob'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {})))))) \<and>
-          (a \<noteq> ''Bob'' \<longrightarrow>
-           (a = ''Alice'' \<longrightarrow>
+               (a' = ''Flo'' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {}) \<and>
+               (a' \<noteq> ''Flo'' \<longrightarrow>
+                (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
+                (a' \<noteq> ''Eve'' \<longrightarrow>
+                 (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
+                 (a' \<noteq> ''David'' \<longrightarrow>
+                  (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
+                  (a' \<noteq> ''Bob'' \<longrightarrow>
+                   (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
+                   (a' \<noteq> ''Alice'' \<longrightarrow>
+                    ''Charly'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (5 * 5 ^ x)) \<inter> range (\<lambda>x. Efid (17 * 17 ^ x)) = {}))))))) \<and>
+          (a \<noteq> ''Charly'' \<longrightarrow>
+           (a = ''Bob'' \<longrightarrow>
             (\<forall>a'\<in>InfrastructureOne.actors_graph
                    (InfrastructureOne.igraph.Lgraph {(pubO, shopO)} ex_loc_assO
                      (\<lambda>x. if x = ''Alice'' then Efids (Efid 1) 0 (\<lambda>n. Efid (2 ^ (n + 1)))
@@ -835,37 +824,66 @@ proof (unfold corona_scenarioO_def ex_graphO_def ex_credsO_def, simp)
                                else if x = ''Charly'' then Efids (Efid 3) 0 (\<lambda>n. Efid (5 ^ (n + 1)))
                                     else if x = ''David'' then Efids (Efid 4) 0 (\<lambda>n. Efid (7 ^ (n + 1)))
                                          else if x = ''Eve'' then Efids (Efid 5) 0 (\<lambda>n. Efid (11 ^ (n + 1)))
-                                              else Efids (Efid 0) 0 (\<lambda>n. Efid (13 ^ (n + 1))))
+                                              else if x = ''Flo'' then Efids (Efid 6) 0 (\<lambda>n. Efid (13 ^ (n + 1)))
+                                                   else Efids (Efid 0) 0 (\<lambda>n. Efid (17 ^ (n + 1))))
                      ex_locsO ex_efidsO ex_knosO).
-                (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
-                (a' \<noteq> ''Eve'' \<longrightarrow>
-                 (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
-                 (a' \<noteq> ''David'' \<longrightarrow>
-                  (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
-                  (a' \<noteq> ''Charly'' \<longrightarrow>
-                   (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
-                   (a' \<noteq> ''Bob'' \<longrightarrow>
-                    ''Alice'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {})))))) \<and>
-           (a \<noteq> ''Alice'' \<longrightarrow>
-            (\<forall>a'\<in>InfrastructureOne.actors_graph
-                   (InfrastructureOne.igraph.Lgraph {(pubO, shopO)} ex_loc_assO
-                     (\<lambda>x. if x = ''Alice'' then Efids (Efid 1) 0 (\<lambda>n. Efid (2 ^ (n + 1)))
-                          else if x = ''Bob'' then Efids (Efid 2) 0 (\<lambda>n. Efid (3 ^ (n + 1)))
-                               else if x = ''Charly'' then Efids (Efid 3) 0 (\<lambda>n. Efid (5 ^ (n + 1)))
-                                    else if x = ''David'' then Efids (Efid 4) 0 (\<lambda>n. Efid (7 ^ (n + 1)))
-                                         else if x = ''Eve'' then Efids (Efid 5) 0 (\<lambda>n. Efid (11 ^ (n + 1)))
-                                              else Efids (Efid 0) 0 (\<lambda>n. Efid (13 ^ (n + 1))))
-                     ex_locsO ex_efidsO ex_knosO).
-                (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
-                (a' \<noteq> ''Eve'' \<longrightarrow>
-                 (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
-                 (a' \<noteq> ''David'' \<longrightarrow>
-                  (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
-                  (a' \<noteq> ''Charly'' \<longrightarrow>
-                   (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
-                   (a' \<noteq> ''Bob'' \<longrightarrow>
-                    (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (13 * 13 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
-                    (a' \<noteq> ''Alice'' \<longrightarrow> a = a')))))))))))"
+                (a' = ''Flo'' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {}) \<and>
+                (a' \<noteq> ''Flo'' \<longrightarrow>
+                 (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
+                 (a' \<noteq> ''Eve'' \<longrightarrow>
+                  (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
+                  (a' \<noteq> ''David'' \<longrightarrow>
+                   (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
+                   (a' \<noteq> ''Charly'' \<longrightarrow>
+                    (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
+                    (a' \<noteq> ''Alice'' \<longrightarrow>
+                     ''Bob'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (3 * 3 ^ x)) \<inter> range (\<lambda>x. Efid (17 * 17 ^ x)) = {}))))))) \<and>
+           (a \<noteq> ''Bob'' \<longrightarrow>
+            (a = ''Alice'' \<longrightarrow>
+             (\<forall>a'\<in>InfrastructureOne.actors_graph
+                    (InfrastructureOne.igraph.Lgraph {(pubO, shopO)} ex_loc_assO
+                      (\<lambda>x. if x = ''Alice'' then Efids (Efid 1) 0 (\<lambda>n. Efid (2 ^ (n + 1)))
+                           else if x = ''Bob'' then Efids (Efid 2) 0 (\<lambda>n. Efid (3 ^ (n + 1)))
+                                else if x = ''Charly'' then Efids (Efid 3) 0 (\<lambda>n. Efid (5 ^ (n + 1)))
+                                     else if x = ''David'' then Efids (Efid 4) 0 (\<lambda>n. Efid (7 ^ (n + 1)))
+                                          else if x = ''Eve'' then Efids (Efid 5) 0 (\<lambda>n. Efid (11 ^ (n + 1)))
+                                               else if x = ''Flo'' then Efids (Efid 6) 0 (\<lambda>n. Efid (13 ^ (n + 1)))
+                                                    else Efids (Efid 0) 0 (\<lambda>n. Efid (17 ^ (n + 1))))
+                      ex_locsO ex_efidsO ex_knosO).
+                 (a' = ''Flo'' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {}) \<and>
+                 (a' \<noteq> ''Flo'' \<longrightarrow>
+                  (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
+                  (a' \<noteq> ''Eve'' \<longrightarrow>
+                   (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
+                   (a' \<noteq> ''David'' \<longrightarrow>
+                    (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
+                    (a' \<noteq> ''Charly'' \<longrightarrow>
+                     (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
+                     (a' \<noteq> ''Bob'' \<longrightarrow>
+                      ''Alice'' \<noteq> a' \<longrightarrow> range (\<lambda>x. Efid (2 * 2 ^ x)) \<inter> range (\<lambda>x. Efid (17 * 17 ^ x)) = {}))))))) \<and>
+            (a \<noteq> ''Alice'' \<longrightarrow>
+             (\<forall>a'\<in>InfrastructureOne.actors_graph
+                    (InfrastructureOne.igraph.Lgraph {(pubO, shopO)} ex_loc_assO
+                      (\<lambda>x. if x = ''Alice'' then Efids (Efid 1) 0 (\<lambda>n. Efid (2 ^ (n + 1)))
+                           else if x = ''Bob'' then Efids (Efid 2) 0 (\<lambda>n. Efid (3 ^ (n + 1)))
+                                else if x = ''Charly'' then Efids (Efid 3) 0 (\<lambda>n. Efid (5 ^ (n + 1)))
+                                     else if x = ''David'' then Efids (Efid 4) 0 (\<lambda>n. Efid (7 ^ (n + 1)))
+                                          else if x = ''Eve'' then Efids (Efid 5) 0 (\<lambda>n. Efid (11 ^ (n + 1)))
+                                               else if x = ''Flo'' then Efids (Efid 6) 0 (\<lambda>n. Efid (13 ^ (n + 1)))
+                                                    else Efids (Efid 0) 0 (\<lambda>n. Efid (17 ^ (n + 1))))
+                      ex_locsO ex_efidsO ex_knosO).
+                 (a' = ''Flo'' \<longrightarrow> range (\<lambda>x. Efid (17 * 17 ^ x)) \<inter> range (\<lambda>x. Efid (13 * 13 ^ x)) = {}) \<and>
+                 (a' \<noteq> ''Flo'' \<longrightarrow>
+                  (a' = ''Eve'' \<longrightarrow> range (\<lambda>x. Efid (17 * 17 ^ x)) \<inter> range (\<lambda>x. Efid (11 * 11 ^ x)) = {}) \<and>
+                  (a' \<noteq> ''Eve'' \<longrightarrow>
+                   (a' = ''David'' \<longrightarrow> range (\<lambda>x. Efid (17 * 17 ^ x)) \<inter> range (\<lambda>x. Efid (7 * 7 ^ x)) = {}) \<and>
+                   (a' \<noteq> ''David'' \<longrightarrow>
+                    (a' = ''Charly'' \<longrightarrow> range (\<lambda>x. Efid (17 * 17 ^ x)) \<inter> range (\<lambda>x. Efid (5 * 5 ^ x)) = {}) \<and>
+                    (a' \<noteq> ''Charly'' \<longrightarrow>
+                     (a' = ''Bob'' \<longrightarrow> range (\<lambda>x. Efid (17 * 17 ^ x)) \<inter> range (\<lambda>x. Efid (3 * 3 ^ x)) = {}) \<and>
+                     (a' \<noteq> ''Bob'' \<longrightarrow>
+                      (a' = ''Alice'' \<longrightarrow> range (\<lambda>x. Efid (17 * 17 ^ x)) \<inter> range (\<lambda>x. Efid (2 * 2 ^ x)) = {}) \<and>
+                      (a' \<noteq> ''Alice'' \<longrightarrow> a = a')))))))))))))"
     apply (rule ballI)+
     apply (rule conjI)
      apply (rule impI)+
@@ -873,6 +891,42 @@ proof (unfold corona_scenarioO_def ex_graphO_def ex_credsO_def, simp)
     apply (rule conjI)
       apply (rule impI)+
       apply (rule coprime_range_disjointOO)
+    apply (rule coprime_13_11, simp, simp)
+     apply (rule impI)+
+     apply (rule conjI)
+      apply (rule impI)+
+    apply (rule coprime_range_disjointOO)
+    apply (rule coprime_13_7, simp, simp)
+     apply (rule impI)+
+     apply (rule conjI)
+      apply (rule impI)+
+    apply (rule coprime_range_disjointOO)
+    apply (rule coprime_13_5, simp, simp)
+     apply (rule impI)+
+     apply (rule conjI)
+      apply (rule impI)+
+    apply (rule coprime_range_disjointOO)
+    apply (rule coprime_13_3, simp, simp)
+     apply (rule impI)+
+     apply (rule conjI)
+      apply (rule impI)+
+    apply (rule coprime_range_disjointOO)
+    apply (rule coprime_13_2, simp, simp)
+     apply (rule impI)+
+    apply (rule coprime_range_disjointOO)
+        apply (rule coprime_13_17, simp, simp)
+    apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+    apply (rule ballI)+
+    apply (rule conjI)
+      apply (rule impI)+
+    apply (rule coprime_range_disjointOO)
+    apply (rule coprime_11_13, simp, simp)
+     apply (rule impI)+
+     apply (rule conjI)
+      apply (rule impI)+
+    apply (rule coprime_range_disjointOO)
     apply (rule coprime_11_7, simp, simp)
      apply (rule impI)+
      apply (rule conjI)
@@ -891,141 +945,165 @@ proof (unfold corona_scenarioO_def ex_graphO_def ex_credsO_def, simp)
         apply (rule coprime_11_2, arith, arith)
      apply (rule impI)+
      apply (rule coprime_range_disjointOO)
-    apply (rule coprime_11_13, arith, arith)
+    apply (rule coprime_11_17, simp, simp)
      apply (rule impI)+
      apply (rule conjI)
      apply (rule impI)+
-     apply (rule ballI)+
-     apply (rule conjI)+
-    apply (rule impI)+
-      apply (rule coprime_range_disjointOO)
-        apply (rule coprime_sym, rule coprime_11_7, arith, arith)
+    apply (rule ballI)+
+    apply (rule conjI)
+      apply (rule impI)+
+    apply (rule coprime_range_disjointOO)
+    apply (rule coprime_7_13, arith, arith)
      apply (rule impI)+
      apply (rule conjI)
-    apply (rule impI)+
-      apply (rule coprime_range_disjointOO)
-        apply (rule coprime_7_5, arith, arith)
-     apply (rule impI)+
-     apply (rule conjI)+
      apply (rule impI)+
       apply (rule coprime_range_disjointOO)
-        apply (rule coprime_7_3, arith, arith)
+    apply (rule coprime_7_11, arith, arith)
      apply (rule impI)+
-     apply (rule conjI)+
-     apply (rule impI)+
-      apply (rule coprime_range_disjointOO)
-        apply (rule coprime_7_2, arith, arith)
+     apply (rule conjI)
      apply (rule impI)+
       apply (rule coprime_range_disjointOO)
-        apply (rule coprime_7_13, arith, arith)
+    apply (rule coprime_7_5, arith, arith)
      apply (rule impI)+
-     apply (rule conjI)+
-    apply (rule impI)+
-     apply (rule ballI)+
-     apply (rule conjI)+
-    apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
       apply (rule coprime_range_disjointOO)
-        apply (rule coprime_5_11, arith, arith)
-    apply (rule impI)+
-     apply (rule conjI)+
-    apply (rule impI)+
+    apply (rule coprime_7_3, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
       apply (rule coprime_range_disjointOO)
-        apply (rule coprime_5_7, arith, arith)
-    apply (rule impI)+
-     apply (rule conjI)+
-    apply (rule impI)+
+    apply (rule coprime_7_2, arith, arith)
+     apply (rule impI)+
       apply (rule coprime_range_disjointOO)
-    apply (rule coprime_5_3,arith,arith)
-    apply (rule impI)+
-     apply (rule conjI)+
-    apply (rule impI)+
-      apply (rule coprime_range_disjointOO)
-    apply (rule coprime_5_2, arith, arith)
-    apply (rule impI)+
+    apply (rule coprime_7_17, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+    apply (rule ballI)+
+    apply (rule conjI)
+      apply (rule impI)+
       apply (rule coprime_range_disjointOO)
     apply (rule coprime_5_13, arith, arith)
-    apply (rule impI)+
-     apply (rule conjI)+
-    apply (rule impI)+
-    apply (rule ballI)
-    apply (rule conjI)+
-      apply (rule impI)+
-      apply (rule coprime_range_disjointOO)
-        apply (rule coprime_3_11, arith, arith)
-     apply (rule impI)+
-     apply (rule conjI)+
-      apply (rule impI)+
-      apply (rule coprime_range_disjointOO)
-        apply (rule coprime_3_7, arith, arith)
      apply (rule impI)+
      apply (rule conjI)
-    apply (rule impI)+
+     apply (rule impI)+
       apply (rule coprime_range_disjointOO)
-        apply (rule coprime_3_5, arith, arith)
+    apply (rule coprime_5_11, arith, arith)
      apply (rule impI)+
      apply (rule conjI)
-      apply (rule impI)
-      apply (rule coprime_range_disjointOO)
-        apply (rule coprime_3_2, arith, arith)
      apply (rule impI)+
       apply (rule coprime_range_disjointOO)
-       apply (rule coprime_3_13, arith, arith)
-    apply (rule impI)+
+    apply (rule coprime_5_7, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_5_3, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_5_2, arith, arith)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_5_17, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+    apply (rule ballI)+
     apply (rule conjI)
-     apply (rule impI)+
-     apply (rule ballI)
-     apply (rule conjI)
       apply (rule impI)+
       apply (rule coprime_range_disjointOO)
-        apply (rule coprime_2_11, arith, arith)
+    apply (rule coprime_3_13, arith, arith)
      apply (rule impI)+
      apply (rule conjI)
-    apply (rule impI)+
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_3_11, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_3_7, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_3_5, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_3_2, arith, arith)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_3_17, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+    apply (rule ballI)+
+    apply (rule conjI)
+      apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_2_13, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_2_11, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
       apply (rule coprime_range_disjointOO)
     apply (rule coprime_2_7, arith, arith)
-     apply (rule impI)
+     apply (rule impI)+
      apply (rule conjI)
-    apply (rule impI)
+     apply (rule impI)+
       apply (rule coprime_range_disjointOO)
     apply (rule coprime_2_5, arith, arith)
      apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_2_3, arith, arith)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_2_17, arith, arith)
+     apply (rule impI)+
+    apply (rule ballI)+
     apply (rule conjI)
       apply (rule impI)+
+     apply (rule coprime_range_disjointOO)
+    apply (rule coprime_17_13, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
       apply (rule coprime_range_disjointOO)
-        apply (rule coprime_2_3, arith, arith)
+    apply (rule coprime_17_11, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
      apply (rule impI)+
      apply (rule coprime_range_disjointOO)
-    apply (rule coprime_2_13, arith, arith)
-    apply (rule impI)+
-    apply (rule ballI)
-    apply (rule conjI)
-    apply (rule impI)+
-     apply (rule coprime_range_disjointOO)
-       apply (rule coprime_13_11, arith, arith)
-    apply (rule impI)+
-    apply (rule conjI)+
+    apply (rule coprime_17_7, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_17_5, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
+     apply (rule impI)+
+      apply (rule coprime_range_disjointOO)
+    apply (rule coprime_17_3, arith, arith)
+     apply (rule impI)+
+     apply (rule conjI)
      apply (rule impI)+
      apply (rule coprime_range_disjointOO)
-       apply (rule coprime_13_7, arith, arith)
-    apply (rule impI)+
-    apply (rule conjI)
-    apply (rule impI)+
-     apply (rule coprime_range_disjointOO)
-       apply (rule coprime_13_5, arith, arith)
-    apply (rule impI)+
-    apply (rule conjI)
-    apply (rule impI)+
-     apply (rule coprime_range_disjointOO)
-       apply (rule coprime_13_3, arith, arith)
-    apply (rule impI)+
-    apply (rule conjI)
-    apply (rule impI)+
-     apply (rule coprime_range_disjointOO)
-       apply (rule coprime_13_2, arith, arith)
+    apply (rule coprime_17_2, arith, arith)
+     apply (rule impI)+
     by (smt (z3) InfrastructureOne.actors_graph_def InfrastructureOne.agra.simps all_not_in_conv ex_loc_assO_def insertE mem_Collect_eq)
 qed
-
-
 
 lemma inj_on_corona_scenarioO: "inj_on (\<lambda>x. efids_cur (InfrastructureOne.cgra (InfrastructureOne.graphI corona_scenarioO) x))
         (InfrastructureOne.actors_graph (InfrastructureOne.graphI corona_scenarioO))"
@@ -1614,319 +1692,6 @@ next show "\<And>s s' G I a l I'.
 qed
 
 
-(*
-   proof (simp add: rmapO_def ref_map_def nodes_def enables_def Infrastructure.enables_def
-              local_policies_def Infrastructure.nodes_def shop_def pub_def)
-      show " \<And>s s' G I a l I'.
-       (corona_scenarioO, I) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
-       {x. \<exists>y. (x, y) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO) \<or>
-               (y, x) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO)} =
-       {x. \<exists>y. (x, y) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<or>
-               (y, x) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I)} \<Longrightarrow>
-       InfrastructureOne.delta corona_scenarioO = InfrastructureOne.delta I \<Longrightarrow>
-       s = I \<Longrightarrow>
-       s' =
-       InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.igraph.Lgraph (InfrastructureOne.gra (InfrastructureOne.graphI I))
-          (InfrastructureOne.agra (InfrastructureOne.graphI I)) (InfrastructureOne.cgra (InfrastructureOne.graphI I))
-          (InfrastructureOne.lgra (InfrastructureOne.graphI I)) (InfrastructureOne.egra (InfrastructureOne.graphI I))
-          ((InfrastructureOne.kgra (InfrastructureOne.graphI I))
-           (Actor a := (InfrastructureOne.kgra (InfrastructureOne.graphI I) (Actor a))
-              (l := InfrastructureOne.agra (InfrastructureOne.graphI I) l \<times>
-                    InfrastructureOne.egra (InfrastructureOne.graphI I) l))))
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       G = InfrastructureOne.graphI I \<Longrightarrow>
-       a @\<^bsub>InfrastructureOne.graphI I\<^esub> l \<Longrightarrow>
-       \<exists>y. (l, y) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<or>
-           (y, l) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<Longrightarrow>
-       \<exists>x\<in>InfrastructureOne.delta I (InfrastructureOne.graphI I) l. case x of (p, e) \<Rightarrow> get \<in> e \<and> p (Actor a) \<Longrightarrow>
-       I' =
-       InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.igraph.Lgraph (InfrastructureOne.gra (InfrastructureOne.graphI I))
-          (InfrastructureOne.agra (InfrastructureOne.graphI I)) (InfrastructureOne.cgra (InfrastructureOne.graphI I))
-          (InfrastructureOne.lgra (InfrastructureOne.graphI I)) (InfrastructureOne.egra (InfrastructureOne.graphI I))
-          ((InfrastructureOne.kgra (InfrastructureOne.graphI I))
-           (Actor a := (InfrastructureOne.kgra (InfrastructureOne.graphI I) (Actor a))
-              (l := InfrastructureOne.agra (InfrastructureOne.graphI I) l \<times>
-                    InfrastructureOne.egra (InfrastructureOne.graphI I) l))))
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       l \<noteq> Location (Suc 0) \<longrightarrow> l = Location 0 "
-        by (metis InfrastructureOne.delta.simps One_nat_def corona_scenarioO_def empty_iff local_policiesO_def pubO_def shopO_def)
-    qed
-    next show "\<And>s s' G I a l I'.
-       (corona_scenarioO, s) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
-       InfrastructureOne.nodes (InfrastructureOne.graphI corona_scenarioO) =
-       InfrastructureOne.nodes (InfrastructureOne.graphI s) \<Longrightarrow>
-       InfrastructureOne.delta corona_scenarioO = InfrastructureOne.delta s \<Longrightarrow>
-       s = I \<Longrightarrow>
-       s' = I' \<Longrightarrow>
-       G = InfrastructureOne.graphI I \<Longrightarrow>
-       a @\<^bsub>G\<^esub> l \<Longrightarrow>
-       l \<in> InfrastructureOne.nodes G \<Longrightarrow>
-       InfrastructureOne.enables I l (Actor a) get \<Longrightarrow>
-       I' =
-       InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.igraph.Lgraph (InfrastructureOne.gra G) (InfrastructureOne.agra G) (InfrastructureOne.cgra G)
-          (InfrastructureOne.lgra G) (InfrastructureOne.egra G)
-          ((InfrastructureOne.kgra G)
-           (Actor a := (InfrastructureOne.kgra G (Actor a))
-              (l := {(x, y). x \<in> InfrastructureOne.agra G l \<and> y \<in> InfrastructureOne.egra G l}))))
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       rmapO s' =
-       Infrastructure.infrastructure.Infrastructure
-        (Infrastructure.igraph.Lgraph (Infrastructure.gra (Infrastructure.graphI (rmapO s)))
-          (Infrastructure.agra (Infrastructure.graphI (rmapO s))) (Infrastructure.cgra (Infrastructure.graphI (rmapO s)))
-          (Infrastructure.lgra (Infrastructure.graphI (rmapO s))) (Infrastructure.egra (Infrastructure.graphI (rmapO s)))
-          ((Infrastructure.kgra (Infrastructure.graphI (rmapO s)))
-           (Actor a := (Infrastructure.kgra (Infrastructure.graphI (rmapO s)) (Actor a))
-              (l := {(x, y).
-                     x \<in> Infrastructure.agra (Infrastructure.graphI (rmapO s)) l \<and>
-                     y \<in> Infrastructure.egra (Infrastructure.graphI (rmapO s)) l}))))
-        (Infrastructure.delta (rmapO s))"
-    apply (simp add: rmapO_def ref_map_def)
-     apply (rule ext,simp)
-      apply (rule impI)
-    apply (rule ext,simp)
-      apply (rule impI)
-    apply (simp add: image_def)
-    apply (rule equalityI)
-     apply auto[1]
-    apply (rule subsetI)
-    apply simp
-    apply (rule conjI)
-    apply (case_tac x)
-     apply simp
-     apply (erule conjE)
-     apply (erule bexE) 
-         apply (rule_tac x = "efids_cur (cgra (graphI I) ab)" in exI)
-     apply (rule_tac I = corona_scenarioO in is_there_lem)
-            apply blast
-    prefer 7
-    using InfrastructureOne.atI_def apply force
-          prefer 6
-          apply assumption
-         prefer 4
-         apply (rule l_eq_corona_scenarioO, assumption+)
-    apply meson
-        apply (rule range_disjoint_corona_scenarioO, assumption+)
-
-
-       prefer 4
-       apply (case_tac x)
-    apply (subgoal_tac "b \<in> {y. \<exists>x\<in>InfrastructureOne.agra (InfrastructureOne.graphI I) l.
-                   y = efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI I) x)}")
-    prefer 2
-        apply simp
-       apply (drule CollectD)
-    apply (erule bexE)
-    apply (rule_tac x = xa in bexI)
-    apply simp
-
-
-
-
-
-
-    proof (simp add: rmapO_def ref_map_def nodes_def enables_def Infrastructure.enables_def
-              local_policies_def Infrastructure.nodes_def shop_def pub_def)
-      show "\<And>s s' G I a l I'.
-       (corona_scenarioO, I) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
-       {x. \<exists>y. (x, y) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO) \<or>
-               (y, x) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO)} =
-       {x. \<exists>y. (x, y) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<or>
-               (y, x) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I)} \<Longrightarrow>
-       InfrastructureOne.delta corona_scenarioO = InfrastructureOne.delta I \<Longrightarrow>
-       s = I \<Longrightarrow>
-       s' =
-       InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.igraph.Lgraph (InfrastructureOne.gra (InfrastructureOne.graphI I))
-          (InfrastructureOne.agra (InfrastructureOne.graphI I)) (InfrastructureOne.cgra (InfrastructureOne.graphI I))
-          (InfrastructureOne.lgra (InfrastructureOne.graphI I)) (InfrastructureOne.egra (InfrastructureOne.graphI I))
-          ((InfrastructureOne.kgra (InfrastructureOne.graphI I))
-           (Actor a := (InfrastructureOne.kgra (InfrastructureOne.graphI I) (Actor a))
-              (l := InfrastructureOne.agra (InfrastructureOne.graphI I) l \<times>
-                    InfrastructureOne.egra (InfrastructureOne.graphI I) l))))
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       G = InfrastructureOne.graphI I \<Longrightarrow>
-       a @\<^bsub>InfrastructureOne.graphI I\<^esub> l \<Longrightarrow>
-       \<exists>y. (l, y) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<or>
-           (y, l) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<Longrightarrow>
-       \<exists>x\<in>InfrastructureOne.delta I (InfrastructureOne.graphI I) l. case x of (p, e) \<Rightarrow> get \<in> e \<and> p (Actor a) \<Longrightarrow>
-       I' =
-       InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.igraph.Lgraph (InfrastructureOne.gra (InfrastructureOne.graphI I))
-          (InfrastructureOne.agra (InfrastructureOne.graphI I)) (InfrastructureOne.cgra (InfrastructureOne.graphI I))
-          (InfrastructureOne.lgra (InfrastructureOne.graphI I)) (InfrastructureOne.egra (InfrastructureOne.graphI I))
-          ((InfrastructureOne.kgra (InfrastructureOne.graphI I))
-           (Actor a := (InfrastructureOne.kgra (InfrastructureOne.graphI I) (Actor a))
-              (l := InfrastructureOne.agra (InfrastructureOne.graphI I) l \<times>
-                    InfrastructureOne.egra (InfrastructureOne.graphI I) l))))
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       (\<lambda>aa la.
-           (\<lambda>(x, y). (x, efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI I) x))) `
-           (if aa = Actor a
-            then (InfrastructureOne.kgra (InfrastructureOne.graphI I) (Actor a))
-                 (l := InfrastructureOne.agra (InfrastructureOne.graphI I) l \<times>
-                       InfrastructureOne.egra (InfrastructureOne.graphI I) l)
-            else InfrastructureOne.kgra (InfrastructureOne.graphI I) aa)
-            la) =
-       (\<lambda>a l. (\<lambda>(x, y). (x, efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI I) x))) `
-              InfrastructureOne.kgra (InfrastructureOne.graphI I) a l)
-       (Actor a :=
-          (\<lambda>l. (\<lambda>(x, y). (x, efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI I) x))) `
-               InfrastructureOne.kgra (InfrastructureOne.graphI I) (Actor a) l)
-          (l := InfrastructureOne.agra (InfrastructureOne.graphI I) l \<times>
-                (\<lambda>a. efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI I) a)) `
-                InfrastructureOne.agra (InfrastructureOne.graphI I) l))"
-
-
-  proof -
-    fix s :: InfrastructureOne.infrastructure and s' :: InfrastructureOne.infrastructure and G :: InfrastructureOne.igraph and I :: InfrastructureOne.infrastructure and a :: "char list" and l :: location and I' :: InfrastructureOne.infrastructure
-    assume a1: "\<exists>x\<in>InfrastructureOne.delta I (InfrastructureOne.graphI I) l. case x of (p, e) \<Rightarrow> get \<in> e \<and> p (Actor a)"
-    assume a2: "InfrastructureOne.delta corona_scenarioO = InfrastructureOne.delta I"
-    assume a3: "{x. \<exists>y. (x, y) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO) \<or> (y, x) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO)} = {x. \<exists>y. (x, y) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<or> (y, x) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I)}"
-    then have "shopO \<notin> {l. \<exists>la. (l, la) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<or> (la, l) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I)} \<longrightarrow> (\<nexists>l. (shopO, l) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO) \<or> (l, shopO) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO))"
-by blast
-  then have f4: "\<exists>l. (shopO, l) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<or> (l, shopO) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I)"
-    using corona_scenarioO_def ex_graphO_def by fastforce
-have "\<exists>l. (pubO, l) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO) \<or> (l, pubO) \<in> InfrastructureOne.gra (InfrastructureOne.graphI corona_scenarioO)"
-  using corona_scenarioO_def ex_graphO_def by force
-  then have "\<exists>l. (pubO, l) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<or> (l, pubO) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I)"
-using a3 by blast
-  then show "\<exists>la. (l, la) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I) \<or> (la, l) \<in> InfrastructureOne.gra (InfrastructureOne.graphI I)"
-    using f4 a2 a1 by (metis InfrastructureOne.delta.simps all_not_in_conv corona_scenarioO_def local_policiesO_def)
-next show "\<And>s s' G I a l I'.
-       (corona_scenarioO, s) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
-       InfrastructureOne.nodes (InfrastructureOne.graphI corona_scenarioO) =
-       InfrastructureOne.nodes (InfrastructureOne.graphI s) \<Longrightarrow>
-       InfrastructureOne.delta corona_scenarioO = InfrastructureOne.delta s \<Longrightarrow>
-       s = I \<Longrightarrow>
-       s' = I' \<Longrightarrow>
-       G = InfrastructureOne.graphI I \<Longrightarrow>
-       a @\<^bsub>G\<^esub> l \<Longrightarrow>
-       InfrastructureOne.enables I l (Actor a) get \<Longrightarrow>
-       I' =
-       InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.igraph.Lgraph (InfrastructureOne.gra G) (InfrastructureOne.agra G) (InfrastructureOne.cgra G)
-          (InfrastructureOne.lgra G) (InfrastructureOne.egra G)
-          ((InfrastructureOne.kgra G)
-           (Actor a := (InfrastructureOne.kgra G (Actor a))
-              (l := {(x, y). x \<in> InfrastructureOne.agra G l \<and> y \<in> InfrastructureOne.egra G l}))))
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       Infrastructure.enables (rmapO s) l (Actor a) get"
-    apply (simp add: InfrastructureOne.enables_def Infrastructure.enables_def rmapO_def ref_map_def shop_def
-           pub_def local_policies_def corona_scenarioO_def ex_graphO_def ex_loc_assO_def nodes_def 
-           ex_locsO_def pubO_def shopO_def local_policiesO_def)
-    by (metis One_nat_def all_not_in_conv local_policiesO_def pubO_def shopO_def)
-next show "\<And>s s' G I a l I'.
-       (corona_scenarioO, s) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
-       InfrastructureOne.nodes (InfrastructureOne.graphI corona_scenarioO) =
-       InfrastructureOne.nodes (InfrastructureOne.graphI s) \<Longrightarrow>
-       InfrastructureOne.delta corona_scenarioO = InfrastructureOne.delta s \<Longrightarrow>
-       s = I \<Longrightarrow>
-       s' = I' \<Longrightarrow>
-       G = InfrastructureOne.graphI I \<Longrightarrow>
-       a @\<^bsub>G\<^esub> l \<Longrightarrow>
-       InfrastructureOne.enables I l (Actor a) get \<Longrightarrow>
-       I' =
-       InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.igraph.Lgraph (InfrastructureOne.gra G) (InfrastructureOne.agra G) (InfrastructureOne.cgra G)
-          (InfrastructureOne.lgra G) (InfrastructureOne.egra G)
-          ((InfrastructureOne.kgra G)
-           (Actor a := (InfrastructureOne.kgra G (Actor a))
-              (l := {(x, y). x \<in> InfrastructureOne.agra G l \<and> y \<in> InfrastructureOne.egra G l}))))
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       rmapO s' =
-       Infrastructure.infrastructure.Infrastructure
-        (Infrastructure.igraph.Lgraph (Infrastructure.gra (Infrastructure.graphI (rmapO s)))
-          (Infrastructure.agra (Infrastructure.graphI (rmapO s))) (Infrastructure.cgra (Infrastructure.graphI (rmapO s)))
-          (Infrastructure.lgra (Infrastructure.graphI (rmapO s))) (Infrastructure.egra (Infrastructure.graphI (rmapO s)))
-          ((Infrastructure.kgra (Infrastructure.graphI (rmapO s)))
-           (Actor a := (Infrastructure.kgra (Infrastructure.graphI (rmapO s)) (Actor a))
-              (l := {(x, y).
-                     x \<in> Infrastructure.agra (Infrastructure.graphI (rmapO s)) l \<and>
-                     y \<in> Infrastructure.egra (Infrastructure.graphI (rmapO s)) l}))))
-        (Infrastructure.delta (rmapO s))"
-    apply (simp add: rmapO_def ref_map_def)
-     apply (rule ext,simp)
-      apply (rule impI)
-    apply (rule ext,simp)
-      apply (rule impI)
-    apply (simp add: image_def)
-    apply (rule equalityI)
-     apply auto[1]
-    apply (rule subsetI)
-    apply simp
-    apply (rule conjI)
-    apply (case_tac x)
-     apply simp
-     apply (erule conjE)
-     apply (erule bexE) 
-     apply (rule_tac x = "efids_cur (cgra (graphI I) a)" in exI)
-     apply (rule_tac I = corona_scenarioO in is_there_lem)
-            apply blast
-    prefer 7
-    using InfrastructureOne.atI_def apply force
-    prefer 6
-
-           apply (simp add: corona_scenarioO_def ex_graphO_def ex_credsO_def)
-           apply (rule conjI)
-            apply (rule impI)+
-            apply (rule conjI)
-             apply simp
-            apply (rule impI)+
-    apply (rule conjI)
-    sorry
-qed
-next show "\<And>s s' G I a l I'.
-       (corona_scenarioO, s) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
-       InfrastructureOne.nodes (InfrastructureOne.graphI corona_scenarioO) =
-       InfrastructureOne.nodes (InfrastructureOne.graphI s) \<Longrightarrow>
-       InfrastructureOne.delta corona_scenarioO = InfrastructureOne.delta s \<Longrightarrow>
-       s = I \<Longrightarrow>
-       s' = I' \<Longrightarrow>
-       G = InfrastructureOne.graphI I \<Longrightarrow>
-       a @\<^bsub>G\<^esub> l \<Longrightarrow>
-       InfrastructureOne.enables I l (Actor a) put \<Longrightarrow>
-       I' =
-       InfrastructureOne.infrastructure.Infrastructure (InfrastructureOne.put_graph_efid a l G)
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       rmapO s \<rightarrow>\<^sub>n rmapO s'"
-    sorry
-qed
-
-(*  apply blast
-    by blast
-*)
-(*
-    apply (simp add: opset_def efid_to_roots_def efid_to_root_def option_set_to_set_def 
-           rmapO_def ref_map_def shop_def
-           pub_def local_policies_def corona_scenarioO_def ex_graphO_def ex_loc_assO_def nodes_def 
-           ex_locsO_def pubO_def shopO_def local_policiesO_def)
-    apply (rule conjI)
-    using InfrastructureOne.actors_graph_def InfrastructureOne.nodes_def apply auto[1]
-    apply (rule ext)+
-    apply (simp add: actors_graph_def)
-    apply (rule impI)+
-    apply (rule equalityI)
-     apply (simp add: image_def)
-     apply (rule subsetI)
-     apply (erule CollectE)
-     apply (erule conjE)
-     apply (erule exE)
-     apply (erule  bexE)
-     apply simp
-     apply (rule_tac x = "Some(efids_root (InfrastructureOne.cgra (InfrastructureOne.graphI I) xa))" in bexI)
-    apply simp+
-     apply (case_tac xa)
-    prefer 2
-    apply (rule UN_I)
-    prefer 2
-*)
-*)
-
-
-
 theorem refmapOne: "corona_Kripke \<sqsubseteq>\<^sub>rmapO corona_KripkeO"
 proof (rule strong_mt', simp add: corona_KripkeO_def corona_Kripke_def corona_states_def corona_statesO_def state_transition_refl_def, rule conjI)
   show "IcoronaO \<subseteq> {I. (corona_scenarioO, I) \<in> {(x, y). x \<rightarrow>\<^sub>i y}\<^sup>*}"
@@ -1946,50 +1711,269 @@ qed
 
 
 lemma step1: "corona_scenarioO  \<rightarrow>\<^sub>n corona_scenarioO'"
-  oops
+proof (rule_tac l = pubO and a = "''Eve''" in get)
+  show "graphI corona_scenarioO = graphI corona_scenarioO" by (rule refl)
+next show "''Eve'' @\<^bsub>graphI corona_scenarioO\<^esub> pubO" 
+    by (simp add: corona_scenarioO_def ex_graphO_def ex_loc_assO_def atI_def nodes_def)
+next show "enables corona_scenarioO pubO (Actor ''Eve'') get"
+    by (simp add: enables_def corona_scenarioO_def ex_graphO_def local_policiesO_def
+                    ex_credsO_def ex_locsO_def)
+next show "pubO \<in> nodes (graphI corona_scenarioO)"
+    using corona_scenarioO_def ex_graphO_def nodes_def by auto 
+next show "corona_scenarioO' =
+    Infrastructure
+     (Lgraph (gra (graphI corona_scenarioO)) (agra (graphI corona_scenarioO)) (cgra (graphI corona_scenarioO))
+       (lgra (graphI corona_scenarioO)) (egra (graphI corona_scenarioO))
+       ((kgra (graphI corona_scenarioO))
+        (''Eve'' := (kgra (graphI corona_scenarioO) (''Eve''))
+           (pubO := {(x, y). x \<in> agra (graphI corona_scenarioO) pubO \<and> y \<in> egra (graphI corona_scenarioO) pubO}))))
+     (delta corona_scenarioO)"
+    apply (simp add: corona_scenarioO'_def ex_graphO'_def move_graph_a_def 
+                     corona_scenarioO_def ex_graphO_def pubO_def shopO_def 
+                     ex_loc_assO'_def ex_loc_assO_def ex_efidsO'_def ex_efidsO_def 
+                     ex_knosO_def ex_knosO'_def ex_credsO_def)
+    apply (rule ext, simp add: insert_Diff_if shopO_def pubO_def)
+      apply (rule impI, rule ext)
+by auto[1]
+qed
+
 
 lemma step1r: "corona_scenarioO  \<rightarrow>\<^sub>n* corona_scenarioO'"
-  oops
+proof (simp add: state_transition_in_refl_def)
+  show " (corona_scenarioO, corona_scenarioO') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
+  by (insert step1, auto)
+qed
 
 lemma step2: "corona_scenarioO'  \<rightarrow>\<^sub>n corona_scenarioO''"
-  oops
+proof (rule_tac l' = shopO and l = pubO and a = "''Bob''" in move, rule refl)
+  show "''Bob'' @\<^bsub>graphI corona_scenarioO'\<^esub> pubO"
+   by (simp add: corona_scenarioO'_def ex_graphO'_def pubO_def shopO_def atI_def ex_loc_assO_def)
+next show "pubO \<in> nodes (graphI corona_scenarioO')"
+    by (simp add: corona_scenarioO'_def ex_graphO'_def pubO_def atI_def nodes_def, blast)
+next show "shopO \<in> nodes (graphI corona_scenarioO')"
+    by (simp add: corona_scenarioO'_def nodes_def ex_graphO'_def, blast)
+next show "''Bob'' \<in> actors_graph (graphI corona_scenarioO')"
+    by (simp add: actors_graph_def corona_scenarioO'_def ex_graphO'_def nodes_def
+                     ex_loc_assO_def shopO_def pubO_def, blast)
+next show "enables corona_scenarioO' shopO (Actor ''Bob'') move"
+    by (simp add: enables_def corona_scenarioO'_def local_policiesO_def)
+next show "corona_scenarioO'' =
+    Infrastructure (move_graph_a ''Bob'' pubO shopO (graphI corona_scenarioO')) (delta corona_scenarioO')"
+    apply (simp add: corona_scenarioO'_def ex_graphO''_def move_graph_a_def corona_scenarioO''_def 
+                     ex_graphO'_def ex_loc_assO_def ex_loc_assO'_def shopO_def pubO_def)
+    apply (rule conjI)
+      apply (rule ext, simp add: insert_Diff_if shopO_def pubO_def)
+    apply (simp add: ex_efidsO_def ex_efidsO'_def shopO_def pubO_def ex_credsO_def)
+    by (rule ext, simp add: insert_Diff_if shopO_def pubO_def)
+qed
 
 lemma step2r: "corona_scenarioO'  \<rightarrow>\<^sub>n* corona_scenarioO''"
-  oops
+proof (simp add: state_transition_in_refl_def)
+  show "(corona_scenarioO', corona_scenarioO'') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
+    by (insert step2, auto)
+qed
 
 lemma step3: "corona_scenarioO''  \<rightarrow>\<^sub>n corona_scenarioO'''"
-  oops
+proof (rule_tac l' = shopO and l = pubO and a = "''Eve''" in move, rule refl)
+  show "''Eve'' @\<^bsub>graphI corona_scenarioO''\<^esub> pubO"
+   by (simp add: corona_scenarioO''_def ex_graphO''_def pubO_def shopO_def atI_def ex_loc_assO'_def)
+next show \<open>pubO \<in> nodes (graphI corona_scenarioO'')\<close>
+    by (simp add: corona_scenarioO''_def pubO_def ex_graphO''_def nodes_def, blast)
+next show \<open>shopO \<in> nodes (graphI corona_scenarioO'')\<close>
+    by (simp add: corona_scenarioO''_def pubO_def ex_graphO''_def nodes_def, blast)
+next show \<open>''Eve'' \<in> actors_graph (graphI corona_scenarioO'')\<close>
+    by (simp add: actors_graph_def corona_scenarioO''_def ex_graphO''_def nodes_def ex_loc_assO'_def 
+                  shopO_def pubO_def, blast)
+next show \<open>enables corona_scenarioO'' shopO (Actor ''Eve'') move\<close>
+    by (simp add: enables_def corona_scenarioO''_def local_policiesO_def)
+next show \<open>corona_scenarioO''' =
+    Infrastructure (move_graph_a ''Eve'' pubO shopO (graphI corona_scenarioO'')) (delta corona_scenarioO'')\<close>
+    apply (simp add: corona_scenarioO'''_def ex_graphO'''_def move_graph_a_def pubO_def shopO_def
+                     corona_scenarioO''_def ex_graphO''_def ex_loc_assO''_def ex_loc_assO'_def)
+    apply (rule conjI)
+     apply (rule ext, simp add: insert_Diff_if shopO_def pubO_def)+
+    apply (simp add: ex_efidsO'_def ex_efidsO''_def shopO_def pubO_def ex_credsO_def)
+    by (simp add: insert_Diff_if shopO_def pubO_def)
+qed
 
 lemma step3r: "corona_scenarioO''  \<rightarrow>\<^sub>n* corona_scenarioO'''"
-  oops
+proof (simp add: state_transition_in_refl_def)
+  show "(corona_scenarioO'', corona_scenarioO''') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
+    by (insert step3, auto)
+qed
 
 lemma step4: "corona_scenarioO'''  \<rightarrow>\<^sub>n corona_scenarioO''''"
-  oops
+proof (rule_tac l = shopO and a = "''Eve''" in get, rule refl)
+  show \<open>''Eve'' @\<^bsub>graphI corona_scenarioO'''\<^esub> shopO\<close>
+   by (simp add: corona_scenarioO'''_def ex_graphO'''_def pubO_def shopO_def atI_def ex_loc_assO''_def)
+next show \<open>enables corona_scenarioO''' shopO (Actor ''Eve'') get\<close>
+    by (simp add: enables_def corona_scenarioO'''_def local_policiesO_def)
+next show "shopO \<in> nodes (graphI corona_scenarioO''')"
+    using corona_scenarioO'''_def ex_graphO'''_def nodes_def by auto
+next show \<open>corona_scenarioO'''' =
+    Infrastructure
+     (Lgraph (gra (graphI corona_scenarioO''')) (agra (graphI corona_scenarioO''')) (cgra (graphI corona_scenarioO'''))
+       (lgra (graphI corona_scenarioO''')) (egra (graphI corona_scenarioO'''))
+       ((kgra (graphI corona_scenarioO'''))
+        (''Eve'' := (kgra (graphI corona_scenarioO''') (''Eve''))
+           (shopO := {(x, y). x \<in> agra (graphI corona_scenarioO''') shopO \<and> y \<in> egra (graphI corona_scenarioO''') shopO}))))
+     (delta corona_scenarioO''') \<close>
+    apply (simp add: corona_scenarioO'''_def ex_graphO'''_def move_graph_a_def pubO_def shopO_def
+                     corona_scenarioO''''_def ex_graphO''''_def ex_loc_assO''_def ex_loc_assO'_def)
+     apply (rule ext, simp add: insert_Diff_if shopO_def pubO_def)+
+    apply (simp add: ex_efidsO''_def shopO_def pubO_def ex_knosO'_def ex_knosO''_def)
+    apply (rule impI, rule ext)
+    apply (simp add: insert_Diff_if shopO_def pubO_def)
+    apply (rule impI)+
+    apply (rule equalityI)
+     apply (rule subsetI)
+     apply (case_tac xa)
+    apply simp
+    apply linarith
+     apply (rule subsetI)
+     apply (case_tac xa)
+    apply simp
+    by metis
+qed
 
 lemma step4r: "corona_scenarioO'''  \<rightarrow>\<^sub>n* corona_scenarioO''''"
-  oops
+proof (simp add: state_transition_in_refl_def)
+  show "(corona_scenarioO''', corona_scenarioO'''') \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>*"
+    by (insert step4, auto)
+qed
 
 lemma corona_refO: "[\<N>\<^bsub>(IcoronaO,scoronaO)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO,scoronaO)\<^esup> \<sqsubseteq>
                   ([\<N>\<^bsub>(IcoronaO,CoronaO')\<^esub>, \<N>\<^bsub>(CoronaO',CoronaO'')\<^esub>,  \<N>\<^bsub>(CoronaO'',CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''',scoronaO)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO,scoronaO)\<^esup>)"
-  oops
+  by (metis append_Cons append_Nil refI)  
+
+lemma corona_refO': "[\<N>\<^bsub>(IcoronaO,scoronaO')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO,scoronaO')\<^esup> \<sqsubseteq>
+                  ([\<N>\<^bsub>(IcoronaO,CoronaO')\<^esub>, \<N>\<^bsub>(CoronaO',CoronaO'')\<^esub>,  \<N>\<^bsub>(CoronaO'',CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''',scoronaO')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO,scoronaO')\<^esup>)"
+  by (metis append_Cons append_Nil refI)  
 
 lemma att_coronaO: "\<turnstile>([\<N>\<^bsub>(IcoronaO,CoronaO')\<^esub>, \<N>\<^bsub>(CoronaO',CoronaO'')\<^esub>,  \<N>\<^bsub>(CoronaO'',CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''',scoronaO)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO,scoronaO)\<^esup>)"
-  oops
+proof (subst att_and, simp, rule conjI)
+  show " \<turnstile>\<N>\<^bsub>(IcoronaO, CoronaO')\<^esub>"
+    apply (simp add: IcoronaO_def CoronaO'_def att_base)
+    using state_transition_infra_def step1 by blast
+next show \<open> \<turnstile>[\<N>\<^bsub>(CoronaO', CoronaO'')\<^esub>, \<N>\<^bsub>(CoronaO'', CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''', scoronaO)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(CoronaO', scoronaO)\<^esup>\<close>
+    apply (subst att_and, simp)
+    apply (rule conjI)
+     apply (simp add: CoronaO'_def CoronaO''_def att_base state_transition_infra_def step2)
+    apply (subst att_and, simp, rule conjI)
+     apply (simp add: CoronaO''_def CoronaO'''_def att_base state_transition_infra_def step3)
+    apply (subst att_and, simp)
+    apply (simp add: CoronaO'''_def scoronaO_def att_base state_transition_infra_def step4)
+    apply (rule_tac x = "corona_scenarioO''''" in exI)
+    apply (rule conjI)
+     prefer 2
+    apply (rule step4)
+     apply (unfold corona_scenarioO''''_def global_policyO''_def)
+     apply (unfold global_policyO''_def identifiableO'_def ex_graphO''''_def ex_loc_assO''_def nodes_def is_singleton_def
+                  ex_efidsO''_def pubO_def shopO_def ex_credsO_def ex_locsO_def ex_knosO''_def local_policiesO_def)
+     apply (rule_tac x = 3 in exI, simp)
+     apply (rule conjI)
+    apply (rule impI)
+     apply (rule_tac x = "''Bob''" in exI)
+      apply (rule_tac  x = "Efid 3" in exI)
+      apply (rule equalityI)
+          apply auto[1]
+      apply simp
+by blast
+qed
 
+
+lemma att_coronaO': "\<turnstile>([\<N>\<^bsub>(IcoronaO,CoronaO')\<^esub>, \<N>\<^bsub>(CoronaO',CoronaO'')\<^esub>,  \<N>\<^bsub>(CoronaO'',CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''',scoronaO')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO,scoronaO')\<^esup>)"
+proof (subst att_and, simp, rule conjI)
+  show " \<turnstile>\<N>\<^bsub>(IcoronaO, CoronaO')\<^esub>"
+    apply (simp add: IcoronaO_def CoronaO'_def att_base)
+    using state_transition_infra_def step1 by blast
+next show \<open> \<turnstile>[\<N>\<^bsub>(CoronaO', CoronaO'')\<^esub>, \<N>\<^bsub>(CoronaO'', CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''', scoronaO')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(CoronaO', scoronaO')\<^esup>\<close>
+    apply (subst att_and, simp)
+    apply (rule conjI)
+     apply (simp add: CoronaO'_def CoronaO''_def att_base state_transition_infra_def step2)
+    apply (subst att_and, simp, rule conjI)
+     apply (simp add: CoronaO''_def CoronaO'''_def att_base state_transition_infra_def step3)
+    apply (subst att_and, simp)
+    apply (simp add: CoronaO'''_def scoronaO'_def att_base state_transition_infra_def step4)
+    apply (rule_tac x = "corona_scenarioO''''" in exI)
+    apply (rule conjI)
+     prefer 2
+    apply (rule step4)
+     apply (unfold corona_scenarioO''''_def global_policyO_def)
+     apply (unfold global_policyO_def identifiableO'_def ex_graphO''''_def ex_loc_assO''_def nodes_def is_singleton_def
+                  ex_efidsO''_def pubO_def shopO_def ex_credsO_def ex_locsO_def ex_knosO''_def local_policiesO_def)
+    apply (rule_tac x = 3 in exI, simp)
+    apply (rule set_exI)
+     prefer 2
+    apply (subgoal_tac 
+    "{Location 0, Location 1} \<subseteq> {x. \<exists>y. x = Location 0 \<and> y = Location (Suc 0) \<or> y = Location 0 \<and> x = Location (Suc 0)}")
+      apply assumption
+    apply simp
+     apply (rule_tac x = "''Bob''" in exI)
+      apply (rule_tac  x = "Efid 3" in exI)
+      apply (rule equalityI)
+     apply simp
+     apply auto[1]
+    apply (rule subsetI)
+    apply (rule CollectI)
+      apply (case_tac x)
+by simp
+qed
+  
 lemma corona_abs_attO: "\<turnstile>\<^sub>V([\<N>\<^bsub>(IcoronaO,scoronaO)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO,scoronaO)\<^esup>)"
-  oops
+   by (rule ref_valI, rule corona_refO, rule att_coronaO)
+
+lemma corona_abs_attO': "\<turnstile>\<^sub>V([\<N>\<^bsub>(IcoronaO,scoronaO')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO,scoronaO')\<^esup>)"
+   by (rule ref_valI, rule corona_refO', rule att_coronaO')
+
 
 lemma corona_attO: "corona_KripkeO \<turnstile> EF {x. \<exists> n. \<not>(global_policyO'' x (Efid n))}"
-  oops
+proof -
+  have a: " \<turnstile>([\<N>\<^bsub>(IcoronaO,CoronaO')\<^esub>, \<N>\<^bsub>(CoronaO',CoronaO'')\<^esub>,  \<N>\<^bsub>(CoronaO'',CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''',scoronaO)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO, scoronaO)\<^esup>)"
+    by (rule att_coronaO)
+  hence "(IcoronaO,scoronaO) = attack ([\<N>\<^bsub>(IcoronaO,CoronaO')\<^esub>, \<N>\<^bsub>(CoronaO',CoronaO'')\<^esub>,  \<N>\<^bsub>(CoronaO'',CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''',scoronaO)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO, scoronaO)\<^esup>)"
+    by simp
+  hence "Kripke {s::infrastructure. \<exists>i::infrastructure\<in>IcoronaO. i \<rightarrow>\<^sub>i* s} IcoronaO \<turnstile> EF scoronaO"
+    using ATV_EF corona_abs_attO by fastforce 
+  thus "corona_KripkeO \<turnstile> EF {x::infrastructure.  \<exists> n. \<not> global_policyO'' x (Efid n)}"
+    by (simp add: corona_KripkeO_def corona_statesO_def IcoronaO_def scoronaO_def)
+qed
+
+lemma corona_attO': "corona_KripkeO \<turnstile> EF {x. \<exists> n. \<not>(global_policyO x (Efid n))}"
+proof -
+  have a: " \<turnstile>([\<N>\<^bsub>(IcoronaO,CoronaO')\<^esub>, \<N>\<^bsub>(CoronaO',CoronaO'')\<^esub>,  \<N>\<^bsub>(CoronaO'',CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''',scoronaO')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO, scoronaO')\<^esup>)"
+    by (rule att_coronaO')
+  hence "(IcoronaO,scoronaO') = attack ([\<N>\<^bsub>(IcoronaO,CoronaO')\<^esub>, \<N>\<^bsub>(CoronaO',CoronaO'')\<^esub>,  \<N>\<^bsub>(CoronaO'',CoronaO''')\<^esub>, \<N>\<^bsub>(CoronaO''',scoronaO')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(IcoronaO, scoronaO')\<^esup>)"
+    by simp
+  hence "Kripke {s::infrastructure. \<exists>i::infrastructure\<in>IcoronaO. i \<rightarrow>\<^sub>i* s} IcoronaO \<turnstile> EF scoronaO'"
+    using ATV_EF corona_abs_attO' by fastforce 
+  thus "corona_KripkeO \<turnstile> EF {x::infrastructure.  \<exists> n. \<not> global_policyO x (Efid n)}"
+    by (simp add: corona_KripkeO_def corona_statesO_def IcoronaO_def scoronaO'_def)
+qed
+
 
 theorem corona_EFO: "corona_KripkeO \<turnstile> EF scoronaO"
-  oops
+  using corona_attO scoronaO_def by blast 
 
-theorem corona_AOO: "\<exists> A. \<turnstile> A \<and> attack A = (IcoronaO,scoronaO)"
-  oops
+theorem corona_EFO': "corona_KripkeO \<turnstile> EF scoronaO'"
+  using corona_attO' scoronaO'_def by blast 
 
-theorem corona_EFO': "corona_KripkeO \<turnstile> EF scoronaO"
-  oops
+
+theorem corona_ATO: "\<exists> A. \<turnstile> A \<and> attack A = (IcoronaO,scoronaO)"
+  using att_coronaO attack.simps(2) by blast  
+
+theorem corona_ATO': "\<exists> A. \<turnstile> A \<and> attack A = (IcoronaO,scoronaO')"
+  using att_coronaO' attack.simps(2) by blast  
+
+text \<open>Conversely, since we have an attack given by rule @{text \<open>corona_AT\<close>}, we can immediately 
+   infer @{text \<open>EF s\<close>} using Correctness @{text \<open>AT_EF\<close>}\footnote{Clearly, this theorem is identical
+   to @{text \<open>corona_EF\<close>} and could thus be inferred from that one but we want to show here an 
+   alternative way of proving it using the Correctness theorem @{text \<open>AT_EF\<close>}.}.\<close>
+theorem corona_EFO'': "corona_KripkeO \<turnstile> EF scoronaO"
+  using corona_EFO by auto
+
+theorem corona_EFO''': "corona_KripkeO \<turnstile> EF scoronaO'"
+  using corona_EFO' by auto
 
 end
 end

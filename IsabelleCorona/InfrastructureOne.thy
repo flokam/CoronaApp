@@ -2,11 +2,13 @@ theory InfrastructureOne
   imports CoronaApp
 begin
 
-text \<open>This is the new element for refining the Ephemeral Id -- simply a list
-     of ephemeral ids. The cryptographic details can be added here if needed
-     but at the current stage of abstraction we are satisfied with a list.
-   The idea is that the nat pointer (2nd element) points to the current element, the nth list member,
-   and that the Efids are popped off once used by incrementing the pointer.\<close>
+text \<open>This is the new element for refining the Ephemeral Id -- a list
+     of ephemeral ids repreented as a function from nat to the efid type. 
+     This function needs to be unique and reversible so it must be injective and
+     also for all actors the ranges should be disjoint. These properties are
+     not part of the actual type but are proved as invariants. In applications
+     (e.g. CoronaApp) they need to be shown for initial states and then the
+     invariants can be applied to show that they hold in any reachable state.\<close>
 datatype efidlist = Efids "efid" "nat" "nat \<Rightarrow> efid"
 
 primrec efids_root :: "efidlist \<Rightarrow> efid"
@@ -579,9 +581,9 @@ lemma init_state_policy: "\<lbrakk> (x,y) \<in> {(x::infrastructure, y::infrastr
   by assumption
 
 (* anonymous actor invariant, i.e. we show that any efid that appears in a state, that is, either in  
-  the egra component or in the kgra component, is in the range of an efodlist for some actor a
+  the egra component or in the kgra component, is in the range of an efidlist for some actor a
   in the set of actors of the infrastructure. Typical for invariants, we first show that the invariant 
-  is preserved in a step, and this is then simply exgrapolated by induction to any reachable I has the 
+  is preserved in a step, and this is then simply extrapolated by induction to any reachable I has the 
   property if it is reached from an initial I that already had that property.*)
 lemma efids_list_eq[rule_format]: "(\<forall> z z'. (z \<rightarrow>\<^sub>n z') \<longrightarrow> 
 efids_list (InfrastructureOne.cgra (InfrastructureOne.graphI z) a) =
@@ -2092,86 +2094,6 @@ proof (erule rtrancl_induct, simp)
 by assumption+
 qed
 
-(*
-lemma kgra_in_egra[rule_format]: "(\<forall> z. (\<forall> z'. (z \<rightarrow>\<^sub>n z') \<longrightarrow>
-(\<forall> a l ab b. (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z) a l \<longrightarrow>
-              (\<exists> l. b \<in> egra (graphI z) l)) \<longrightarrow>
-(\<forall> a l ab b. (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z') a l \<longrightarrow>
-              (\<exists> l. b \<in> egra (graphI z') l))))"
-proof (clarify,frule same_actors0, frule same_nodes0, rule state_transition_in.cases, assumption)
-  show "\<And>z z' a l ab b G I aa la l' I'.
-       z \<rightarrow>\<^sub>n z' \<Longrightarrow>
-       \<forall>a l ab b.
-          (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z) a l \<longrightarrow>
-          (\<exists>l. b \<in> InfrastructureOne.egra (InfrastructureOne.graphI z) l) \<Longrightarrow>
-       (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z') a l \<Longrightarrow>
-       InfrastructureOne.actors_graph (InfrastructureOne.graphI z) =
-       InfrastructureOne.actors_graph (InfrastructureOne.graphI z') \<Longrightarrow>
-       InfrastructureOne.nodes (InfrastructureOne.graphI z) = InfrastructureOne.nodes (InfrastructureOne.graphI z') \<Longrightarrow>
-       z = I \<Longrightarrow>
-       z' = I' \<Longrightarrow>
-       G = InfrastructureOne.graphI I \<Longrightarrow>
-       aa @\<^bsub>G\<^esub> la \<Longrightarrow>
-       la \<in> InfrastructureOne.nodes G \<Longrightarrow>
-       l' \<in> InfrastructureOne.nodes G \<Longrightarrow>
-       aa \<in> InfrastructureOne.actors_graph (InfrastructureOne.graphI I) \<Longrightarrow>
-       InfrastructureOne.enables I l' (Actor aa) move \<Longrightarrow>
-       I' =
-       InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.move_graph_a aa la l' (InfrastructureOne.graphI I)) (InfrastructureOne.delta I) \<Longrightarrow>
-       \<exists>l. b \<in> InfrastructureOne.egra (InfrastructureOne.graphI z') l"
-    apply (simp add: move_graph_a_def)
-    by metis
-next show "\<And>z z' a l ab b G I aa la I'.
-       z \<rightarrow>\<^sub>n z' \<Longrightarrow>
-       \<forall>a l ab b.
-          (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z) a l \<longrightarrow>
-          (\<exists>l. b \<in> InfrastructureOne.egra (InfrastructureOne.graphI z) l) \<Longrightarrow>
-       (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z') a l \<Longrightarrow>
-       InfrastructureOne.actors_graph (InfrastructureOne.graphI z) =
-       InfrastructureOne.actors_graph (InfrastructureOne.graphI z') \<Longrightarrow>
-       InfrastructureOne.nodes (InfrastructureOne.graphI z) = InfrastructureOne.nodes (InfrastructureOne.graphI z') \<Longrightarrow>
-       z = I \<Longrightarrow>
-       z' = I' \<Longrightarrow>
-       G = InfrastructureOne.graphI I \<Longrightarrow>
-       aa @\<^bsub>G\<^esub> la \<Longrightarrow>
-       la \<in> InfrastructureOne.nodes G \<Longrightarrow>
-       InfrastructureOne.enables I la (Actor aa) get \<Longrightarrow>
-       I' =
-       InfrastructureOne.infrastructure.Infrastructure
-        (InfrastructureOne.igraph.Lgraph (InfrastructureOne.gra G) (InfrastructureOne.agra G) (InfrastructureOne.cgra G)
-          (InfrastructureOne.lgra G) (InfrastructureOne.egra G)
-          ((InfrastructureOne.kgra G)
-           (aa := (InfrastructureOne.kgra G aa)
-              (la := {(x, y). x \<in> InfrastructureOne.agra G la \<and> y \<in> InfrastructureOne.egra G la}))))
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       \<exists>l. b \<in> InfrastructureOne.egra (InfrastructureOne.graphI z') l"
-    by (metis (no_types, lifting) InfrastructureOne.egra.simps InfrastructureOne.graphI.simps InfrastructureOne.kgra.simps Pair_inject case_prodE fun_upd_def mem_Collect_eq)
-next show "\<And>z z' a l ab b G I aa la I'.
-       z \<rightarrow>\<^sub>n z' \<Longrightarrow>
-       \<forall>a l ab b.
-          (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z) a l \<longrightarrow>
-          (\<exists>l. b \<in> InfrastructureOne.egra (InfrastructureOne.graphI z) l) \<Longrightarrow>
-       (ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z') a l \<Longrightarrow>
-       InfrastructureOne.actors_graph (InfrastructureOne.graphI z) =
-       InfrastructureOne.actors_graph (InfrastructureOne.graphI z') \<Longrightarrow>
-       InfrastructureOne.nodes (InfrastructureOne.graphI z) = InfrastructureOne.nodes (InfrastructureOne.graphI z') \<Longrightarrow>
-       z = I \<Longrightarrow>
-       z' = I' \<Longrightarrow>
-       G = InfrastructureOne.graphI I \<Longrightarrow>
-       aa @\<^bsub>G\<^esub> la \<Longrightarrow>
-       InfrastructureOne.enables I la (Actor aa) put \<Longrightarrow>
-       I' =
-       InfrastructureOne.infrastructure.Infrastructure (InfrastructureOne.put_graph_efid aa la G)
-        (InfrastructureOne.delta I) \<Longrightarrow>
-       \<exists>l. b \<in> InfrastructureOne.egra (InfrastructureOne.graphI z') l"
-    apply (unfold put_graph_efid_def)
-    apply (subgoal_tac "(ab, b) \<in> InfrastructureOne.kgra (InfrastructureOne.graphI z) a l")
-    prefer 2
-    apply fastforce
-    apply (case_tac "l = la")
-apply simp
-   *)
 end
 
  
