@@ -471,7 +471,6 @@ lemma efids_cur_in_efids_list: "a\<in>InfrastructureThree.actors_graph (Infrastr
   apply (case_tac "(InfrastructureThree.cgra (InfrastructureThree.graphI I) a)")
   by simp
 
-
 lemma efids_list_inj_imp_inc_ind_not_eq[rule_format]: " (\<forall> a \<in> actors_graph (InfrastructureThree.graphI z). 
  inj (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI z) a)) \<longrightarrow>
       efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI z) a) \<noteq>
@@ -484,8 +483,6 @@ proof (clarify, simp add: efids_inc_ind_def efids_cur_def efids_list_def, case_t
        InfrastructureThree.graphI z = InfrastructureThree.igraph.Lgraph x1 x2 x3 x4 x5 x6 \<Longrightarrow> False"
     by (smt (z3) efidlist.exhaust efidlist.rec n_not_Suc_n the_inv_f_f)
 qed
-
-
 
 (* New invariant in step 3: card (agra g l) \<ge> 2 is preserved *)
 lemma card_minusO: "3 \<le> card (S) \<Longrightarrow> 2 \<le> card (S - {a})"
@@ -578,6 +575,12 @@ next show "\<And>z z' l G I a la I'.
        3 \<le> card (InfrastructureThree.agra (InfrastructureThree.graphI z') l)"
     using InfrastructureThree.put_graph_efid_def by force
 qed
+
+lemma numbers_actors_invO[rule_format]: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow>  
+(\<forall> l \<in> nodes (graphI z). card (agra (graphI z) l) \<ge> 3 \<longrightarrow> 
+ card (agra (graphI z') l) \<ge> 3)"
+  using numbers_actors_inv by blast
+
 
 (*
 lemma numbers_actors_inv_old: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow>  
@@ -2805,6 +2808,509 @@ lemma theoremAOO: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rig
   by (smt (verit) InfrastructureThree.same_actors InfrastructureThree.same_nodes empty_Collect_eq inf_set_def mem_Collect_eq theoremA)
 
 (* Single-set intersection lemma is given by invariant that there are more than 3 - ergo not identifiable *)
+(*
+lemma  "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+(\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI I) \<longrightarrow>  
+                a \<in>  InfrastructureThree.agra (InfrastructureThree.graphI I) l \<longrightarrow>  
+                a \<in>  InfrastructureThree.agra (InfrastructureThree.graphI I) l' \<longrightarrow> l = l')) \<Longrightarrow>
+(\<forall> l \<in> nodes(InfrastructureThree.graphI I).
+\<forall> e \<in> (InfrastructureThree.egra (InfrastructureThree.graphI I) l).
+ (\<exists> a \<in> agra (InfrastructureThree.graphI I) l. 
+     e = efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI I) a))) \<Longrightarrow>
+\<forall> l \<in> nodes(InfrastructureThree.graphI y).
+ \<forall>x\<in>InfrastructureThree.agra (InfrastructureThree.graphI y) l.
+       InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI I) x)
+       \<in> InfrastructureThree.egra (InfrastructureThree.graphI y) l"
+  apply (subgoal_tac "(\<forall> l \<in> nodes(InfrastructureThree.graphI y).
+\<forall> e \<in> (InfrastructureThree.egra (InfrastructureThree.graphI y) l).
+ (\<exists> a \<in> agra (InfrastructureThree.graphI y) l. 
+     e = efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI y) a)))")
+  apply (subgoal_tac "(\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI y) \<longrightarrow>  
+                a \<in>  InfrastructureThree.agra (InfrastructureThree.graphI y) l \<longrightarrow>  
+                a \<in>  InfrastructureThree.agra (InfrastructureThree.graphI y) l' \<longrightarrow> l = l'))")
+  prefer 2
+  using InfrastructureThree.actor_unique_loc_lem apply presburger
+  prefer 2
+   apply (simp add: InfrastructureThree.efids_cur_eq_egra_refl)
+  apply (rule ballI)+
+  apply (rotate_tac -4)
+  apply (drule_tac x = l in bspec)
+   apply assumption
+  apply (rotate_tac -1)
+  apply (drule_tac x = "efids_cur (cgra (InfrastructureThree.graphI y) x)" in bspec)
+produces "InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI I) x)
+           \<in> InfrastructureThree.egra (InfrastructureThree.graphI y) l " which is the goal as
+  subgoal 
+*)
+lemma isthere_lem0: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow>  nodes (graphI z) = nodes (graphI z') \<longrightarrow>
+           (inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI z) x)) 
+                     (actors_graph (InfrastructureThree.graphI z))) \<longrightarrow>
+ (\<forall> a \<in> actors_graph (InfrastructureThree.graphI z). 
+      efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI z) a) \<noteq>
+              efids_cur(efids_inc_ind (InfrastructureThree.cgra (InfrastructureThree.graphI z) a))) \<longrightarrow>
+(\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI z) \<longrightarrow>
+                a \<in>  agra (graphI z) l \<longrightarrow>  a \<in>  agra (graphI z) l' \<longrightarrow> l = l')) \<longrightarrow>
+         (\<forall> a.
+             (\<forall> l. l \<in> nodes (graphI z) \<longrightarrow>  a \<in>  agra (graphI z) l \<longrightarrow>
+            efids_cur ((InfrastructureThree.cgra (graphI z) a)) \<in> egra (graphI z) l)) 
+        \<longrightarrow> (\<forall> a. 
+           (\<forall> l'. l' \<in> nodes (graphI z') \<longrightarrow>  a \<in>  agra (graphI z') l' \<longrightarrow>
+          efids_cur ((InfrastructureThree.cgra (graphI z') a)) \<in> egra (graphI z') l'))"
+  apply (rule allI)+
+  apply (rule impI)
+  apply (rule InfrastructureThree.state_transition_in.cases, assumption)
+    apply (simp add: move_graph_a_def)
+    apply (rule conjI)
+     apply (rule impI)+
+     apply (rule allI)
+     apply (rule conjI)
+     apply (rule impI)+
+     apply (rule allI)
+     apply (rule impI)+
+      apply (erule conjE)+
+  apply meson
+  apply (metis (no_types, lifting) InfrastructureThree.actors_graph_def inj_on_def mem_Collect_eq)
+  apply force
+(* get *)
+  using InfrastructureThree.agra.simps InfrastructureThree.cgra.simps InfrastructureThree.egra.simps InfrastructureThree.graphI.simps apply presburger
+(* put *)
+  by (smt (z3) InfrastructureThree.actors_graph_def InfrastructureThree.agra.simps InfrastructureThree.atI_def InfrastructureThree.cgra.simps InfrastructureThree.egra.simps InfrastructureThree.graphI.simps InfrastructureThree.put_graph_efid_def fun_upd_apply inj_on_def insert_Diff insert_iff mem_Collect_eq)
+
+lemma isthere_lem0a: "z \<rightarrow>\<^sub>n z' \<Longrightarrow>  nodes (graphI z) = nodes (graphI z') \<Longrightarrow>
+           (inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI z) x)) 
+                     (actors_graph (InfrastructureThree.graphI z))) \<Longrightarrow>
+ (\<forall> a \<in> actors_graph (InfrastructureThree.graphI z). 
+      efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI z) a) \<noteq>
+              efids_cur(efids_inc_ind (InfrastructureThree.cgra (InfrastructureThree.graphI z) a))) \<Longrightarrow>
+(\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI z) \<longrightarrow>
+                a \<in>  agra (graphI z) l \<longrightarrow>  a \<in>  agra (graphI z) l' \<longrightarrow> l = l')) \<Longrightarrow>
+         (\<forall> a.
+             (\<forall> l. l \<in> nodes (graphI z) \<longrightarrow>  a \<in>  agra (graphI z) l \<longrightarrow>
+            efids_cur ((InfrastructureThree.cgra (graphI z) a)) \<in> egra (graphI z) l)) \<Longrightarrow>
+         (\<forall> a. 
+           (\<forall> l'. l' \<in> nodes (graphI z') \<longrightarrow>  a \<in>  agra (graphI z') l' \<longrightarrow>
+          efids_cur ((InfrastructureThree.cgra (graphI z') a)) \<in> egra (graphI z') l'))"
+  using InfrastructureThree.isthere_lem0 by presburger
+
+lemma isthere_lem00: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow>  nodes (graphI z) = nodes (graphI z') \<longrightarrow>
+           (inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI z) x)) 
+                     (actors_graph (InfrastructureThree.graphI z))) \<longrightarrow>
+ (\<forall> a \<in> actors_graph (InfrastructureThree.graphI z). 
+      inj (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI z) a))) \<longrightarrow>
+(\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI z) \<longrightarrow>
+                a \<in>  agra (graphI z) l \<longrightarrow>  a \<in>  agra (graphI z) l' \<longrightarrow> l = l')) \<longrightarrow>
+         (\<forall> a.
+             (\<forall> l. l \<in> nodes (graphI z) \<longrightarrow>  a \<in>  agra (graphI z) l \<longrightarrow>
+            efids_cur ((InfrastructureThree.cgra (graphI z) a)) \<in> egra (graphI z) l)) 
+        \<longrightarrow> (\<forall> a. 
+           (\<forall> l'. l' \<in> nodes (graphI z') \<longrightarrow>  a \<in>  agra (graphI z') l' \<longrightarrow>
+          efids_cur ((InfrastructureThree.cgra (graphI z') a)) \<in> egra (graphI z') l'))"
+  by (simp add: InfrastructureThree.efids_list_inj_imp_inc_ind_not_eq InfrastructureThree.isthere_lem0)
+
+lemma isthere_lem00a: "z \<rightarrow>\<^sub>n z' \<Longrightarrow> nodes (graphI z) = nodes (graphI z') \<Longrightarrow>
+           (inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI z) x)) 
+                     (actors_graph (InfrastructureThree.graphI z))) \<Longrightarrow>
+ (\<forall> a \<in> actors_graph (InfrastructureThree.graphI z). 
+      inj (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI z) a))) \<Longrightarrow>
+(\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI z) \<longrightarrow>
+                a \<in>  agra (graphI z) l \<longrightarrow>  a \<in>  agra (graphI z) l' \<longrightarrow> l = l')) \<Longrightarrow>
+         (\<forall> a.
+             (\<forall> l. l \<in> nodes (graphI z) \<longrightarrow>  a \<in>  agra (graphI z) l \<longrightarrow>
+            efids_cur ((InfrastructureThree.cgra (graphI z) a)) \<in> egra (graphI z) l)) \<Longrightarrow>
+         (\<forall> a. 
+           (\<forall> l'. l' \<in> nodes (graphI z') \<longrightarrow>  a \<in>  agra (graphI z') l' \<longrightarrow>
+          efids_cur ((InfrastructureThree.cgra (graphI z') a)) \<in> egra (graphI z') l'))"
+  using InfrastructureThree.isthere_lem00 by presburger
+
+lemma is_there_lem[rule_format]: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+     (\<forall> a \<in> actors_graph (InfrastructureThree.graphI I). (\<forall> a' \<in> actors_graph(InfrastructureThree.graphI I). a \<noteq> a' \<longrightarrow>
+     ((range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)) \<inter> 
+      (range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a')))) = {}))) \<Longrightarrow>
+        (inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI I) x)) 
+                     (actors_graph (InfrastructureThree.graphI I))) \<Longrightarrow>
+        (\<forall> a \<in> actors_graph (InfrastructureThree.graphI I). 
+               inj (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a))) \<Longrightarrow>
+           (\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI I) \<longrightarrow>
+                a \<in>  agra (graphI I) l \<longrightarrow>  a \<in>  agra (graphI I) l' \<longrightarrow> l = l')) \<Longrightarrow>
+(\<forall> a.
+             (\<forall> l. l \<in> nodes (graphI I) \<longrightarrow>  a \<in>  agra (graphI I) l \<longrightarrow>
+            efids_cur ((InfrastructureThree.cgra (graphI I) a)) \<in> egra (graphI I) l)) \<longrightarrow>
+        (\<forall> a. 
+           (\<forall> l'. l' \<in> nodes (graphI y) \<longrightarrow>  a \<in>  agra (graphI y) l' \<longrightarrow>
+                  efids_cur ((InfrastructureThree.cgra (graphI y) a)) \<in> egra (graphI y) l'))"
+proof (erule rtrancl_induct, simp)
+  show "\<And>y z. \<forall>a\<in>InfrastructureThree.actors_graph (InfrastructureThree.graphI I).
+              \<forall>a'\<in>InfrastructureThree.actors_graph (InfrastructureThree.graphI I).
+                 a \<noteq> a' \<longrightarrow>
+                 range (InfrastructureThree.efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)) \<inter>
+                 range (InfrastructureThree.efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a')) =
+                 {} \<Longrightarrow>
+           inj_on (\<lambda>x. InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI I) x))
+            (InfrastructureThree.actors_graph (InfrastructureThree.graphI I)) \<Longrightarrow>
+           \<forall>a\<in>InfrastructureThree.actors_graph (InfrastructureThree.graphI I).
+              inj (InfrastructureThree.efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)) \<Longrightarrow>
+           \<forall>a l l'.
+              l \<in> InfrastructureThree.nodes (InfrastructureThree.graphI I) \<longrightarrow>
+              a \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<longrightarrow>
+              a \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l' \<longrightarrow> l = l' \<Longrightarrow>
+           (I, y) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+           (y, z) \<in> {(x, y). x \<rightarrow>\<^sub>n y} \<Longrightarrow>
+           (\<forall>a l. l \<in> InfrastructureThree.nodes (InfrastructureThree.graphI I) \<longrightarrow>
+                  a \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<longrightarrow>
+                  InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)
+                  \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l) \<longrightarrow>
+           (\<forall>a l'.
+               l' \<in> InfrastructureThree.nodes (InfrastructureThree.graphI y) \<longrightarrow>
+               a \<in> InfrastructureThree.agra (InfrastructureThree.graphI y) l' \<longrightarrow>
+               InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI y) a)
+               \<in> InfrastructureThree.egra (InfrastructureThree.graphI y) l') \<Longrightarrow>
+           (\<forall>a l. l \<in> InfrastructureThree.nodes (InfrastructureThree.graphI I) \<longrightarrow>
+                  a \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<longrightarrow>
+                  InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)
+                  \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l) \<longrightarrow>
+           (\<forall>a l'.
+               l' \<in> InfrastructureThree.nodes (InfrastructureThree.graphI z) \<longrightarrow>
+               a \<in> InfrastructureThree.agra (InfrastructureThree.graphI z) l' \<longrightarrow>
+               InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI z) a)
+               \<in> InfrastructureThree.egra (InfrastructureThree.graphI z) l')"
+    apply (rule impI)
+  apply (rule_tac z = y in isthere_lem00a)
+    apply force
+    apply (metis InfrastructureThree.same_nodes rtrancl.rtrancl_into_rtrancl)
+    apply (smt (verit, ccfv_threshold) InfrastructureThree.efids_cur_in_efids_listO InfrastructureThree.same_actors disjoint_insert(2) efids_list_eq_refl inj_onI insert_Diff)
+    apply (metis InfrastructureThree.same_actors efids_list_eq_refl)
+    using InfrastructureThree.actor_unique_loc_lem apply presburger
+    by meson
+qed
+
+
+
+lemma inj_on_leq: "inj_on f A \<Longrightarrow>
+    AO \<subseteq> A \<Longrightarrow> \<forall> x \<in> AO. f x \<in> EO \<Longrightarrow> finite EO \<Longrightarrow>
+    3 \<le> card AO \<Longrightarrow>
+    3 \<le> card EO"
+  apply (subgoal_tac "card AO \<le> card EO")
+   apply (meson dual_order.trans)
+  apply (rule_tac f = f in card_inj_on_le)
+  using inj_on_subset apply blast
+  apply fastforce
+  using card_ge_0_finite by blast
+
+lemma finite_egras_inv: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow> (\<forall> l \<in> nodes (graphI z). finite(egra (graphI z) l)) 
+                         \<longrightarrow> (\<forall> l' \<in> nodes (graphI z'). finite(egra (graphI z') l'))"
+  apply (rule allI)+
+  apply (rule impI)
+  apply (rule InfrastructureThree.state_transition_in.cases, assumption)
+    apply (simp add: move_graph_a_def)
+  apply (simp add: InfrastructureThree.same_nodes0)
+  apply (simp add: InfrastructureThree.same_nodes0)
+  apply (simp add: put_graph_efid_def)
+  by (simp add: InfrastructureThree.same_nodes0)
+
+lemma finite_egras_inv_refl: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+                     (\<forall> l \<in> nodes (graphI I). finite(egra (graphI I) l)) \<Longrightarrow>
+                     (\<forall> l' \<in> nodes (graphI y). finite(egra (graphI y) l'))"
+proof (erule rtrancl_induct, simp)
+  show "\<And>y z. \<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI I).
+              finite (InfrastructureThree.egra (InfrastructureThree.graphI I) l) \<Longrightarrow>
+           (I, y) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+           (y, z) \<in> {(x, y). x \<rightarrow>\<^sub>n y} \<Longrightarrow>
+           \<forall>l'\<in>InfrastructureThree.nodes (InfrastructureThree.graphI y).
+              finite (InfrastructureThree.egra (InfrastructureThree.graphI y) l') \<Longrightarrow>
+           \<forall>l'\<in>InfrastructureThree.nodes (InfrastructureThree.graphI z).
+              finite (InfrastructureThree.egra (InfrastructureThree.graphI z) l') "
+    by (simp add: finite_egras_inv)
+qed
+
+lemma finite_agras_inv: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow> (\<forall> l \<in> nodes (graphI z). finite(agra (graphI z) l)) 
+                         \<longrightarrow> (\<forall> l' \<in> nodes (graphI z'). finite(agra (graphI z') l'))"
+  apply (rule allI)+
+  apply (rule impI)
+  apply (rule InfrastructureThree.state_transition_in.cases, assumption)
+    apply (simp add: move_graph_a_def)
+  using InfrastructureThree.nodes_def apply force
+  apply (simp add: InfrastructureThree.same_nodes0)
+  apply (simp add: put_graph_efid_def)
+  by (simp add: InfrastructureThree.same_nodes0)
+
+lemma finite_agras_inv_refl: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+                     (\<forall> l \<in> nodes (graphI I). finite(agra (graphI I) l)) \<Longrightarrow>
+                     (\<forall> l' \<in> nodes (graphI y). finite(agra (graphI y) l'))"
+proof (erule rtrancl_induct, simp)
+  show " \<And>y z. \<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI I).
+              finite (InfrastructureThree.agra (InfrastructureThree.graphI I) l) \<Longrightarrow>
+           (I, y) \<in> {(x, y). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+           (y, z) \<in> {(x, y). x \<rightarrow>\<^sub>n y} \<Longrightarrow>
+           \<forall>l'\<in>InfrastructureThree.nodes (InfrastructureThree.graphI y).
+              finite (InfrastructureThree.agra (InfrastructureThree.graphI y) l') \<Longrightarrow>
+           \<forall>l'\<in>InfrastructureThree.nodes (InfrastructureThree.graphI z).
+              finite (InfrastructureThree.agra (InfrastructureThree.graphI z) l')"
+    using finite_agras_inv by force
+qed
+
+lemma numbers_egras_inv: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+(\<forall> a \<in> actors_graph (InfrastructureThree.graphI I). (\<forall> a' \<in> actors_graph(InfrastructureThree.graphI I). a \<noteq> a' \<longrightarrow> 
+(range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)) \<inter> 
+ range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a'))) = {})) 
+\<Longrightarrow>
+(inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI I) x)) 
+           (actors_graph (InfrastructureThree.graphI I))) \<Longrightarrow>
+        (\<forall> a \<in> actors_graph (InfrastructureThree.graphI I). 
+               inj (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a))) \<Longrightarrow>
+           (\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI I) \<longrightarrow>
+                a \<in>  agra (graphI I) l \<longrightarrow>  a \<in>  agra (graphI I) l' \<longrightarrow> l = l')) \<Longrightarrow>
+(\<forall> a.
+             (\<forall> l. l \<in> nodes (graphI I) \<longrightarrow>  a \<in>  agra (graphI I) l \<longrightarrow>
+            efids_cur ((InfrastructureThree.cgra (graphI I) a)) \<in> egra (graphI I) l)) \<Longrightarrow>
+\<forall> l \<in> nodes (graphI I). finite(egra (graphI I) l) \<Longrightarrow>
+ l \<in> nodes (graphI I) \<Longrightarrow> 
+card (agra (graphI I) l) \<ge> 3 \<Longrightarrow>
+card (egra (graphI y) l) \<ge> 3"
+  apply (subgoal_tac "(inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI y) x)) 
+           (actors_graph (InfrastructureThree.graphI y)))")
+  prefer 2
+  apply (smt (verit, ccfv_SIG) InfrastructureThree.efids_cur_in_efids_listO InfrastructureThree.ran_efids_list_disjoint_refl disjoint_iff inj_on_def)
+  apply (subgoal_tac " 3 \<le> card (InfrastructureThree.agra (InfrastructureThree.graphI y) l)")
+   prefer 2
+  using numbers_actors_inv_refl apply presburger
+  apply (rule_tac A = "actors_graph (InfrastructureThree.graphI y)" and 
+                  AO = "agra (InfrastructureThree.graphI y) l" and 
+                  EO = "egra (InfrastructureThree.graphI y) l" in inj_on_leq)
+ apply assumption
+  apply (metis (mono_tags, lifting) InfrastructureThree.actors_graph_def InfrastructureThree.same_actors InfrastructureThree.same_nodes mem_Collect_eq subsetI)
+    prefer 3
+    apply assumption
+  using InfrastructureThree.is_there_lem InfrastructureThree.same_nodes apply auto[1]
+  by (metis InfrastructureThree.same_nodes finite_egras_inv_refl)
+
+lemma two_noteq_card_ge_two: "finite A \<Longrightarrow> x \<in> A \<Longrightarrow> y \<in> A \<Longrightarrow> x \<noteq> y \<Longrightarrow> 2 \<le> card A"
+  by (metis Suc_leI card_Diff1_less_iff card_gt_0_iff ex_in_conv finite_insert insert_Diff insert_iff less_not_le linorder_neqE_nat numeral_2_eq_2) 
+
+lemma one_ge_card_imp_one_neq: "finite S \<Longrightarrow> 1 \<le> card S \<Longrightarrow>
+       \<exists> A.  A \<in> S"
+  by (metis One_nat_def Suc_le_lessD all_not_in_conv card.empty less_not_refl3)
+
+lemma two_ge_card_imp_two_neq: "finite S \<Longrightarrow> 2 \<le> card S \<Longrightarrow>
+       \<exists> A B. A \<noteq> B  \<and> A \<in> S \<and> B \<in> S"
+  by (meson card_2_iff' in_mono obtain_subset_with_card_n)
+
+lemma three_ge_card_imp_three_neqO: "finite S \<Longrightarrow> 3 \<le> card S \<Longrightarrow>
+       \<exists> A B E. A \<noteq> B \<and> A \<noteq> E \<and> B \<noteq> E \<and> A \<in> S \<and> B \<in> S \<and> E \<in> S"
+  by (metis Suc_le_lessD card_2_iff' less_imp_le_nat less_not_le numeral_2_eq_2 numeral_3_eq_3 two_ge_card_imp_two_neq)
+
+lemma three_ge_card_imp_three_neq: "finite S \<Longrightarrow> 3 \<le> card S \<Longrightarrow>
+       \<exists> A B E. A \<noteq> B \<and> A \<noteq> E \<and> B \<noteq> E \<and> A \<in> S \<and> B \<in> S"
+  using three_ge_card_imp_three_neqO by fastforce
+
+lemma three_ge_card_imp_two_neq_Eve: "finite S \<Longrightarrow> 3 \<le> card S \<Longrightarrow>
+       \<exists>A B. A \<noteq> B \<and> A \<noteq> ''Eve'' \<and> B \<noteq> ''Eve'' \<and> A \<in> S \<and> B \<in> S"
+  by (smt (verit, ccfv_SIG) card_2_iff' dual_order.antisym numeral_eq_iff obtain_subset_with_card_n order_refl semiring_norm(89) three_ge_card_imp_three_neq two_noteq_card_ge_two)
+
+lemma last_lemOOO[rule_format]: "\<forall> z z'. z \<rightarrow>\<^sub>n z' \<longrightarrow>
+(\<forall> a \<in> actors_graph (InfrastructureThree.graphI z). (\<forall> a' \<in> actors_graph(InfrastructureThree.graphI z). a \<noteq> a' \<longrightarrow> 
+(range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI z) a)) \<inter> 
+ range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI z) a'))) = {})) \<longrightarrow>
+(inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI z) x)) 
+           (actors_graph (InfrastructureThree.graphI z))) \<longrightarrow>
+        (\<forall> a \<in> actors_graph (InfrastructureThree.graphI z). 
+               inj (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI z) a))) \<longrightarrow>
+           (\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI z) \<longrightarrow>
+                a \<in>  agra (graphI z) l \<longrightarrow>  a \<in>  agra (graphI z) l' \<longrightarrow> l = l')) \<longrightarrow>
+(\<forall> a.
+             (\<forall> l. l \<in> nodes (graphI z) \<longrightarrow>  a \<in>  agra (graphI z) l \<longrightarrow>
+            efids_cur ((InfrastructureThree.cgra (graphI z) a)) \<in> egra (graphI z) l)) \<longrightarrow>
+(\<forall> l \<in> nodes (graphI z). finite(egra (graphI z) l)) \<longrightarrow>
+(\<forall> l \<in> nodes (graphI z). finite(agra (graphI z) l)) \<longrightarrow>
+(\<forall> l \<in> nodes (graphI z). card (agra (graphI z) l) \<ge> 3) \<longrightarrow>
+(\<forall> l \<in> nodes (graphI z). card (egra (graphI z) l) \<ge> 3) \<longrightarrow>
+ (\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI z).
+  {(Id, Eid).
+     (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI z) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq> {}
+   \<longrightarrow>  2 \<le> card {(Id, Eid).
+       (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI z) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid})
+\<longrightarrow>  (\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI z').
+  {(Id, Eid).
+     (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI z') ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq> {}
+   \<longrightarrow>  2 \<le> card {(Id, Eid).
+       (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI z') ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid})"
+  apply (rule allI)+
+  apply (rule impI)
+  apply (rule InfrastructureThree.state_transition_in.cases, assumption)
+    apply (simp add: move_graph_a_def)
+  using InfrastructureThree.gra.simps InfrastructureThree.nodes_def apply presburger
+   prefer 2
+  apply (simp add: put_graph_efid_def)
+  using InfrastructureThree.graphI.simps InfrastructureThree.same_nodes0 apply presburger
+  apply (rule impI)+
+  apply (rule ballI)
+  apply (rule impI)
+(* *)
+  apply simp
+  apply (erule exE)
+  apply (erule conjE)
+(*
+  apply (subgoal_tac "(\<forall> l \<in> nodes (graphI z'). card (agra (graphI z') l) \<ge> 3)
+                   \<and> (\<forall> l \<in> nodes (graphI z'). card (egra (graphI z') l) \<ge> 3)")
+   prefer 2
+   apply (rule conjI)
+  using InfrastructureThree.same_nodes0 apply force
+   apply (rule ballI)
+   apply (rule_tac I = z in numbers_egras_inv, force)
+          apply simp+
+  using InfrastructureThree.graphI.simps InfrastructureThree.same_nodes0 apply presburger
+   apply (metis InfrastructureThree.same_nodes0)
+*)
+  apply (rule conjI)
+   apply (rule impI)+
+   apply (rule conjI)
+    apply (rule impI)+
+    defer
+    apply fastforce
+   apply (rule impI)+
+  apply (rule conjI)
+  using InfrastructureThree.same_nodes0 apply force
+  using InfrastructureThree.same_nodes0 apply force
+  apply simp
+  apply (erule conjE)
+  (*   aa \<noteq> a \<Longrightarrow>
+       la = l \<Longrightarrow>
+       ''Eve'' = a \<Longrightarrow>
+       aa \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<Longrightarrow>
+       eid \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l \<Longrightarrow>
+       2 \<le> card {(Id, Eid).
+                  Id \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<and>
+                  Eid \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l \<and> Id \<noteq> a \<and> Eid = eid} *)
+  apply (subgoal_tac "3 \<le> card (InfrastructureThree.agra (InfrastructureThree.graphI I) l)")
+   prefer 2
+   apply fastforce
+(*
+  apply (subgoal_tac "3 \<le> card(InfrastructureThree.egra (InfrastructureThree.graphI I) l)")
+  prefer 2
+  apply fastforce
+*)
+  apply (subgoal_tac "? A B. A \<noteq> B \<and> A \<noteq> ''Eve'' \<and> B \<noteq> ''Eve'' \<and> A \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l
+                         \<and> B \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l")
+(*
+   apply (subgoal_tac "? id od ad. id \<noteq> od \<and> od \<noteq> ad \<and> id \<noteq> ad \<and> {id, od, ad} \<subseteq> InfrastructureThree.egra (InfrastructureThree.graphI I) l")
+*)
+    apply (erule exE)+
+  apply (erule conjE)+
+  apply (subgoal_tac "(A, eid) \<in> {(Id, Eid).
+                  Id \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<and>
+                  Eid \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l \<and> Id \<noteq> a \<and> Eid = eid}")
+  prefer 2
+  apply force
+  apply (subgoal_tac "(B, eid) \<in> {(Id, Eid).
+                  Id \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<and>
+                  Eid \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l \<and> Id \<noteq> a \<and> Eid = eid}")
+    prefer 2
+    apply force
+   apply (subgoal_tac "(A,eid) \<noteq> (B, eid)")
+  prefer 2
+    apply blast
+  apply (subgoal_tac "finite({(Id, Eid).
+                  Id \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<and>
+                  Eid \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l \<and> Id \<noteq> a \<and> Eid = eid})")
+    apply (rule two_noteq_card_ge_two, assumption)
+      prefer 3
+  apply assumption+
+      defer
+  apply (subgoal_tac "finite(InfrastructureThree.agra (InfrastructureThree.graphI I) l)")
+  using three_ge_card_imp_two_neq_Eve apply presburger
+   apply fastforce
+  apply (subgoal_tac "{(Id, Eid).
+         Id \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<and>
+         Eid \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l \<and> Id \<noteq> a \<and> Eid = eid} \<subseteq>
+        {(Id, Eid).
+         Id \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<and>
+         Eid \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l}")
+   apply (erule finite_subset)
+   apply (simp add: finite_cartesian_product_iff)
+  by force
+
+lemma last_lemOOOa: "z \<rightarrow>\<^sub>n z' \<Longrightarrow>
+(\<forall> a \<in> actors_graph (InfrastructureThree.graphI z). (\<forall> a' \<in> actors_graph(InfrastructureThree.graphI z). a \<noteq> a' \<longrightarrow> 
+(range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI z) a)) \<inter> 
+ range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI z) a'))) = {})) \<Longrightarrow>
+(inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI z) x)) 
+           (actors_graph (InfrastructureThree.graphI z))) \<Longrightarrow>
+        (\<forall> a \<in> actors_graph (InfrastructureThree.graphI z). 
+               inj (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI z) a))) \<Longrightarrow>
+           (\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI z) \<longrightarrow>
+                a \<in>  agra (graphI z) l \<longrightarrow>  a \<in>  agra (graphI z) l' \<longrightarrow> l = l')) \<Longrightarrow>
+(\<forall> a.
+             (\<forall> l. l \<in> nodes (graphI z) \<longrightarrow>  a \<in>  agra (graphI z) l \<longrightarrow>
+            efids_cur ((InfrastructureThree.cgra (graphI z) a)) \<in> egra (graphI z) l)) \<Longrightarrow>
+(\<forall> l \<in> nodes (graphI z). finite(egra (graphI z) l)) \<Longrightarrow>
+(\<forall> l \<in> nodes (graphI z). finite(agra (graphI z) l)) \<Longrightarrow>
+(\<forall> l \<in> nodes (graphI z). card (agra (graphI z) l) \<ge> 3) \<Longrightarrow>
+(\<forall> l \<in> nodes (graphI z). card (egra (graphI z) l) \<ge> 3) \<Longrightarrow>
+ (\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI z).
+  {(Id, Eid).
+     (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI z) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq> {}
+   \<longrightarrow>  2 \<le> card {(Id, Eid).
+       (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI z) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid})
+\<Longrightarrow>  (\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI z').
+  {(Id, Eid).
+     (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI z') ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq> {}
+   \<longrightarrow>  2 \<le> card {(Id, Eid).
+       (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI z') ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid})"
+  apply (rule ballI)
+  apply (rule impI)
+  apply (rule last_lemOOO)
+              apply assumption
+  by simp+
+
+lemma last_lemOO: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
+  (\<forall> l a. kgra (graphI I) a l = {}) \<Longrightarrow>
+(\<forall> a \<in> actors_graph (InfrastructureThree.graphI I). (\<forall> a' \<in> actors_graph(InfrastructureThree.graphI I). a \<noteq> a' \<longrightarrow> 
+(range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)) \<inter> 
+ range (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a'))) = {})) 
+\<Longrightarrow>
+(inj_on(\<lambda> x. efids_cur(InfrastructureThree.cgra (InfrastructureThree.graphI I) x)) 
+           (actors_graph (InfrastructureThree.graphI I))) \<Longrightarrow>
+        (\<forall> a \<in> actors_graph (InfrastructureThree.graphI I). 
+               inj (efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a))) \<Longrightarrow>
+           (\<forall> a.
+             (\<forall> l l'. l \<in> nodes (graphI I) \<longrightarrow>
+                a \<in>  agra (graphI I) l \<longrightarrow>  a \<in>  agra (graphI I) l' \<longrightarrow> l = l')) \<Longrightarrow>
+(\<forall> a.
+             (\<forall> l. l \<in> nodes (graphI I) \<longrightarrow>  a \<in>  agra (graphI I) l \<longrightarrow>
+            efids_cur ((InfrastructureThree.cgra (graphI I) a)) \<in> egra (graphI I) l)) \<Longrightarrow>
+\<forall> l \<in> nodes (graphI I). finite(egra (graphI I) l) \<Longrightarrow>
+(\<forall> l \<in> nodes (graphI I). finite(agra (graphI I) l)) \<Longrightarrow>
+\<forall> l \<in> nodes (graphI I). card (agra (graphI I) l) \<ge> 3 \<Longrightarrow>
+\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI y).
+       {(Id, Eid).
+        (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI y) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq>
+       {} \<longrightarrow>
+       2 \<le> card {(Id, Eid).
+                  (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI y) ''Eve'' l \<and>
+                  Id \<noteq> ''Eve'' \<and> Eid = eid}"
+  apply (erule rtrancl_induct, simp)
+  apply (rule last_lemOOOa)
+  apply simp
+  using InfrastructureThree.ran_efids_list_disjoint_refl apply presburger
+  apply (smt (z3) InfrastructureThree.efids_cur_in_efids_listO InfrastructureThree.same_actors efids_list_eq_refl inj_onI insert_Diff insert_disjoint(2))
+  apply (metis InfrastructureThree.same_actors efids_list_eq_refl)
+  using InfrastructureThree.actor_unique_loc_lem apply presburger
+  using InfrastructureThree.is_there_lem apply auto[1]
+  using finite_egras_inv_refl apply presburger
+  using finite_agras_inv_refl apply presburger
+  apply (simp add: InfrastructureThree.same_nodes numbers_actors_inv_refl)
+  using InfrastructureThree.same_nodes inj_on_cong numbers_egras_inv apply auto[1]
+  by assumption
+
 lemma last_lem[rule_format]: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
 \<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI y).
        {(Id, Eid).
