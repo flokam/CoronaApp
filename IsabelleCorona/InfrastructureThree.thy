@@ -3311,26 +3311,6 @@ lemma last_lemOO: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rig
   using InfrastructureThree.same_nodes inj_on_cong numbers_egras_inv apply auto[1]
   by assumption
 
-lemma last_lem[rule_format]: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
-\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI y).
-       {(Id, Eid).
-        (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI y) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq>
-       {} \<longrightarrow>
-       2 \<le> card {(Id, Eid).
-                  (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI y) ''Eve'' l \<and>
-                  Id \<noteq> ''Eve'' \<and> Eid = eid}"
-  sorry
-
-lemma last_lemO: "(I, y) \<in> {(x::infrastructure, y::infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<Longrightarrow>
-\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI y).
-       {(Id, Eid).
-        (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI y) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq>
-       {} \<longrightarrow>
-       2 \<le> card {(Id, Eid).
-                  (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI y) ''Eve'' l \<and>
-                  Id \<noteq> ''Eve'' \<and> Eid = eid}"
-  using last_lem by blast
-
 
 end
 
