@@ -845,6 +845,17 @@ lemma kgra_init_lem: "\<forall>l a. InfrastructureThree.kgra (InfrastructureThre
              shopR_def pubR_def)
   using ex_knosR_def by force
 
+(* Initial finiteness invariants needed in the "pea-counting" lemma last_lem *)
+lemma finite_egra_init_lem: "\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI corona_scenarioR).
+       finite (InfrastructureThree.egra (InfrastructureThree.graphI corona_scenarioR) l)"
+  by (simp add: corona_scenarioR_def ex_graphR_def ex_loc_assR_def nodes_def ex_credsR_def ex_efidsR_def
+             shopR_def pubR_def)
+
+lemma finite_agra_init_lem: "\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI corona_scenarioR).
+       finite (InfrastructureThree.agra (InfrastructureThree.graphI corona_scenarioR) l)"
+  by (simp add: corona_scenarioR_def ex_graphR_def ex_loc_assR_def nodes_def ex_credsR_def ex_efidsR_def
+             shopR_def pubR_def)
+
 
 text \<open>Other invariants are that the efids at egra l are in fact efids of the actors at
       that location, i.e. 
@@ -1476,17 +1487,17 @@ lemma global_policy_valid: "(corona_scenarioR  \<rightarrow>\<^sub>n* y) \<Longr
   apply (simp add: actors_unique_init_lem)
   apply (simp add: range_disjoint_corona_scenarioR)
    apply (simp add: efid_eq_efid_cur_corona_scenarioR)
-  apply (rule last_lemO)
-by (simp add: state_transition_in_refl_def)
-(* Sstill to show lemma:
-\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI y).
-       {(Id, Eid).
-        (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI y) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq>
-       {} \<longrightarrow>
-       2 \<le> card {(Id, Eid).
-                  (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI y) ''Eve'' l \<and>
-                  Id \<noteq> ''Eve'' \<and> Eid = eid} *)
-
+  apply (rule last_lemOO)
+           apply (simp add: state_transition_in_refl_def)
+  using kgra_init_lem apply blast
+  using range_disjoint_corona_scenarioR apply blast
+  apply (smt (verit, best) InfrastructureThree.efids_cur_in_efids_listO disjoint_iff inj_onI range_disjoint_corona_scenarioR)
+  using inj_efids_list_init_lem apply blast
+  using actors_unique_init_lem apply blast
+  using local.isthere_lem00 apply blast
+    apply (rule finite_egra_init_lem) 
+   apply (rule finite_agra_init_lem)
+  using numbers_actors_inv_corona_scenarioR by blast 
 
 
 lemma  AG_all_sO_n: "(\<forall>y. (x,y)\<in> {(x,y). state_transition_in x y}\<^sup>* \<longrightarrow> y \<in> s) \<Longrightarrow> x \<in> AG s"
