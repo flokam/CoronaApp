@@ -1107,8 +1107,9 @@ qed
 
 lemma inj_on_corona_scenarioO: "inj_on (\<lambda>x. efids_cur (InfrastructureOne.cgra (InfrastructureOne.graphI corona_scenarioO) x))
         (InfrastructureOne.actors_graph (InfrastructureOne.graphI corona_scenarioO))"
-  sorry
-
+  by (simp add: corona_scenarioO_def inj_on_def ex_graphO_def ex_knosO_def pubO_def shopO_def
+                   ex_loc_assO_def ex_credsO_def ex_locsO_def ex_efidsO_def actors_graph_def)
+ 
 
 lemma l_eq_corona_scenarioO[rule_format]: "(\<forall> l l'. l \<in> nodes (graphI corona_scenarioO) \<longrightarrow>
                 a \<in>  agra (graphI corona_scenarioO) l \<longrightarrow>  a \<in>  agra (graphI corona_scenarioO) l' \<longrightarrow> l = l')"
