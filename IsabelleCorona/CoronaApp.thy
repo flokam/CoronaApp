@@ -55,6 +55,11 @@ defines global_policy''_def: "global_policy'' I eid \<equiv>
                 ((\<Inter> (kgra(graphI I)(''Eve'')`(nodes(graphI I))))
                  - {(x,y). x = ''Eve''}))"
 
+fixes global_policy :: "[infrastructure, efid] \<Rightarrow> bool"
+defines global_policy_def: "global_policy I eid \<equiv>  
+             \<forall> L. L \<subseteq> nodes(graphI I) \<longrightarrow> (\<not>(identifiable' eid 
+               ((\<Inter> (kgra(graphI I)(''Eve'')`L))
+                          - {(x,y). x = ''Eve''})))"
 
 fixes ex_creds :: "identity \<Rightarrow> efid"
 defines ex_creds_def: 
@@ -62,7 +67,8 @@ defines ex_creds_def:
                             (if x = ''Bob'' then  Efid 2 else 
                             (if x = ''Charly'' then Efid 3 else
                             (if x = ''David'' then Efid 4 else
-                            (if x = ''Eve'' then Efid 5 else Efid 0)))))"
+                            (if x = ''Eve'' then Efid 5 else 
+                            (if x = ''Flo'' then Efid 6 else Efid 0))))))"
 
 fixes ex_locs :: "location \<Rightarrow> string * (dlm * data) set"
 defines "ex_locs \<equiv> (\<lambda> x. ('''',{}))"
@@ -70,35 +76,35 @@ defines "ex_locs \<equiv> (\<lambda> x. ('''',{}))"
 fixes ex_loc_ass :: "location \<Rightarrow> identity set"
 defines ex_loc_ass_def: "ex_loc_ass \<equiv>
           (\<lambda> x. if x = pub then {''Alice'', ''Bob'', ''Eve''}  
-                 else (if x = shop then {''Charly'', ''David''} 
+                 else (if x = shop then {''Charly'', ''David'', ''Flo''} 
                        else {}))"
 fixes ex_loc_ass' :: "location \<Rightarrow> identity set"
 defines ex_loc_ass'_def: "ex_loc_ass' \<equiv>
           (\<lambda> x. if x = pub then {''Alice'', ''Eve''}  
-                 else (if x = shop then { ''Bob'', ''Charly'', ''David''} 
+                 else (if x = shop then { ''Bob'', ''Charly'', ''David'', ''Flo''} 
                        else {}))"
 fixes ex_loc_ass'' :: "location \<Rightarrow> identity set"
 defines ex_loc_ass''_def: "ex_loc_ass'' \<equiv>
           (\<lambda> x. if x = pub then {''Alice''}  
-                 else (if x = shop then {''Eve'', ''Bob'', ''Charly'', ''David''} 
+                 else (if x = shop then {''Eve'', ''Bob'', ''Charly'', ''David'', ''Flo''} 
                        else {}))"
 
 fixes ex_efids :: "location \<Rightarrow> efid set"
 defines ex_efids_def: "ex_efids \<equiv> 
           (\<lambda> x. if x = pub then {Efid 1, Efid 2, Efid 5}
-                else (if x = shop then {Efid 3, Efid 4}
+                else (if x = shop then {Efid 3, Efid 4, Efid 6}
                       else {}))"
 
 fixes ex_efids' :: "location \<Rightarrow> efid set"
 defines ex_efids'_def: "ex_efids' \<equiv> 
           (\<lambda> x. if x = pub then {Efid 1, Efid 5}
-                else (if x = shop then {Efid 2, Efid 3, Efid 4}
+                else (if x = shop then {Efid 2, Efid 3, Efid 4, Efid 6}
                       else {}))"
 
 fixes ex_efids'' :: "location \<Rightarrow> efid set"
 defines ex_efids''_def: "ex_efids'' \<equiv> 
           (\<lambda> x. if x = pub then {Efid 1}
-                else (if x = shop then {Efid 5, Efid 2, Efid 3, Efid 4}
+                else (if x = shop then {Efid 5, Efid 2, Efid 3, Efid 4, Efid 6}
                       else {}))"
 
 fixes ex_knos :: "identity \<Rightarrow> location \<Rightarrow> (identity * efid) set"
@@ -126,10 +132,11 @@ defines ex_knos''_def: "ex_knos'' \<equiv> (\<lambda> x :: identity.
                                     (''Bob'', Efid 1),(''Bob'', Efid 2),(''Bob'', Efid 5),
                                     (''Eve'', Efid 1),(''Eve'', Efid 2),(''Eve'', Efid 5)})
                             else (if l = shop then 
-                                     ({(''Eve'', Efid 5),(''Eve'', Efid 2),(''Eve'', Efid 3),(''Eve'', Efid 4),
-                                       (''Bob'', Efid 5),(''Bob'', Efid 2),(''Bob'', Efid 3),(''Bob'', Efid 4), 
-                                       (''Charly'', Efid 5),(''Charly'', Efid 2),(''Charly'', Efid 3),(''Charly'', Efid 4),
-                                       (''David'', Efid 5),(''David'', Efid 2),(''David'', Efid 3),(''David'', Efid 4)})
+                                     ({(''Eve'', Efid 5),(''Eve'', Efid 2),(''Eve'', Efid 3),(''Eve'', Efid 4),(''Eve'', Efid 6),
+                                       (''Bob'', Efid 5),(''Bob'', Efid 2),(''Bob'', Efid 3),(''Bob'', Efid 4),(''Bob'', Efid 6),
+                                       (''Charly'', Efid 5),(''Charly'', Efid 2),(''Charly'', Efid 3),(''Charly'', Efid 4),(''Charly'', Efid 6),
+                                       (''David'', Efid 5),(''David'', Efid 2),(''David'', Efid 3),(''David'', Efid 4),(''David'', Efid 6),
+                                       (''Flo'', Efid 5),(''Flo'', Efid 2),(''Flo'', Efid 3),(''Flo'', Efid 4),(''Flo'', Efid 6)})
                                    else {})))
                    else (\<lambda> l :: location. {} :: (identity * efid) set)))"
 
@@ -227,6 +234,8 @@ fixes corona_Kripke
 defines "corona_Kripke \<equiv> Kripke corona_states Icorona"
 fixes scorona 
 defines "scorona \<equiv> {x. \<exists> n. \<not> global_policy'' x (Efid n)}"  
+fixes scorona' 
+defines "scorona' \<equiv> {x. \<exists> n. \<not> global_policy x (Efid n)}"  
 
   (*  We assume the Insider assumption for Eve being able to impersonate Charly but
      we only need it in a positive sense to ensure that other actors can be assumed to 
@@ -394,7 +403,16 @@ next show \<open>corona_scenario'''' =
     apply (simp add: ex_efids''_def shop_def pub_def ex_knos'_def ex_knos''_def)
     apply (rule impI, rule ext)
     apply (simp add: insert_Diff_if shop_def pub_def)
-    by auto
+    apply (rule impI)+
+    apply (rule equalityI)
+     apply (rule subsetI)
+     apply (case_tac xa)
+    apply simp
+    apply linarith
+     apply (rule subsetI)
+     apply (case_tac xa)
+    apply simp
+    by metis
 qed
 
 lemma step4r: "corona_scenario'''  \<rightarrow>\<^sub>n* corona_scenario''''"
@@ -418,6 +436,11 @@ following him from pub to shop and interfering.\<close>
 lemma corona_ref: "[\<N>\<^bsub>(Icorona,scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup> \<sqsubseteq>
                   ([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
   by (metis append_Cons append_Nil refI)  
+
+lemma corona_ref': "[\<N>\<^bsub>(Icorona,scorona')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona')\<^esup> \<sqsubseteq>
+                  ([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona')\<^esup>)"
+  by (metis append_Cons append_Nil refI)  
+
 
 lemma att_corona: "\<turnstile>([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
 proof (subst att_and, simp, rule conjI)
@@ -450,8 +473,67 @@ next show \<open> \<turnstile>[\<N>\<^bsub>(Corona', Corona'')\<^esub>, \<N>\<^b
 by blast
 qed
 
+thm bspec
+thm ballI
+thm bexE bexI
+
+lemma set_spec: "\<forall> L\<subseteq> S. P L \<Longrightarrow> L' \<subseteq> S \<Longrightarrow> P L'"
+  by simp
+
+lemma set_allI:  "(\<And> L'. L' \<subseteq> S \<Longrightarrow> P L') \<Longrightarrow> \<forall> L\<subseteq> S. P L "
+  by simp
+
+lemma set_exI:  "P x \<Longrightarrow> x \<subseteq> A \<Longrightarrow> \<exists>x \<subseteq> A. P x"
+  by blast
+
+lemma set_exE: "\<exists>x \<subseteq> A. P x \<Longrightarrow>  (\<And>x. x \<subseteq> A \<Longrightarrow> P x \<Longrightarrow> Q) \<Longrightarrow> Q"
+  by blast
+
+lemma att_corona': "\<turnstile>([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona')\<^esup>)"
+proof (subst att_and, simp, rule conjI)
+  show " \<turnstile>\<N>\<^bsub>(Icorona, Corona')\<^esub>"
+    apply (simp add: Icorona_def Corona'_def att_base)
+    using state_transition_infra_def step1 by blast
+next show \<open> \<turnstile>[\<N>\<^bsub>(Corona', Corona'')\<^esub>, \<N>\<^bsub>(Corona'', Corona''')\<^esub>, \<N>\<^bsub>(Corona''', scorona')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Corona', scorona')\<^esup>\<close>
+    apply (subst att_and, simp)
+    apply (rule conjI)
+     apply (simp add: Corona'_def Corona''_def att_base state_transition_infra_def step2)
+    apply (subst att_and, simp, rule conjI)
+     apply (simp add: Corona''_def Corona'''_def att_base state_transition_infra_def step3)
+    apply (subst att_and, simp)
+    apply (simp add: Corona'''_def scorona'_def att_base state_transition_infra_def step4)
+    apply (rule_tac x = "corona_scenario''''" in exI)
+    apply (rule conjI)
+     prefer 2
+    apply (rule step4)
+     apply (unfold corona_scenario''''_def global_policy_def)
+     apply (unfold global_policy_def identifiable'_def ex_graph''''_def ex_loc_ass''_def nodes_def is_singleton_def
+                  ex_efids''_def pub_def shop_def ex_creds_def ex_locs_def ex_knos''_def local_policies_def)
+    apply (rule_tac x = 2 in exI, simp)
+    apply (rule set_exI)
+     prefer 2
+    apply (subgoal_tac 
+    "{Location 0, Location 1} \<subseteq> {x. \<exists>y. x = Location 0 \<and> y = Location (Suc 0) \<or> y = Location 0 \<and> x = Location (Suc 0)}")
+      apply assumption
+    apply simp
+     apply (rule_tac x = "''Bob''" in exI)
+      apply (rule_tac  x = "Efid 2" in exI)
+      apply (rule equalityI)
+     apply simp
+     apply auto[1]
+    apply (rule subsetI)
+    apply (rule CollectI)
+      apply (case_tac x)
+by simp
+qed
+
+
+(* here *)
 lemma corona_abs_att: "\<turnstile>\<^sub>V([\<N>\<^bsub>(Icorona,scorona)\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona)\<^esup>)"
   by (rule ref_valI, rule corona_ref, rule att_corona)
+
+lemma corona_abs_att': "\<turnstile>\<^sub>V([\<N>\<^bsub>(Icorona,scorona')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona,scorona')\<^esup>)"
+  by (rule ref_valI, rule corona_ref', rule att_corona')
 
 text \<open>We can then simply apply the Correctness theorem @{text \<open>AT EF\<close>} to immediately 
       prove the following CTL statement.
@@ -472,8 +554,24 @@ proof -
     by (simp add: corona_Kripke_def corona_states_def Icorona_def scorona_def)
 qed
 
+lemma corona_att': "corona_Kripke \<turnstile> EF {x. \<exists> n. \<not>(global_policy x (Efid n))}"
+proof -
+  have a: " \<turnstile>([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona')\<^esup>)"
+    by (rule att_corona')
+  hence "(Icorona,scorona') = attack ([\<N>\<^bsub>(Icorona,Corona')\<^esub>, \<N>\<^bsub>(Corona',Corona'')\<^esub>,  \<N>\<^bsub>(Corona'',Corona''')\<^esub>, \<N>\<^bsub>(Corona''',scorona')\<^esub>] \<oplus>\<^sub>\<and>\<^bsup>(Icorona, scorona')\<^esup>)"
+    by simp
+  hence "Kripke {s::infrastructure. \<exists>i::infrastructure\<in>Icorona. i \<rightarrow>\<^sub>i* s} Icorona \<turnstile> EF scorona'"
+    using ATV_EF corona_abs_att' by fastforce 
+  thus "corona_Kripke \<turnstile> EF {x::infrastructure.  \<exists> n. \<not> global_policy x (Efid n)}"
+    by (simp add: corona_Kripke_def corona_states_def Icorona_def scorona'_def)
+qed
+
 theorem corona_EF: "corona_Kripke \<turnstile> EF scorona"
   using corona_att scorona_def by blast 
+
+theorem corona_EF': "corona_Kripke \<turnstile> EF scorona'"
+  using corona_att' scorona'_def by blast 
+
 
 text \<open>Similarly, vice-versa, the CTL statement proved in @{text \<open>corona_EF\<close>}
     can now be directly translated into Attack Trees using the Completeness 
@@ -494,16 +592,20 @@ proof -
     by (simp add: corona_Kripke_def Icorona_def corona_states_def)
 qed
 *)
+theorem corona_AT': "\<exists> A. \<turnstile> A \<and> attack A = (Icorona,scorona')"
+  using att_corona' attack.simps(2) by blast  
+
 
 text \<open>Conversely, since we have an attack given by rule @{text \<open>corona_AT\<close>}, we can immediately 
    infer @{text \<open>EF s\<close>} using Correctness @{text \<open>AT_EF\<close>}\footnote{Clearly, this theorem is identical
    to @{text \<open>corona_EF\<close>} and could thus be inferred from that one but we want to show here an 
    alternative way of proving it using the Correctness theorem @{text \<open>AT_EF\<close>}.}.\<close>
-theorem corona_EF': "corona_Kripke \<turnstile> EF scorona"
+theorem corona_EF'': "corona_Kripke \<turnstile> EF scorona"
   using corona_EF by auto
 (* older version of  proof that uses AT_EF and does not use corona_EF:
     by (auto simp: corona_Kripke_def corona_states_def Icorona_def dest: AT_EF) *)
-
+theorem corona_EF''': "corona_Kripke \<turnstile> EF scorona'"
+  using corona_EF' by auto
 
 (* CoronaApp: The remainder is probably not relevant in this application (FK 26.6.2020) 
 (* However, when integrating DLM into the model and hence labeling
