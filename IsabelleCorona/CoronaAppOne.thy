@@ -1118,32 +1118,77 @@ lemma l_eq_corona_scenarioO[rule_format]: "(\<forall> l l'. l \<in> nodes (graph
 lemma coronaO_efids_list_inj: 
 "a \<in> actors_graph(InfrastructureOne.graphI corona_scenarioO) \<Longrightarrow> 
 inj (efids_list (InfrastructureOne.cgra (InfrastructureOne.graphI corona_scenarioO) a))"
-  sorry
+  by (simp add: corona_scenarioO_def ex_graphO_def ex_loc_assO_def nodes_def
+                    ex_credsO_def ex_locsO_def ex_efidsO_def ex_knosO_def pubO_def shopO_def inj_def)
 
 lemma efid_in_range_corona_scenarioO: "(\<forall> l \<in> nodes (graphI corona_scenarioO).
          (\<forall> e \<in> (egra (InfrastructureOne.graphI corona_scenarioO) l).
          (\<exists> a \<in> actors_graph (graphI corona_scenarioO). 
              e \<in> range (efids_list (InfrastructureOne.cgra (graphI corona_scenarioO) a)))))"
-  sorry
-
+  apply (simp add: corona_scenarioO_def ex_graphO_def nodes_def)
+  apply (rule allI)
+   apply (rule impI)+
+   apply (rule ballI)
+  apply (simp add: ex_efidsO_def actors_graph_def ex_loc_assO_def)
+  apply (erule exE)
+  apply (erule disjE)
+   apply (simp add: pubO_def shopO_def ex_credsO_def nodes_def)
+   apply (erule disjE)
+    apply (rule_tac x = "''Alice''" in exI)
+  apply simp
+    apply blast
+   apply (erule disjE)
+  apply (rule_tac x = "''Bob''" in exI)
+  apply simp
+    apply blast
+   apply (rule_tac x = "''Eve''" in exI)
+  apply simp
+    apply blast
+   apply (simp add: pubO_def shopO_def ex_credsO_def nodes_def)
+   apply (erule disjE)
+   apply (rule_tac x = "''Charly''" in exI)
+  apply simp
+   apply (erule disjE)
+   apply (rule_tac x = "''David''" in exI)
+  apply simp
+  apply (rule_tac x = "''Flo''" in exI)
+  by simp
 
 lemma efid_kgra_in_range_corona_scenarioO: "(\<forall> l \<in> InfrastructureOne.nodes (InfrastructureOne.graphI corona_scenarioO). 
          (\<forall> h \<in> InfrastructureOne.actors_graph(InfrastructureOne.graphI corona_scenarioO).
          (\<forall> e \<in> (snd`((InfrastructureOne.kgra (InfrastructureOne.graphI corona_scenarioO) h l))).
          (\<exists> a \<in> InfrastructureOne.actors_graph (InfrastructureOne.graphI corona_scenarioO). 
            e \<in> range (InfrastructureOne.efids_list (InfrastructureOne.cgra (InfrastructureOne.graphI corona_scenarioO) a))))))"
-  sorry
+  by (simp add: corona_scenarioO_def ex_graphO_def nodes_def
+                 ex_credsO_def ex_locsO_def ex_efidsO_def ex_knosO_def pubO_def shopO_def)
 
 lemma efid_eq_efid_cur_corona_scenarioO: "lb \<in> InfrastructureOne.nodes (InfrastructureOne.graphI corona_scenarioO) \<Longrightarrow>
        e \<in> InfrastructureOne.egra (InfrastructureOne.graphI corona_scenarioO) lb \<Longrightarrow>
        \<exists>a\<in>InfrastructureOne.agra (InfrastructureOne.graphI corona_scenarioO) lb.
           e = efids_cur (InfrastructureOne.cgra (InfrastructureOne.graphI corona_scenarioO) a)"
-  sorry
+  apply (simp add: corona_scenarioO_def ex_graphO_def nodes_def ex_loc_assO_def 
+                 ex_credsO_def ex_locsO_def ex_efidsO_def ex_knosO_def pubO_def shopO_def)
+  using shopO_def by fastforce
+
 
 lemma anonymous_actor_corona_scenarioO: " lb \<in> InfrastructureOne.nodes (InfrastructureOne.graphI corona_scenarioO) \<Longrightarrow>
        e \<in> InfrastructureOne.egra (InfrastructureOne.graphI corona_scenarioO) lb \<Longrightarrow>
        anonymous_actor corona_scenarioO e \<in> InfrastructureOne.agra (InfrastructureOne.graphI corona_scenarioO) lb"
-  sorry
+  thm anonymous_actor_def1a
+    apply (subgoal_tac "InfrastructureOne.actors_graph (InfrastructureOne.graphI corona_scenarioO) \<noteq> {}")
+   apply (drule_tac e = e in anonymous_actor_def1a)
+  prefer 6
+  using efid_in_range_corona_scenarioO apply force
+      prefer 5
+      apply (erule conjE)
+      apply (simp add: actors_graph_def)
+      apply (erule exE)
+      apply (erule conjE)
+  apply (metis (no_types, lifting) InfrastructureOne.actors_graph_def efid_eq_efid_cur_corona_scenarioO efids_cur_efids_list_actor_unique mem_Collect_eq range_disjoint_corona_scenarioO)
+
+  using coronaO_efids_list_inj apply blast
+      apply (simp add: range_disjoint_corona_scenarioO, assumption)
+  by (simp add: efid_in_range_corona_scenarioO)
 
 lemma refmapOne_lem: "\<forall>s::InfrastructureOne.infrastructure.
        (corona_scenarioO, s) \<in> {(x::InfrastructureOne.infrastructure, y::InfrastructureOne.infrastructure). x \<rightarrow>\<^sub>n y}\<^sup>* \<longrightarrow>

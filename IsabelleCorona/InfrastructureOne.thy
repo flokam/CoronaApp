@@ -687,6 +687,7 @@ proof (clarify, frule same_actors0, frule same_nodes0, frule efids_list_eq0, eru
      prefer 2
      apply (simp add: move_graph_a_def)+
     by (metis (mono_tags, hide_lams) Diff_iff UNIV_I efidlist.exhaust efids_cur.simps efids_list.simps fun_upd_apply image_eqI insert_iff)
+     (* for Isabelle 2021-1 ...(mono_tags, opaque_lifting)... *)
 next show " \<And>z z' l e G I a la I'.
        \<forall>l\<in>InfrastructureOne.nodes (InfrastructureOne.graphI z).
           \<forall>e\<in>InfrastructureOne.egra (InfrastructureOne.graphI z) l.
@@ -963,7 +964,7 @@ next show "\<And>z z' l h' e a b G I aa la I'.
        \<exists>aa\<in>InfrastructureOne.actors_graph (InfrastructureOne.graphI z').
           snd (a, b) \<in> range (efids_list (InfrastructureOne.cgra (InfrastructureOne.graphI z') aa)) "
     apply (simp add: put_graph_efid_def)
-    by (metis (no_types, hide_lams) InfrastructureOne.graphI.simps InfrastructureOne.put_graph_efid_def InfrastructureOne.same_actors0 InfrastructureOne.same_nodes0 InfrastructureOne.state_transition_in.put efidlist.exhaust efids_inc_ind.simps efids_list.simps snd_conv)
+    by (metis (no_types, opaque_lifting) InfrastructureOne.graphI.simps InfrastructureOne.put_graph_efid_def InfrastructureOne.same_actors0 InfrastructureOne.same_nodes0 InfrastructureOne.state_transition_in.put efidlist.exhaust efids_inc_ind.simps efids_list.simps snd_conv)
 next show "\<And>z z' l h' e a b G I aa la I'.
        \<forall>l\<in>InfrastructureOne.nodes (InfrastructureOne.graphI z).
           \<forall>e\<in>InfrastructureOne.egra (InfrastructureOne.graphI z) l.
