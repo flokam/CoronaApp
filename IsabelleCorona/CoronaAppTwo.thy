@@ -1872,7 +1872,7 @@ lemma all_kgra_disj_imp_greater_two_inv: "(\<forall> a \<in> actors_graph (graph
       (\<not>(identifiableT' eid 
                ((\<Inter> (kgra(graphI I)(''Eve'')`L))
                           - {(x,y). x = ''Eve''})))"
-  sorry
+  oops
 
 end
 end
