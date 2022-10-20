@@ -528,6 +528,8 @@ proof (clarify, frule same_nodes0, erule state_transition_in.cases)
         (InfrastructureThree.move_graph_a a la l' (InfrastructureThree.graphI I)) (InfrastructureThree.delta I) \<Longrightarrow>
        3 \<le> card (InfrastructureThree.agra (InfrastructureThree.graphI z') l)"
     apply (simp add: InfrastructureThree.move_graph_a_def)
+    by (meson card_insert card_minus)
+(*
     apply (rule conjI)
      apply (rule impI)+
     apply (rule conjI)
@@ -539,6 +541,7 @@ proof (clarify, frule same_nodes0, erule state_transition_in.cases)
      apply (rule impI)+
     apply (erule conjE)+
     by (erule card_insert)
+*)
 next show "\<And>z z' l G I a la I' g.
        l \<in> InfrastructureThree.nodes (InfrastructureThree.graphI z) \<Longrightarrow>
        3 \<le> card (InfrastructureThree.agra (InfrastructureThree.graphI z) l) \<Longrightarrow>
