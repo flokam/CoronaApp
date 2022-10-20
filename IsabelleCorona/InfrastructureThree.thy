@@ -528,7 +528,7 @@ proof (clarify, frule same_nodes0, erule state_transition_in.cases)
         (InfrastructureThree.move_graph_a a la l' (InfrastructureThree.graphI I)) (InfrastructureThree.delta I) \<Longrightarrow>
        3 \<le> card (InfrastructureThree.agra (InfrastructureThree.graphI z') l)"
     apply (simp add: InfrastructureThree.move_graph_a_def)
-    by (meson card_insert card_minus)
+    by (metis One_nat_def card_Diff_singleton card_insert card_minus)
 (*
     apply (rule conjI)
      apply (rule impI)+
