@@ -1519,4 +1519,212 @@ by (simp add: state_transition_in_refl_def)
  
 
 end
+
+(* Generalisation of RR_cycle_succeeds *)
+(* First need to generalise a few lemmas *)
+lemma  AG_all_sO_n: "(\<forall>y. (x,y)\<in> {(x,y). state_transition_in x y}\<^sup>* \<longrightarrow> y \<in> s) \<Longrightarrow> x \<in> AG s"
+  apply (rule AG_all_sO)
+  by (smt (verit) Collect_cong InfrastructureThree.state_transition_infra_def split_cong state_transition_refl_def)
+
+(* For the generalisation, we need to redefine the global policy at global level*)
+definition identifiable :: "[efid, (identity * efid)set] \<Rightarrow> bool"
+  where \<open>identifiable eid A \<equiv> is_singleton{(Id,Eid). (Id, Eid) \<in> A \<and> Eid = eid}\<close>
+
+definition global_policy :: "[infrastructure, efid] \<Rightarrow> bool"
+where \<open>global_policy I eid \<equiv>  
+             \<forall> L. 0 < card L \<longrightarrow> L \<subseteq> nodes(graphI I) \<longrightarrow> (\<not>(identifiable eid 
+               ((\<Inter> (kgra(graphI I)(''Eve'')`L)
+                          - {(x,y). x = ''Eve''}))))\<close>
+
+lemma all_kgra_disj_imp_greater_two_inv_gen: "(\<forall> a \<in> actors_graph (graphI I). 
+     (\<forall> l \<in> nodes (graphI I). \<forall> l' \<in> nodes (graphI I). 
+      (l \<noteq> l' \<longrightarrow> (kgra (graphI I) a l) \<inter> kgra(graphI I) a l' = {}))) \<Longrightarrow>
+      L \<subseteq> nodes(graphI I)  \<Longrightarrow> card L \<ge> 2 \<Longrightarrow> 
+      ''Eve'' \<in> actors_graph (graphI I) \<Longrightarrow>
+      (\<not>(identifiable eid 
+               ((\<Inter> (kgra(graphI I)(''Eve'')`L))
+                          - {(x,y). x = ''Eve''})))"
+  apply (simp add: identifiable_def) 
+  apply (subgoal_tac " {(Id, Eid).
+         (\<forall>x\<in>L. (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI I) ''Eve'' x) \<and>
+         Id \<noteq> ''Eve'' \<and> Eid = eid} = {}")
+   apply (rotate_tac -1)
+   apply (erule ssubst)
+   apply (simp add: is_singleton_def)
+  apply (rule equalityI)
+   prefer 2
+   apply simp
+  apply (rule subsetI)
+  apply simp
+  apply (case_tac x)
+  apply simp
+  apply (subgoal_tac "\<exists> l \<in> L. (\<exists> l' \<in> L. l \<noteq> l')")
+   apply (erule bexE)+
+  apply (erule conjE)
+   apply (frule_tac x = l in bspec, assumption)
+   apply (drule_tac x = l' in bspec, assumption)
+   apply (drule_tac x = "''Eve''" in bspec)
+  prefer 2
+    apply (meson disjoint_iff in_mono)
+   apply assumption
+by (erule CoronaAppThree.scenarioCoronaThree.card_two_two_not_eq_elem)
+
+
+
+lemma all_kgra_disj_imp_less_two_inv_gen: 
+     "L \<subseteq> nodes(graphI I)  \<Longrightarrow> card L < 2 \<Longrightarrow> 
+      ''Eve'' \<in> actors_graph (graphI I) \<Longrightarrow> 0 < card L \<Longrightarrow>
+\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI I).
+       {(Id, Eid).
+        (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI I) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq>
+       {} \<longrightarrow>
+       2 \<le> card {(Id, Eid).
+                  (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI I) ''Eve'' l \<and>
+                  Id \<noteq> ''Eve'' \<and> Eid = eid} \<Longrightarrow>
+      (\<not>(identifiable eid 
+               (((\<Inter> (kgra(graphI I)(''Eve'')`L)
+                          - {(x,y). x = ''Eve''})))))"
+  apply (subgoal_tac "finite L")
+  prefer 2
+  using card_gt_0_iff apply blast
+  apply (subgoal_tac "card L = 1")
+   prefer 2
+   apply linarith
+  apply (subgoal_tac "\<exists> l. L = {l}")
+   prefer 2
+   apply (meson card_1_singletonE)
+  apply (erule exE)
+  apply simp
+  apply (simp add: identifiable_def)
+  apply (subgoal_tac "{(Id, Eid).
+     (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI I) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} = {} 
+\<or>
+card({(Id, Eid).
+     (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI I) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid}) \<ge> 2")
+   apply (erule disjE)
+  apply (rotate_tac -1)
+  apply (erule ssubst)
+  apply (simp add: is_singleton_def)+
+   apply force
+  apply (case_tac "{(Id, Eid).
+     (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI I) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} = {}")
+   apply simp
+  apply (rule disjI2)
+by simp
+
+
+lemma all_kgra_disj_imp_inv_gen: "''Eve'' \<in> InfrastructureThree.actors_graph (InfrastructureThree.graphI I) \<Longrightarrow>
+     (\<forall> a \<in> actors_graph (graphI I).
+     (\<forall> l \<in> nodes (graphI I). \<forall> l' \<in> nodes (graphI I). 
+      (l \<noteq> l' \<longrightarrow> (kgra (graphI I) a l) \<inter> kgra(graphI I) a l' = {}))) \<Longrightarrow>
+     (\<forall> l \<in> nodes (graphI I). {(Id, Eid).
+          (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI I) ''Eve'' l \<and> Id \<noteq> ''Eve'' \<and> Eid = eid} \<noteq>
+         {} \<longrightarrow>
+     ( 2 \<le> card {(Id, Eid).
+                    (Id, Eid) \<in> InfrastructureThree.kgra (InfrastructureThree.graphI I) ''Eve'' l \<and>
+                    Id \<noteq> ''Eve'' \<and> Eid = eid})) \<Longrightarrow> global_policy I eid"
+  apply (unfold global_policy_def)
+  apply (rule allI)
+  apply (rule impI)+
+  apply (subgoal_tac "(0 < card L \<and> card L < 2) \<or> card L \<ge> 2")
+   prefer 2
+   apply arith
+  apply (erule disjE)
+  apply (rule all_kgra_disj_imp_less_two_inv_gen, assumption, simp, assumption, simp, assumption)
+  using all_kgra_disj_imp_greater_two_inv_gen by presburger
+
+(* Now, we can reprove the general validity of the global policy (called global_policyR in the locale.
+   All the locale lemmas that proved specific required lemmas about the finite infrastructure example
+   used in the locale, lead now to a list of assumptions here in the generalised theorem. 
+   The first theorem global_policy_valid shows the validity of the global policy for all states.
+   This is then generalised into the corresponding AG property below in theorem RR_cycle_succeeds_gen *)
+lemma global_policy_valid: "(I  \<rightarrow>\<^sub>n* y) \<Longrightarrow>  
+''Eve'' \<in> actors_graph (graphI I) \<Longrightarrow>
+\<forall>l a. InfrastructureThree.kgra (InfrastructureThree.graphI I) a l = {} \<Longrightarrow>
+\<forall>a\<in>InfrastructureThree.actors_graph (InfrastructureThree.graphI I).
+       inj (InfrastructureThree.efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)) \<Longrightarrow>
+\<forall>a l l'.
+       l \<in> InfrastructureThree.nodes (InfrastructureThree.graphI I) \<longrightarrow>
+       a \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<longrightarrow>
+       a \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l' \<longrightarrow> l = l' \<Longrightarrow>
+ \<forall>a\<in>InfrastructureThree.actors_graph (InfrastructureThree.graphI I).
+       \<forall>a'\<in>InfrastructureThree.actors_graph (InfrastructureThree.graphI I).
+          a \<noteq> a' \<longrightarrow>
+          range (InfrastructureThree.efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)) \<inter>
+          range (InfrastructureThree.efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI I) a')) =
+          {} \<Longrightarrow>
+\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI I).
+       \<forall>e\<in>InfrastructureThree.egra (InfrastructureThree.graphI I) l.
+          \<exists>a\<in>InfrastructureThree.agra (InfrastructureThree.graphI I) l.
+             e = InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI I) a) \<Longrightarrow>
+\<forall>a l. l \<in> InfrastructureThree.nodes (InfrastructureThree.graphI I) \<longrightarrow>
+          a \<in> InfrastructureThree.agra (InfrastructureThree.graphI I) l \<longrightarrow>
+          InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI I) a)
+          \<in> InfrastructureThree.egra (InfrastructureThree.graphI I) l \<Longrightarrow>
+\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI I).
+       finite (InfrastructureThree.egra (InfrastructureThree.graphI I) l) \<Longrightarrow>
+\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI I).
+       finite (InfrastructureThree.agra (InfrastructureThree.graphI I) l) \<Longrightarrow>
+\<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI I).
+       3 \<le> card (InfrastructureThree.agra (InfrastructureThree.graphI I) l) \<Longrightarrow>
+global_policy y (Efid n)"
+  apply (rule all_kgra_disj_imp_inv_gen)
+  using InfrastructureThree.same_actors InfrastructureThree.state_transition_in_refl_def apply fastforce
+  thm theoremAOO
+   apply (rule theoremAOO)
+  apply (simp add: state_transition_in_refl_def)
+       apply (assumption)+
+  apply (rule last_lemOO)
+           apply (simp add: state_transition_in_refl_def)
+  apply assumption+
+        apply (smt (verit, ccfv_SIG) InfrastructureThree.efids_cur_in_efids_listO disjoint_iff inj_on_def)
+  by assumption+
+
+(* Simply embedding the previosu theorem into the CTL form as an AG formula 
+   Effectively, the first part just dels with the AG deconstruction -- afterward global_policy_gen is
+   applied and the assumptions discharged. *)
+theorem RR_cycle_succeeds_gen: "I \<noteq> {} \<Longrightarrow> 
+  \<forall> x \<in> I. ''Eve'' \<in> actors_graph (graphI x) \<Longrightarrow>
+ (\<forall> x \<in> I. \<forall>l a. InfrastructureThree.kgra (InfrastructureThree.graphI x) a l = {}) \<Longrightarrow>
+(\<forall> x \<in> I. \<forall>a\<in>InfrastructureThree.actors_graph (InfrastructureThree.graphI x).
+       inj (InfrastructureThree.efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI x) a))) \<Longrightarrow>
+ (\<forall> x \<in> I. \<forall>a l l'.
+       l \<in> InfrastructureThree.nodes (InfrastructureThree.graphI x) \<longrightarrow>
+       a \<in> InfrastructureThree.agra (InfrastructureThree.graphI x) l \<longrightarrow>
+       a \<in> InfrastructureThree.agra (InfrastructureThree.graphI x) l' \<longrightarrow> l = l') \<Longrightarrow>
+  (\<forall> x \<in> I. \<forall>a\<in>InfrastructureThree.actors_graph (InfrastructureThree.graphI x).
+       \<forall>a'\<in>InfrastructureThree.actors_graph (InfrastructureThree.graphI x).
+          a \<noteq> a' \<longrightarrow>
+          range (InfrastructureThree.efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI x) a)) \<inter>
+          range (InfrastructureThree.efids_list (InfrastructureThree.cgra (InfrastructureThree.graphI x) a')) =
+          {}) \<Longrightarrow>
+ (\<forall> x \<in> I. \<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI x).
+       \<forall>e\<in>InfrastructureThree.egra (InfrastructureThree.graphI x) l.
+          \<exists>a\<in>InfrastructureThree.agra (InfrastructureThree.graphI x) l.
+             e = InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI x) a)) \<Longrightarrow>
+ (\<forall> x \<in> I. \<forall>a l. l \<in> InfrastructureThree.nodes (InfrastructureThree.graphI x) \<longrightarrow>
+          a \<in> InfrastructureThree.agra (InfrastructureThree.graphI x) l \<longrightarrow>
+          InfrastructureThree.efids_cur (InfrastructureThree.cgra (InfrastructureThree.graphI x) a)
+          \<in> InfrastructureThree.egra (InfrastructureThree.graphI x) l) \<Longrightarrow>
+ (\<forall> x \<in> I. \<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI x).
+       finite (InfrastructureThree.egra (InfrastructureThree.graphI x) l)) \<Longrightarrow>
+ (\<forall> x \<in> I. \<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI x).
+       finite (InfrastructureThree.agra (InfrastructureThree.graphI x) l)) \<Longrightarrow>
+ (\<forall> x \<in> I. \<forall>l\<in>InfrastructureThree.nodes (InfrastructureThree.graphI x).
+       3 \<le> card (InfrastructureThree.agra (InfrastructureThree.graphI x) l)) \<Longrightarrow>
+                  ((Kripke {s. \<exists> i \<in> I. (i \<rightarrow>\<^sub>n* s)} I  \<turnstile> AG {x. \<forall> n. global_policy x (Efid n)}))"
+  apply (simp add: check_def)
+  apply (rule subsetI)
+  apply simp
+  apply (rule conjI)
+  using InfrastructureThree.state_transition_in_refl_def apply auto[1]
+  apply (rule AG_all_sO_n)
+  apply (rule allI)
+  apply (rule impI)
+  apply (rule CollectI)
+  apply (rule allI)
+  apply (rule global_policy_valid)
+  apply (simp add: InfrastructureThree.state_transition_in_refl_def)
+  by simp+
+
 end

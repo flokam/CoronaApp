@@ -2542,7 +2542,7 @@ lemma path_List_PreI: "path I y p \<Longrightarrow> list_Pre I p = None"
 
 
 
-(* See conterexample: if there are repititions, then the reverse gets the wrong end *)
+(* See conterexample: if there are repetitions, then the reverse gets the wrong end *)
 lemma List_Pred_Suc: "list_Pred z p = Some zO \<Longrightarrow> list_Suc zO p = Some z"
   oops
 
@@ -2592,7 +2592,7 @@ lemma P_notP_nthlist[rule_format]: "2 \<le> length p \<longrightarrow> \<not> P 
      (\<exists> n < length p - 1. \<not> P (nth p n) \<and> P(nth p (Suc n)))"
   apply (rule list.induct)
   apply simp
-  by (metis (no_types, hide_lams) One_nat_def Suc_1 Suc_diff_1 Suc_le_mono Suc_less_eq diff_Suc_1 le0 length_Cons nth_Cons' nth_non_equal_first_eq zero_less_Suc)
+  by (metis (no_types, lifting) One_nat_def Suc_less_eq Suc_pred length_tl list.sel(3) list.simps(3) list.size(3) nth_Cons_Suc tl_nempty_length tl_nempty_lngth)
 
 
 lemma P_notP_list: "(P y) \<longrightarrow> \<not> (P I) \<longrightarrow> 

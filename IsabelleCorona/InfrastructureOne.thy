@@ -24,7 +24,8 @@ primrec efids_list :: "efidlist \<Rightarrow> nat \<Rightarrow> efid"
 definition repl_efr :: "efidlist \<Rightarrow> efid"
   where "repl_efr el \<equiv> efids_root el" 
 
-datatype igraph = Lgraph "(location * location)set" "location \<Rightarrow> identity set"
+datatype igraph = Lgraph "(location * location)set" 
+                           "location \<Rightarrow> identity set"
                            "identity \<Rightarrow> efidlist"  
                            "location \<Rightarrow> string * (dlm * data) set"
                            "location \<Rightarrow> efid set"
@@ -686,7 +687,8 @@ proof (clarify, frule same_actors0, frule same_nodes0, frule efids_list_eq0, eru
     apply (case_tac "a \<in> ((agra (InfrastructureOne.graphI I)) la) &  a \<notin> ((agra (InfrastructureOne.graphI I)) l')")
      prefer 2
      apply (simp add: move_graph_a_def)+
-    by (metis (mono_tags, hide_lams) Diff_iff UNIV_I efidlist.exhaust efids_cur.simps efids_list.simps fun_upd_apply image_eqI insert_iff)
+    apply (simp add: atI_def nodes_def)
+    by (metis (mono_tags, lifting) Diff_iff UNIV_I efidlist.exhaust efids_cur.simps efids_list.simps fun_upd_apply image_eqI insertE)
      (* for Isabelle 2021-1 ...(mono_tags, opaque_lifting)... *)
 next show " \<And>z z' l e G I a la I'.
        \<forall>l\<in>InfrastructureOne.nodes (InfrastructureOne.graphI z).

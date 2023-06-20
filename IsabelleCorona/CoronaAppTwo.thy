@@ -182,7 +182,7 @@ defines ex_knosTi_def: "ex_knosTi \<equiv>(\<lambda> x :: identity.
                    else (\<lambda> l :: location. {} :: (identity * efid) set)))"
 
 
-(* initial attack -- not working any more here after action refinement (se below) *)
+(* initial attack -- not working any more here after action refinement (see below) *)
 fixes ex_graphT :: "igraph"
 defines ex_graphT_def: "ex_graphT \<equiv> Lgraph {(pubT, shopT)} ex_loc_assT ex_credsT ex_locsT ex_efidsT ex_knosT"
 
