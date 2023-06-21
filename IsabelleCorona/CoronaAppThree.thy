@@ -1522,13 +1522,15 @@ end
 
 (* Generalisation of RR_cycle_succeeds *)
 (* First need to generalise a few lemmas *)
-lemma  AG_all_sO_n: "(\<forall>y. (x,y)\<in> {(x,y). state_transition_in x y}\<^sup>* \<longrightarrow> y \<in> s) \<Longrightarrow> x \<in> AG s"
-  apply (rule AG_all_sO)
-  by (smt (verit) Collect_cong InfrastructureThree.state_transition_infra_def split_cong state_transition_refl_def)
 
 (* For the generalisation, we need to redefine the global policy at global level*)
 definition identifiable :: "[efid, (identity * efid)set] \<Rightarrow> bool"
   where \<open>identifiable eid A \<equiv> is_singleton{(Id,Eid). (Id, Eid) \<in> A \<and> Eid = eid}\<close>
+
+
+(* This has the same meaning:
+  thm CoronaAppThree.scenarioCoronaThree.global_policyR_def 
+but for practicality we redefine the global policy with a global name *)
 
 definition global_policy :: "[infrastructure, efid] \<Rightarrow> bool"
 where \<open>global_policy I eid \<equiv>  
@@ -1680,7 +1682,7 @@ global_policy y (Efid n)"
         apply (smt (verit, ccfv_SIG) InfrastructureThree.efids_cur_in_efids_listO disjoint_iff inj_on_def)
   by assumption+
 
-(* Simply embedding the previosu theorem into the CTL form as an AG formula 
+(* Simply embedding the previous theorem into the CTL form as an AG formula 
    Effectively, the first part just dels with the AG deconstruction -- afterward global_policy_gen is
    applied and the assumptions discharged. *)
 theorem RR_cycle_succeeds_gen: "I \<noteq> {} \<Longrightarrow> 
@@ -1718,7 +1720,7 @@ theorem RR_cycle_succeeds_gen: "I \<noteq> {} \<Longrightarrow>
   apply simp
   apply (rule conjI)
   using InfrastructureThree.state_transition_in_refl_def apply auto[1]
-  apply (rule AG_all_sO_n)
+  apply (rule CoronaAppThree.scenarioCoronaThree.AG_all_sO_n)
   apply (rule allI)
   apply (rule impI)
   apply (rule CollectI)
